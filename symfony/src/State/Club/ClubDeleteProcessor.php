@@ -28,4 +28,9 @@ final class ClubDeleteProcessor extends AbstractDeleteProcessor
 
         return null;
     }
+
+    protected function foreignKeyConstraintViolationMessage(object $entity, array $context): ?string
+    {
+        return 'This club cannot be deleted because it is still used by other resources.';
+    }
 }

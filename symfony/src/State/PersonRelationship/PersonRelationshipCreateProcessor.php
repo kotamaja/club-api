@@ -6,7 +6,6 @@ use ApiPlatform\Metadata\Operation;
 use App\Dto\PersonRelationship\PersonRelationshipCreateDto;
 use App\Entity\Person;
 use App\Entity\PersonRelationship;
-use App\Mapper\InvalidInputException;
 use App\Mapper\MapperRegistry;
 use App\Repository\PersonRepository;
 use App\State\Util\AbstractCreateProcessor;
@@ -41,7 +40,6 @@ class PersonRelationshipCreateProcessor extends AbstractCreateProcessor
 
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
-        $context['uri_variables'] = $uriVariables;
 
         try {
             return parent::process($data, $operation, $uriVariables, $context);
@@ -53,41 +51,27 @@ class PersonRelationshipCreateProcessor extends AbstractCreateProcessor
     protected function beforePersist(mixed $data, object $entity, array $context): void
     {
 
-
-
-        $subjectPublicId = $this->extractPublicIdFromIri($data->subject);
-        $relatedPublicId = $this->extractPublicIdFromIri($data->relatedPerson);
-
-
-        if ($subjectPublicId === $relatedPublicId) {
+        if ($data->subjectId === $data->relatedPersonId) {
             throw new UnprocessableEntityHttpException('A person cannot be related to themselves.');
         }
 
-        $subject = $this->personRepository->findOneBy(['publicId' => $subjectPublicId]);
+        $subject = $this->personRepository->findOneBy(['publicId' => $data->subjectId]);
         if (!$subject instanceof Person) {
             throw new NotFoundHttpException('Subject person not found.');
         }
 
-        $related = $this->personRepository->findOneBy(['publicId' => $relatedPublicId]);
-        if (!$related instanceof Person) {
+        $relatedPerson = $this->personRepository->findOneBy(['publicId' => $data->relatedPersonId]);
+        if (!$relatedPerson instanceof Person) {
             throw new NotFoundHttpException('Related person not found.');
         }
 
         $entity->setSubject($subject);
-        $entity->setRelatedPerson($related);
+        $entity->setRelatedPerson($relatedPerson);
     }
 
-    private function extractPublicIdFromIri(string $iri): string
+    protected function uniqueConstraintViolationMessage(mixed $data, object $entity, array $context): ?string
     {
-        // supporte "/people/01H..." et "01H..." (tolérant)
-        $trim = trim($iri);
-        if ($trim === '') {
-            return '';
-        }
-        if (str_contains($trim, '/')) {
-            return (string) preg_replace('~^.*/~', '', $trim);
-        }
-        return $trim;
+        return 'This relationship already exists.';
     }
 
 }

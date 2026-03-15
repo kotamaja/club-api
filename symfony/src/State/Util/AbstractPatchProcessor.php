@@ -4,19 +4,21 @@ namespace App\State\Util;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
-use App\Entity\Club;
 use App\Mapper\MapperRegistry;
+use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 
 abstract class AbstractPatchProcessor implements ProcessorInterface
 {
     use OutputDtoResolverTrait;
 
     public function __construct(
-        protected readonly MapperRegistry $mapperRegistry,
+        protected readonly MapperRegistry         $mapperRegistry,
         protected readonly EntityManagerInterface $em,
-    ) {}
+    )
+    {
+    }
 
     final public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
@@ -52,7 +54,17 @@ abstract class AbstractPatchProcessor implements ProcessorInterface
 
         $this->afterMap($data, $entity, $context);
 
-        $this->em->flush();
+        try {
+            $this->em->flush();
+        } catch (UniqueConstraintViolationException $e) {
+            $message = $this->uniqueConstraintViolationMessage($data, $entity, $context);
+
+            if (null === $message) {
+                throw $e;
+            }
+
+            throw new ConflictHttpException($message, $e);
+        }
 
         $outputDto = $this->resolveOutputDto($operation);
         return $this->mapperRegistry->map($entity, $outputDto);
@@ -60,6 +72,16 @@ abstract class AbstractPatchProcessor implements ProcessorInterface
 
     abstract protected function assertInput(mixed $data): void;
 
-    protected function beforeMap(mixed $data, object $entity, array $context): void {}
-    protected function afterMap(mixed $data, object $entity, array $context): void {}
+    protected function beforeMap(mixed $data, object $entity, array $context): void
+    {
+    }
+
+    protected function afterMap(mixed $data, object $entity, array $context): void
+    {
+    }
+
+    protected function uniqueConstraintViolationMessage(mixed $data, object $entity, array $context): ?string
+    {
+        return 'A resource with the same unique values already exists.';
+    }
 }

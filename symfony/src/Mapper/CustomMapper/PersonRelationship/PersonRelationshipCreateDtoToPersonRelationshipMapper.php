@@ -17,11 +17,8 @@ final class PersonRelationshipCreateDtoToPersonRelationshipMapper implements Cus
         }
         $personRelationship = $target instanceof PersonRelationship ? $target : new PersonRelationship();
 
-
         $personRelationship->setType($source->type);
         $personRelationship->setEmergencyContact($source->isEmergencyContact);
-
-        // Important: subject and relatedPerson are set in function beforePersist of PersonRelationshipCreateProcessor
 
         return $personRelationship;
     }

@@ -2,9 +2,9 @@
 
 namespace App\Entity;
 
-use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
+use ApiPlatform\Doctrine\Orm\Filter\ExactFilter;
 use ApiPlatform\Doctrine\Orm\Filter\PartialSearchFilter;
-use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Doctrine\Orm\Filter\SortFilter;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Delete;
@@ -24,10 +24,10 @@ use App\State\Club\ClubDeleteProcessor;
 use App\State\Club\ClubPatchProcessor;
 use App\State\CollectionProvider;
 use App\State\ItemProvider;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Ulid;
-use Symfony\Bridge\Doctrine\Types\UlidType;
-use Doctrine\DBAL\Types\Types;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ApiResource(
     operations: [
@@ -36,12 +36,33 @@ use Doctrine\DBAL\Types\Types;
             output: ClubListDto::class,
             provider: CollectionProvider::class,
             parameters: [
-                // Filtres (API Platform 4 : QueryParameter + Filter)
-                'name' => new QueryParameter(filter: new PartialSearchFilter()),
-                // ou en SearchFilter "partial" via ApiFilter (voir plus bas)
-                'order[:property]' => new QueryParameter(
-                    filter: new OrderFilter(),
-                    properties: ['name', 'publicId'],
+                'id' => new QueryParameter(
+                    schema: [
+                        'type' => 'array',
+                        'items' => ['type' => 'string'],
+                        'uniqueItems' => true,
+                    ],
+                    filter: new ExactFilter(),
+                    property: 'publicId',
+                    constraints: [
+                        new Assert\All([
+                            new Assert\NotBlank(),
+                            new Assert\Ulid(),
+                        ]),
+                    ],
+                    castToArray: true,
+                ),
+                'name' => new QueryParameter(
+                    filter: new PartialSearchFilter(),
+                    property: 'name',
+                ),
+                'orderId' => new QueryParameter(
+                    filter: new SortFilter(),
+                    property: 'publicId',
+                ),
+                'orderName' => new QueryParameter(
+                    filter: new SortFilter(),
+                    property: 'name',
                 ),
             ],
         ),

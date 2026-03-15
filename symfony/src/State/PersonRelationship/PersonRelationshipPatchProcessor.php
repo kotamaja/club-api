@@ -13,4 +13,9 @@ class PersonRelationshipPatchProcessor extends AbstractPatchProcessor
             throw new \LogicException('Expected PersonRelationshipPatchDto.');
         }
     }
+
+    protected function uniqueConstraintViolationMessage(mixed $data, object $entity, array $context): ?string
+    {
+        return 'This relationship already exists.';
+    }
 }

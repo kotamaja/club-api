@@ -25,6 +25,7 @@ CREATE TABLE `person_relationship` (
     `related_person_id` INT NOT NULL,
     UNIQUE INDEX `uniq_person_relationship_public_id` (`public_id`),
     INDEX `idx_person_relationship_subject` (`subject_id`),
+    INDEX `idx_person_relationship_subject_type` (`subject_id`, `type`),
     INDEX `idx_person_relationship_related` (`related_person_id`),
     UNIQUE INDEX uniq_person_relationship (`subject_id`, `related_person_id`, `type`),
     PRIMARY KEY (`id`)

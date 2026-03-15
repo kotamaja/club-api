@@ -2,15 +2,15 @@
 
 namespace App\Entity;
 
-use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
-use ApiPlatform\Doctrine\Orm\Filter\PartialSearchFilter;
-use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
-use ApiPlatform\Metadata\ApiFilter;
+use ApiPlatform\Doctrine\Orm\Filter\BooleanFilter;
+use ApiPlatform\Doctrine\Orm\Filter\ExactFilter;
+use ApiPlatform\Doctrine\Orm\Filter\SortFilter;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Link;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\QueryParameter;
@@ -35,19 +35,87 @@ use Symfony\Component\Validator\Constraints as Assert;
         output: PersonRelationshipViewDto::class,
         provider: CollectionProvider::class,
         parameters: [
-            // Filtres (API Platform 4 : QueryParameter + Filter)
-            'subjectId' => new QueryParameter(filter: new PartialSearchFilter()),
-            'relatedPersonId' => new QueryParameter(filter: new PartialSearchFilter()),
-            'type' => new QueryParameter(filter: new PartialSearchFilter()),
-            // ou en SearchFilter "partial" via ApiFilter (voir plus bas)
-            'order[:property]' => new QueryParameter(
-                filter: new OrderFilter(),
-                properties: ['subject', 'relatedPerson', 'type', 'publicId'],
+            'id' => new QueryParameter(
+                schema: [
+                    'type' => 'array',
+                    'items' => ['type' => 'string'],
+                    'uniqueItems' => true,
+                ],
+                filter: new ExactFilter(),
+                property: 'publicId',
+                constraints: [
+                    new Assert\All([
+                        new Assert\NotBlank(),
+                        new Assert\Ulid(),
+                    ]),
+                ],
+                castToArray: true,
+            ),
+            'subjectId' => new QueryParameter(
+                schema: [
+                    'type' => 'array',
+                    'items' => ['type' => 'string'],
+                    'uniqueItems' => true,
+                ],
+                filter: new ExactFilter(),
+                property: 'subject.publicId',
+                constraints: [
+                    new Assert\All([
+                        new Assert\NotBlank(),
+                        new Assert\Ulid(),
+                    ]),
+                ],
+                castToArray: true,
+            ),
+            'relatedPersonId' => new QueryParameter(
+                schema: [
+                    'type' => 'array',
+                    'items' => ['type' => 'string'],
+                    'uniqueItems' => true,
+                ],
+                filter: new ExactFilter(),
+                property: 'relatedPerson.publicId',
+                constraints: [
+                    new Assert\All([
+                        new Assert\NotBlank(),
+                        new Assert\Ulid(),
+                    ]),
+                ],
+                castToArray: true,
+            ),
+            'type' => new QueryParameter(
+                filter: new ExactFilter(),
+                property: 'type',
+            ),
+            'isEmergencyContact' => new QueryParameter(
+                filter: new BooleanFilter(),
+                property: 'isEmergencyContact',
+            ),
+
+            // Tri : un paramètre par propriété
+            'orderId' => new QueryParameter(
+                filter: new SortFilter(),
+                property: 'publicId',
+            ),
+            'orderType' => new QueryParameter(
+                filter: new SortFilter(),
+                property: 'type',
+            ),
+            'orderSubjectId' => new QueryParameter(
+                filter: new SortFilter(),
+                property: 'subject.publicId',
+            ),
+            'orderRelatedPersonId' => new QueryParameter(
+                filter: new SortFilter(),
+                property: 'relatedPerson.publicId',
             ),
         ],
     ),
     new Get(
         uriTemplate: '/person_relationships/{id}',
+        uriVariables: [
+            'id' => new Link(fromClass: PersonRelationship::class, identifiers: ['publicId']),
+        ],
         output: PersonRelationshipViewDto::class,
         provider: ItemProvider::class,
     ),
@@ -59,30 +127,28 @@ use Symfony\Component\Validator\Constraints as Assert;
     ),
     new Patch(
         uriTemplate: '/person_relationships/{id}',
+        uriVariables: [
+            'id' => new Link(fromClass: PersonRelationship::class, identifiers: ['publicId']),
+        ],
         input: PersonRelationshipPatchDto::class,
         output: PersonRelationshipViewDto::class,
         read: true,
-        provider: ItemProvider::class,
         processor: PersonRelationshipPatchProcessor::class,
     ),
     new Delete(
         uriTemplate: '/person_relationships/{id}',
+        uriVariables: [
+            'id' => new Link(fromClass: PersonRelationship::class, identifiers: ['publicId']),
+        ],
         read: true,
-        provider: ItemProvider::class,
         processor: PersonRelationshipDeleteProcessor::class,
     ),
 ])]
-
-//#[ApiFilter(SearchFilter::class, properties: [
-//    'subject' => 'exact',
-//    'relatedPerson' => 'exact',
-//    'type' => 'exact',
-//])]
-
 #[ORM\Table(name: 'person_relationship')]
 #[ORM\Entity(repositoryClass: PersonRelationShipRepository::class)]
 #[ORM\Index(name: 'idx_person_relationship_subject', columns: ['subject_id'])]
 #[ORM\Index(name: 'idx_person_relationship_related', columns: ['related_person_id'])]
+#[ORM\Index(name: 'idx_person_relationship_subject_type', columns: ['related_person_id', 'type'])]
 #[ORM\UniqueConstraint(name: 'uniq_person_relationship', columns: ['subject_id', 'related_person_id', 'type'])]
 #[Assert\Expression(
     "this.getSubject() !== this.getRelatedPerson()",

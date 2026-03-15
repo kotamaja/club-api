@@ -5,15 +5,19 @@ namespace App\Dto\PersonRelationship;
 use App\Enum\RelationshipType;
 use Symfony\Component\Validator\Constraints as Assert;
 
+#[Assert\Expression(
+    'this.subjectId !== this.relatedPersonId',
+    message: 'A person cannot be related to themselves.'
+)]
 final class PersonRelationshipCreateDto
 {
 
     #[Assert\NotBlank]
-    #[Assert\Length(exactly: 26)]
+    #[Assert\Ulid]
     public string $subjectId;
 
     #[Assert\NotBlank]
-    #[Assert\Length(exactly: 26)]
+    #[Assert\Ulid]
     public string $relatedPersonId;
 
     public RelationshipType $type;

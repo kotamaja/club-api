@@ -5,7 +5,9 @@ namespace App\State\Util;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Mapper\MapperRegistry;
+use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 
 abstract class AbstractCreateProcessor implements ProcessorInterface
 {
@@ -27,8 +29,19 @@ abstract class AbstractCreateProcessor implements ProcessorInterface
 
         $this->beforePersist($data, $entity, $context);
 
-        $this->em->persist($entity);
-        $this->em->flush();
+        try {
+            $this->em->persist($entity);
+            $this->em->flush();
+        }
+        catch(UniqueConstraintViolationException $e) {
+            $message = $this->uniqueConstraintViolationMessage($data, $entity, $context);
+
+            if (null === $message) {
+                throw $e;
+            }
+
+            throw new ConflictHttpException($message, $e);
+        }
 
         $this->afterPersist($data, $entity, $context);
 
@@ -47,5 +60,10 @@ abstract class AbstractCreateProcessor implements ProcessorInterface
 
     protected function afterPersist(mixed $data, object $entity, array $context): void
     {
+    }
+
+    protected function uniqueConstraintViolationMessage(mixed $data, object $entity, array $context): ?string
+    {
+        return 'A resource with the same unique values already exists.';
     }
 }

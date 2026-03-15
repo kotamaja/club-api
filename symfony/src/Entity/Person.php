@@ -2,8 +2,9 @@
 
 namespace App\Entity;
 
-use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
+use ApiPlatform\Doctrine\Orm\Filter\ExactFilter;
 use ApiPlatform\Doctrine\Orm\Filter\PartialSearchFilter;
+use ApiPlatform\Doctrine\Orm\Filter\SortFilter;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Delete;
@@ -27,8 +28,8 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Bridge\Doctrine\Types\UlidType;
 use Symfony\Component\Uid\Ulid;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ApiResource(
     operations: [
@@ -37,14 +38,49 @@ use Symfony\Component\Uid\Ulid;
             output: PersonListDto::class,
             provider: CollectionProvider::class,
             parameters: [
-                // Filtres (API Platform 4 : QueryParameter + Filter)
-                'firstname' => new QueryParameter(filter: new PartialSearchFilter()),
-                'lastname' => new QueryParameter(filter: new PartialSearchFilter()),
-                'email' => new QueryParameter(filter: new PartialSearchFilter()),
-                // ou en SearchFilter "partial" via ApiFilter (voir plus bas)
-                'order[:property]' => new QueryParameter(
-                    filter: new OrderFilter(),
-                    properties: ['firstname', 'lastname','email', 'publicId'],
+                'id' => new QueryParameter(
+                    schema: [
+                        'type' => 'array',
+                        'items' => ['type' => 'string'],
+                        'uniqueItems' => true,
+                    ],
+                    filter: new ExactFilter(),
+                    property: 'publicId',
+                    constraints: [
+                        new Assert\All([
+                            new Assert\NotBlank(),
+                            new Assert\Ulid(),
+                        ]),
+                    ],
+                    castToArray: true,
+                ),
+                'firstname' => new QueryParameter(
+                    filter: new PartialSearchFilter(),
+                    property: 'firstname',
+                ),
+                'lastname' => new QueryParameter(
+                    filter: new PartialSearchFilter(),
+                    property: 'lastname',
+                ),
+                'email' => new QueryParameter(
+                    filter: new PartialSearchFilter(),
+                    property: 'email',
+                ),
+                'orderId' => new QueryParameter(
+                    filter: new SortFilter(),
+                    property: 'publicId',
+                ),
+                'orderFirstname' => new QueryParameter(
+                    filter: new SortFilter(),
+                    property: 'firstname',
+                ),
+                'orderLastname' => new QueryParameter(
+                    filter: new SortFilter(),
+                    property: 'lastname',
+                ),
+                'orderEmail' => new QueryParameter(
+                    filter: new SortFilter(),
+                    property: 'email',
                 ),
             ],
         ),

@@ -4,6 +4,7 @@ namespace App\State\Util;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
+use Doctrine\DBAL\Exception\ForeignKeyConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 
@@ -40,8 +41,19 @@ abstract class AbstractDeleteProcessor implements ProcessorInterface
 
         $this->beforeRemove($entity, $context);
 
+        try {
         $this->em->remove($entity);
         $this->em->flush();
+
+        } catch (ForeignKeyConstraintViolationException $e) {
+            $message = $this->foreignKeyConstraintViolationMessage($entity, $context);
+
+            if (null === $message) {
+                throw $e;
+            }
+
+            throw new ConflictHttpException($message, $e);
+        }
 
         $this->afterRemove($entity, $context);
 
@@ -59,4 +71,10 @@ abstract class AbstractDeleteProcessor implements ProcessorInterface
 
     protected function beforeRemove(object $entity, array $context): void {}
     protected function afterRemove(object $entity, array $context): void {}
+
+    protected function foreignKeyConstraintViolationMessage(object $entity, array $context): ?string
+    {
+        return 'This resource cannot be deleted because it is still referenced by other resources.';
+    }
+
 }
