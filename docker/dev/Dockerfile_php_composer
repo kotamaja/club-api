@@ -1,0 +1,36 @@
+
+ARG DOCKER_REPO=docker.io
+ARG PHP_VERSION=8.5
+
+FROM ${DOCKER_REPO}/mlocati/php-extension-installer AS php-extension-installer
+FROM ${DOCKER_REPO}/composer:latest AS composer
+
+FROM ${DOCKER_REPO}/php:${PHP_VERSION}-cli
+
+RUN rm -rf /home/dev && mkdir /home/dev
+WORKDIR /home/dev
+ENV HOME=/home/dev
+
+RUN apt-get update \
+ && apt-get install -y wget curl unzip iputils-ping less git curl
+
+RUN curl -sS https://get.symfony.com/cli/installer | bash && \
+  chmod a+rwx  /home/dev/.symfony5 && \
+  mv  /home/dev/.symfony5/bin/symfony /usr/local/bin/symfony
+
+COPY --from=php-extension-installer /usr/bin/install-php-extensions /usr/local/bin/
+
+RUN install-php-extensions  gd intl zip opcache pdo_mysql xdebug openssl  imagick exif
+
+## Comment next line when composer cannot be installed with install-php-extensions
+#RUN  install-php-extensions  @composer
+
+## Unomment next line when composer cannot be installed with install-php-extensions
+COPY --from=composer /usr/bin/composer /usr/local/bin/composer
+
+RUN mv "$PHP_INI_DIR/php.ini-development" "$PHP_INI_DIR/php.ini"
+COPY ./docker/dev/php/docker-php-ram-limit.ini "$PHP_INI_DIR/conf.d/docker-php-ram-limit.ini"
+COPY ./docker/dev/php/docker-php-ext-xdebug.ini "$PHP_INI_DIR/conf.d/docker-php-ext-xdebug.ini"
+
+
+

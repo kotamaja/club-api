@@ -1,0 +1,44 @@
+services:
+
+  mysql-dev:
+    image: mysql:8.0
+    ports:
+      - "127.0.0.1:3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    volumes:
+      - ./docker/mysql/my.cnf:/etc/mysql/conf.d/my.cnf:ro
+      - ./docker/database/schema/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+      - club-api-mysql-dev:/var/lib/mysql
+
+  php:
+    build:
+      context: .
+      dockerfile: ./Dockerfile-dev
+    working_dir: /var/www
+    volumes:
+      - ./symfony:/var/www:delegated
+      - club_api_composer_cache_dev:/tmp/composer
+    environment:
+      DATABASE_URL: mysql://${MYSQL_USER}:${MYSQL_PASSWORD}@mysql-dev:3306/${MYSQL_DATABASE}?serverVersion=${MYSQL_VERSION}
+      COMPOSER_HOME: /tmp/composer
+      XDEBUG_MODE: ${XDEBUG_MODE:-off}
+
+    user: "${UID:-1000}:${GID:-1000}"
+
+  nginx:
+    image: nginx:1.27-alpine
+    depends_on:
+      - php
+    ports:
+      - "8080:80"
+    volumes:
+      - ./symfony:/var/www
+      - ./docker/dev/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+
+volumes:
+  club_api_composer_cache_dev:
+  club-api-mysql-dev:
