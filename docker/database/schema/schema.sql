@@ -16,19 +16,19 @@ CREATE TABLE `club` (
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci`;
 
-CREATE TABLE `person_relationship` (
+CREATE TABLE `person_contact` (
     `id` INT AUTO_INCREMENT NOT NULL,
     `public_id` VARCHAR(26) NOT NULL,
     `type` VARCHAR(255) NOT NULL,
     `is_emergency_contact` TINYINT DEFAULT 0 NOT NULL,
-    `subject_id` INT NOT NULL,
-    `related_person_id` INT NOT NULL,
-    UNIQUE INDEX `uniq_person_relationship_public_id` (`public_id`),
-    INDEX `idx_person_relationship_subject` (`subject_id`),
-    INDEX `idx_person_relationship_subject_type` (`subject_id`, `type`),
-    INDEX `idx_person_relationship_related` (`related_person_id`),
-    UNIQUE INDEX uniq_person_relationship (`subject_id`, `related_person_id`, `type`),
+    `person_id` INT NOT NULL,
+    `contact_person_id` INT NOT NULL,
+    UNIQUE INDEX `uniq_person_contact_public_id` (`public_id`),
+    INDEX `idx_person_contact_person` (`person_id`),
+    INDEX `idx_person_contact_person_type` (`person_id`, `type`),
+    INDEX `idx_person_contact_contact_person` (`contact_person_id`),
+    UNIQUE INDEX uniq_person_contact (`person_id`, `contact_person_id`, `type`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci`;
-ALTER TABLE `person_relationship` ADD CONSTRAINT `fk_person_relationship_subject_id` FOREIGN KEY (`subject_id`) REFERENCES `person` (`id`) ON DELETE CASCADE;
-ALTER TABLE `person_relationship` ADD CONSTRAINT `fk_person_relationship_related_person_id` FOREIGN KEY (`related_person_id`) REFERENCES person (`id`) ON DELETE CASCADE;
+ALTER TABLE `person_contact` ADD CONSTRAINT `fk_person_contact_person_id` FOREIGN KEY (`person_id`) REFERENCES `person` (`id`) ON DELETE CASCADE;
+ALTER TABLE `person_contact` ADD CONSTRAINT `fk_person_contact_contact_person_id` FOREIGN KEY (`contact_person_id`) REFERENCES person (`id`) ON DELETE CASCADE;

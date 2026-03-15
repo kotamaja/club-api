@@ -1,14 +1,14 @@
 <?php
 
-namespace App\Dto\PersonRelationship;
+namespace App\Dto\PersonContact;
 
 use App\Enum\RelationshipType;
 
-final class PersonRelationshipViewDto
+final class PersonContactViewDto
 {
     public string $id; // publicId
-    public string $subjectId;
-    public string $relatedPersonId;
+    public string $personId;
+    public string $contactPersonId;
 
     public RelationshipType $type;
     public bool $isEmergencyContact;

@@ -146,23 +146,23 @@ class Person
     private ?string $email = null;
 
     /**
-     * @var Collection<int, PersonRelationship>
+     * @var Collection<int, PersonContact>
      */
-    #[ORM\OneToMany(targetEntity: PersonRelationship::class, mappedBy: 'subject')]
-    private Collection $relationshipsAsSubject;
+    #[ORM\OneToMany(targetEntity: PersonContact::class, mappedBy: 'person')]
+    private Collection $relationshipsAsPerson;
 
     /**
-     * @var Collection<int, PersonRelationship>
+     * @var Collection<int, PersonContact>
      */
-    #[ORM\OneToMany(targetEntity: PersonRelationship::class, mappedBy: 'relatedPerson')]
-    private Collection $relationshipsAsRelatedPerson;
+    #[ORM\OneToMany(targetEntity: PersonContact::class, mappedBy: 'contactPerson')]
+    private Collection $relationshipsAsContactPerson;
 
 
     public function __construct()
     {
         $this->publicId = (string) new Ulid();
-        $this->relationshipsAsSubject = new ArrayCollection();
-        $this->relationshipsAsRelatedPerson = new ArrayCollection();
+        $this->relationshipsAsPerson = new ArrayCollection();
+        $this->relationshipsAsContactPerson = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -212,29 +212,29 @@ class Person
     }
 
     /**
-     * @return Collection<int, PersonRelationship>
+     * @return Collection<int, PersonContact>
      */
-    public function getRelationshipsAsSubject(): Collection
+    public function getRelationshipsAsPerson(): Collection
     {
-        return $this->relationshipsAsSubject;
+        return $this->relationshipsAsPerson;
     }
 
-    public function addRelationshipsAsSubject(PersonRelationship $relationshipsAsSubject): static
+    public function addRelationshipsAsPerson(PersonContact $relationshipsAsPerson): static
     {
-        if (!$this->relationshipsAsSubject->contains($relationshipsAsSubject)) {
-            $this->relationshipsAsSubject->add($relationshipsAsSubject);
-            $relationshipsAsSubject->setSubject($this);
+        if (!$this->relationshipsAsPerson->contains($relationshipsAsPerson)) {
+            $this->relationshipsAsPerson->add($relationshipsAsPerson);
+            $relationshipsAsPerson->setPerson($this);
         }
 
         return $this;
     }
 
-    public function removeRelationshipsAsSubject(PersonRelationship $relationshipsAsSubject): static
+    public function removeRelationshipsAsPerson(PersonContact $relationshipsAsPerson): static
     {
-        if ($this->relationshipsAsSubject->removeElement($relationshipsAsSubject)) {
+        if ($this->relationshipsAsPerson->removeElement($relationshipsAsPerson)) {
             // set the owning side to null (unless already changed)
-            if ($relationshipsAsSubject->getSubject() === $this) {
-                $relationshipsAsSubject->setSubject(null);
+            if ($relationshipsAsPerson->getPerson() === $this) {
+                $relationshipsAsPerson->setPerson(null);
             }
         }
 
@@ -242,29 +242,29 @@ class Person
     }
 
     /**
-     * @return Collection<int, PersonRelationship>
+     * @return Collection<int, PersonContact>
      */
-    public function getRelationshipsAsRelatedPerson(): Collection
+    public function getRelationshipsAsContactPerson(): Collection
     {
-        return $this->relationshipsAsRelatedPerson;
+        return $this->relationshipsAsContactPerson;
     }
 
-    public function addRelationshipsAsRelatedPerson(PersonRelationship $relationshipsAsRelatedPerson): static
+    public function addRelationshipsAsContactPerson(PersonContact $relationshipsAsContactPerson): static
     {
-        if (!$this->relationshipsAsRelatedPerson->contains($relationshipsAsRelatedPerson)) {
-            $this->relationshipsAsRelatedPerson->add($relationshipsAsRelatedPerson);
-            $relationshipsAsRelatedPerson->setRelatedPerson($this);
+        if (!$this->relationshipsAsContactPerson->contains($relationshipsAsContactPerson)) {
+            $this->relationshipsAsContactPerson->add($relationshipsAsContactPerson);
+            $relationshipsAsContactPerson->setContactPerson($this);
         }
 
         return $this;
     }
 
-    public function removeRelationshipsAsRelatedPerson(PersonRelationship $relationshipsAsRelatedPerson): static
+    public function removeRelationshipsAsContactPerson(PersonContact $relationshipsAsContactPerson): static
     {
-        if ($this->relationshipsAsRelatedPerson->removeElement($relationshipsAsRelatedPerson)) {
+        if ($this->relationshipsAsContactPerson->removeElement($relationshipsAsContactPerson)) {
             // set the owning side to null (unless already changed)
-            if ($relationshipsAsRelatedPerson->getRelatedPerson() === $this) {
-                $relationshipsAsRelatedPerson->setRelatedPerson(null);
+            if ($relationshipsAsContactPerson->getContactPerson() === $this) {
+                $relationshipsAsContactPerson->setContactPerson(null);
             }
         }
 

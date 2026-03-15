@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Dto\PersonRelationship;
+namespace App\Dto\PersonContact;
 
 use App\Enum\RelationshipType;
 
-final class PersonRelationshipPatchDto
+final class PersonContactPatchDto
 {
     private bool $typeProvided = false;
     private ?RelationshipType $type = null;

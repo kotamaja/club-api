@@ -14,16 +14,16 @@ use ApiPlatform\Metadata\Link;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\QueryParameter;
-use App\Dto\PersonRelationship\PersonRelationshipCreateDto;
-use App\Dto\PersonRelationship\PersonRelationshipPatchDto;
-use App\Dto\PersonRelationship\PersonRelationshipViewDto;
+use App\Dto\PersonContact\PersonContactCreateDto;
+use App\Dto\PersonContact\PersonContactPatchDto;
+use App\Dto\PersonContact\PersonContactViewDto;
 use App\Enum\RelationshipType;
-use App\Repository\PersonRelationShipRepository;
+use App\Repository\PersonContactRepository;
 use App\State\CollectionProvider;
 use App\State\ItemProvider;
-use App\State\PersonRelationship\PersonRelationshipCreateProcessor;
-use App\State\PersonRelationship\PersonRelationshipDeleteProcessor;
-use App\State\PersonRelationship\PersonRelationshipPatchProcessor;
+use App\State\PersonContact\PersonContactCreateProcessor;
+use App\State\PersonContact\PersonContactDeleteProcessor;
+use App\State\PersonContact\PersonContactPatchProcessor;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Ulid;
@@ -31,8 +31,8 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 #[ApiResource(operations: [
     new GetCollection(
-        uriTemplate: '/person_relationships',
-        output: PersonRelationshipViewDto::class,
+        uriTemplate: '/person_contacts',
+        output: PersonContactViewDto::class,
         provider: CollectionProvider::class,
         parameters: [
             'id' => new QueryParameter(
@@ -51,14 +51,14 @@ use Symfony\Component\Validator\Constraints as Assert;
                 ],
                 castToArray: true,
             ),
-            'subjectId' => new QueryParameter(
+            'personId' => new QueryParameter(
                 schema: [
                     'type' => 'array',
                     'items' => ['type' => 'string'],
                     'uniqueItems' => true,
                 ],
                 filter: new ExactFilter(),
-                property: 'subject.publicId',
+                property: 'person.publicId',
                 constraints: [
                     new Assert\All([
                         new Assert\NotBlank(),
@@ -67,14 +67,14 @@ use Symfony\Component\Validator\Constraints as Assert;
                 ],
                 castToArray: true,
             ),
-            'relatedPersonId' => new QueryParameter(
+            'contactPersonId' => new QueryParameter(
                 schema: [
                     'type' => 'array',
                     'items' => ['type' => 'string'],
                     'uniqueItems' => true,
                 ],
                 filter: new ExactFilter(),
-                property: 'relatedPerson.publicId',
+                property: 'contactPerson.publicId',
                 constraints: [
                     new Assert\All([
                         new Assert\NotBlank(),
@@ -101,60 +101,62 @@ use Symfony\Component\Validator\Constraints as Assert;
                 filter: new SortFilter(),
                 property: 'type',
             ),
-            'orderSubjectId' => new QueryParameter(
+            'orderPersonId' => new QueryParameter(
                 filter: new SortFilter(),
-                property: 'subject.publicId',
+                property: 'person.publicId',
             ),
-            'orderRelatedPersonId' => new QueryParameter(
+            'orderContactPersonId' => new QueryParameter(
                 filter: new SortFilter(),
-                property: 'relatedPerson.publicId',
+                property: 'contactPerson.publicId',
             ),
         ],
     ),
     new Get(
-        uriTemplate: '/person_relationships/{id}',
+        uriTemplate: '/person_contacts/{id}',
         uriVariables: [
-            'id' => new Link(fromClass: PersonRelationship::class, identifiers: ['publicId']),
+            'id' => new Link(fromClass: PersonContact::class, identifiers: ['publicId']),
         ],
-        output: PersonRelationshipViewDto::class,
+        output: PersonContactViewDto::class,
         provider: ItemProvider::class,
     ),
     new Post(
-        uriTemplate: '/person_relationships',
-        input: PersonRelationshipCreateDto::class,
-        output: PersonRelationshipViewDto::class,
-        processor: PersonRelationshipCreateProcessor::class,
+        uriTemplate: '/person_contacts',
+        input: PersonContactCreateDto::class,
+        output: PersonContactViewDto::class,
+        processor: PersonContactCreateProcessor::class,
     ),
     new Patch(
-        uriTemplate: '/person_relationships/{id}',
+        uriTemplate: '/person_contacts/{id}',
         uriVariables: [
-            'id' => new Link(fromClass: PersonRelationship::class, identifiers: ['publicId']),
+            'id' => new Link(fromClass: PersonContact::class, identifiers: ['publicId']),
         ],
-        input: PersonRelationshipPatchDto::class,
-        output: PersonRelationshipViewDto::class,
+        input: PersonContactPatchDto::class,
+        output: PersonContactViewDto::class,
         read: true,
-        processor: PersonRelationshipPatchProcessor::class,
+        processor: PersonContactPatchProcessor::class,
     ),
     new Delete(
-        uriTemplate: '/person_relationships/{id}',
+        uriTemplate: '/person_contacts/{id}',
         uriVariables: [
-            'id' => new Link(fromClass: PersonRelationship::class, identifiers: ['publicId']),
+            'id' => new Link(fromClass: PersonContact::class, identifiers: ['publicId']),
         ],
         read: true,
-        processor: PersonRelationshipDeleteProcessor::class,
+        processor: PersonContactDeleteProcessor::class,
     ),
-])]
-#[ORM\Table(name: 'person_relationship')]
-#[ORM\Entity(repositoryClass: PersonRelationShipRepository::class)]
-#[ORM\Index(name: 'idx_person_relationship_subject', columns: ['subject_id'])]
-#[ORM\Index(name: 'idx_person_relationship_related', columns: ['related_person_id'])]
-#[ORM\Index(name: 'idx_person_relationship_subject_type', columns: ['related_person_id', 'type'])]
-#[ORM\UniqueConstraint(name: 'uniq_person_relationship', columns: ['subject_id', 'related_person_id', 'type'])]
+
+],
+    routePrefix: '/v1',)]
+#[ORM\Table(name: 'person_contact')]
+#[ORM\Entity(repositoryClass: PersonContactRepository::class)]
+#[ORM\Index(name: 'idx_person_contact_subject', columns: ['person_id'])]
+#[ORM\Index(name: 'idx_person_contact_related', columns: ['contact_person_id'])]
+#[ORM\Index(name: 'idx_person_contact_subject_type', columns: ['person_id', 'type'])]
+#[ORM\UniqueConstraint(name: 'uniq_person_contact', columns: ['person_id', 'contact_person_id', 'type'])]
 #[Assert\Expression(
-    "this.getSubject() !== this.getRelatedPerson()",
+    "this.getPerson() !== this.getContactPerson()",
     message: "A person cannot be related to themselves."
 )]
-class PersonRelationship
+class PersonContact
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -166,13 +168,13 @@ class PersonRelationship
     #[ApiProperty(identifier: true)]
     private string $publicId;
 
-    #[ORM\ManyToOne(targetEntity: Person::class, inversedBy: 'relationshipsAsSubject')]
-    #[ORM\JoinColumn(name: "subject_id", referencedColumnName: "id", nullable: false, onDelete: 'CASCADE')]
-    private ?Person $subject = null;
+    #[ORM\ManyToOne(targetEntity: Person::class, inversedBy: 'relationshipsAsPerson')]
+    #[ORM\JoinColumn(name: "person_id", referencedColumnName: "id", nullable: false, onDelete: 'CASCADE')]
+    private ?Person $person = null;
 
-    #[ORM\ManyToOne(targetEntity: Person::class, inversedBy: 'relationshipsAsRelatedPerson')]
-    #[ORM\JoinColumn(name: "related_person_id", referencedColumnName: "id", nullable: false, onDelete: 'CASCADE')]
-    private ?Person $relatedPerson = null;
+    #[ORM\ManyToOne(targetEntity: Person::class, inversedBy: 'relationshipsAsContactPerson')]
+    #[ORM\JoinColumn(name: "contact_person_id", referencedColumnName: "id", nullable: false, onDelete: 'CASCADE')]
+    private ?Person $contactPerson = null;
 
     #[ORM\Column(name: 'type', enumType: RelationshipType::class)]
     private ?RelationshipType $type = null;
@@ -196,26 +198,26 @@ class PersonRelationship
         return $this->publicId;
     }
 
-    public function getSubject(): ?Person
+    public function getPerson(): ?Person
     {
-        return $this->subject;
+        return $this->person;
     }
 
-    public function setSubject(?Person $subject): static
+    public function setPerson(?Person $person): static
     {
-        $this->subject = $subject;
+        $this->person = $person;
 
         return $this;
     }
 
-    public function getRelatedPerson(): ?Person
+    public function getContactPerson(): ?Person
     {
-        return $this->relatedPerson;
+        return $this->contactPerson;
     }
 
-    public function setRelatedPerson(?Person $relatedPerson): static
+    public function setContactPerson(?Person $contactPerson): static
     {
-        $this->relatedPerson = $relatedPerson;
+        $this->contactPerson = $contactPerson;
 
         return $this;
     }
@@ -237,7 +239,7 @@ class PersonRelationship
         return $this->isEmergencyContact;
     }
 
-    public function setEmergencyContact(bool $isEmergencyContact): static
+    public function setIsEmergencyContact(bool $isEmergencyContact): static
     {
         $this->isEmergencyContact = $isEmergencyContact;
 

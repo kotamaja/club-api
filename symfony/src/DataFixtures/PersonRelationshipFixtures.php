@@ -3,7 +3,7 @@
 namespace App\DataFixtures;
 
 use App\Entity\Person;
-use App\Entity\PersonRelationship;
+use App\Entity\PersonContact;
 use App\Enum\RelationshipType;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
@@ -11,17 +11,17 @@ use Doctrine\Persistence\ObjectManager;
 class PersonRelationshipFixtures extends Fixture
 {
 
-    private function create(ObjectManager $manager, string $subjectRef, string $relatedPersonRef, RelationshipType $type, bool $emergencyContact): PersonRelationship {
-        $relation = new PersonRelationship();
+    private function create(ObjectManager $manager, string $subjectRef, string $relatedPersonRef, RelationshipType $type, bool $emergencyContact): PersonContact {
+        $relation = new PersonContact();
         $subject = $this->getReference($subjectRef, Person::class);
         $relatedPerson = $this->getReference($relatedPersonRef, Person::class);
 
-        $relation->setSubject($subject);
-        $relation->setRelatedPerson($relatedPerson);
+        $relation->setPerson($subject);
+        $relation->setContactPerson($relatedPerson);
 
         $relation->setType($type);
 
-        $relation->setEmergencyContact($emergencyContact);
+        $relation->setIsEmergencyContact($emergencyContact);
 
         $manager->persist($relation);
         return $relation;
@@ -32,7 +32,7 @@ class PersonRelationshipFixtures extends Fixture
     {
 
 
-        $this->create($manager, "yves-a", "marie-a", RelationshipType::PARTNER, true );
+        $this->create($manager, "yves-a", "marie-a", RelationshipType::LEGAL_GUARDIAN, true );
         $this->create($manager, "yves-a", "serge-a", RelationshipType::LEGAL_GUARDIAN, false );
         $this->create($manager, "yves-a", "monica-a", RelationshipType::OTHER, false );
         $this->create($manager, "anna-a", "yves-a", RelationshipType::PARENT, true );
