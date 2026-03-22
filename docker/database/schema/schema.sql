@@ -32,3 +32,23 @@ CREATE TABLE `person_contact` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci`;
 ALTER TABLE `person_contact` ADD CONSTRAINT `fk_person_contact_person_id` FOREIGN KEY (`person_id`) REFERENCES `person` (`id`) ON DELETE CASCADE;
 ALTER TABLE `person_contact` ADD CONSTRAINT `fk_person_contact_contact_person_id` FOREIGN KEY (`contact_person_id`) REFERENCES person (`id`) ON DELETE CASCADE;
+
+CREATE TABLE `membership` (
+    `id` INT AUTO_INCREMENT NOT NULL,
+    `public_id` VARCHAR(26) NOT NULL,
+    `person_id` INT NOT NULL,
+    `club_id` INT NOT NULL,
+    `joined_at` DATETIME NOT NULL,
+    `ended_at` DATETIME DEFAULT NULL,
+    INDEX `idx_membership_person` (`person_id`),
+    INDEX `idx_membership_club` (`club_id`),
+    INDEX `idx_membership_person_club_ended_at` (`person_id`, `club_id`, `ended_at`),
+    UNIQUE INDEX `uniq_membership_public_id` (`public_id`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci`;
+
+ALTER TABLE `membership` ADD CONSTRAINT `fk_membership_person_id` FOREIGN KEY (`person_id`) REFERENCES person (`id`) ON DELETE CASCADE;
+ALTER TABLE `membership` ADD CONSTRAINT `fk_membership_club_id` FOREIGN KEY (`club_id`) REFERENCES club (`id`) ON DELETE CASCADE;
+
+
+

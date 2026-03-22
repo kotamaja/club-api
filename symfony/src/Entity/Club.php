@@ -24,11 +24,12 @@ use App\State\Club\ClubDeleteProcessor;
 use App\State\Club\ClubPatchProcessor;
 use App\State\CollectionProvider;
 use App\State\ItemProvider;
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Ulid;
 use Symfony\Component\Validator\Constraints as Assert;
-
+use Doctrine\Common\Collections\Collection;
 #[ApiResource(
     operations: [
         new GetCollection(
@@ -122,10 +123,17 @@ class Club
     private ?string $name = null;
 
 
+    /**
+     * @var Collection<int, Membership>
+     */
+    #[ORM\OneToMany(targetEntity: Membership::class, mappedBy: 'club')]
+    private Collection $memberships;
+
 
     public function __construct()
     {
         $this->publicId = (string) new Ulid();
+        $this->memberships = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -151,6 +159,34 @@ class Club
     }
 
 
+    /**
+     * @return Collection<int, Membership>
+     */
+    public function getMemberships(): Collection
+    {
+        return $this->memberships;
+    }
 
+    public function addMembership(Membership $membership): static
+    {
+        if (!$this->memberships->contains($membership)) {
+            $this->memberships->add($membership);
+            $membership->setClub($this);
+        }
+
+        return $this;
+    }
+
+    public function removeMembership(Membership $membership): static
+    {
+        if ($this->memberships->removeElement($membership)) {
+            // set the owning side to null (unless already changed)
+            if ($membership->getClub() === $this) {
+                $membership->setClub(null);
+            }
+        }
+
+        return $this;
+    }
 
 }

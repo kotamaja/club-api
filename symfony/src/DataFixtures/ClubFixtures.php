@@ -13,6 +13,7 @@ class ClubFixtures extends Fixture
         $club = new Club();
         $club->setName($name);
         $manager->persist($club);
+        $this->addReference(sprintf("%s", $name), $club);
         return $club;
     }
 

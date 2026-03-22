@@ -6,9 +6,10 @@ use App\Entity\Person;
 use App\Entity\PersonContact;
 use App\Enum\RelationshipType;
 use Doctrine\Bundle\FixturesBundle\Fixture;
+use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 
-class PersonRelationshipFixtures extends Fixture
+class PersonRelationshipFixtures extends Fixture implements DependentFixtureInterface
 {
 
     private function create(ObjectManager $manager, string $subjectRef, string $relatedPersonRef, RelationshipType $type, bool $emergencyContact): PersonContact {
@@ -31,14 +32,20 @@ class PersonRelationshipFixtures extends Fixture
     public function load(ObjectManager $manager): void
     {
 
-
         $this->create($manager, "yves-a", "marie-a", RelationshipType::LEGAL_GUARDIAN, true );
         $this->create($manager, "yves-a", "serge-a", RelationshipType::LEGAL_GUARDIAN, false );
         $this->create($manager, "yves-a", "monica-a", RelationshipType::OTHER, false );
         $this->create($manager, "anna-a", "yves-a", RelationshipType::PARENT, true );
 
-
         $manager->flush();
 
     }
+
+    public function getDependencies(): array
+    {
+        return [
+            PersonFixtures::class,
+        ];
+    }
+
 }

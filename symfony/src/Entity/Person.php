@@ -157,12 +157,18 @@ class Person
     #[ORM\OneToMany(targetEntity: PersonContact::class, mappedBy: 'contactPerson')]
     private Collection $relationshipsAsContactPerson;
 
+    /**
+     * @var Collection<int, Membership>
+     */
+    #[ORM\OneToMany(targetEntity: Membership::class, mappedBy: 'person')]
+    private Collection $memberships;
 
     public function __construct()
     {
         $this->publicId = (string) new Ulid();
         $this->relationshipsAsPerson = new ArrayCollection();
         $this->relationshipsAsContactPerson = new ArrayCollection();
+        $this->memberships = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -270,4 +276,36 @@ class Person
 
         return $this;
     }
+
+
+    /**
+     * @return Collection<int, Membership>
+     */
+    public function getMemberships(): Collection
+    {
+        return $this->memberships;
+    }
+
+    public function addMembership(Membership $membership): static
+    {
+        if (!$this->memberships->contains($membership)) {
+            $this->memberships->add($membership);
+            $membership->setPerson($this);
+        }
+
+        return $this;
+    }
+
+    public function removeMembership(Membership $membership): static
+    {
+        if ($this->memberships->removeElement($membership)) {
+            // set the owning side to null (unless already changed)
+            if ($membership->getPerson() === $this) {
+                $membership->setPerson(null);
+            }
+        }
+
+        return $this;
+    }
+
 }
