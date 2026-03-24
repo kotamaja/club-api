@@ -4,6 +4,7 @@ namespace App\DataFixtures;
 
 use App\Entity\Club;
 use App\Entity\Person;
+use App\Factory\PersonFactory;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
 
@@ -32,5 +33,13 @@ class PersonFixtures extends Fixture
         $this->create($manager, "monica", "a");
 
         $manager->flush();
+
+        $people = PersonFactory::createMany(200);
+        $i = 1;
+        foreach ($people as $person) {
+            $this->addReference(sprintf("ref-%s", $i), $person);
+            $i++;
+        }
+
     }
 }

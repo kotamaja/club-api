@@ -169,11 +169,11 @@ class PersonContact
     private string $publicId;
 
     #[ORM\ManyToOne(targetEntity: Person::class, inversedBy: 'relationshipsAsPerson')]
-    #[ORM\JoinColumn(name: "person_id", referencedColumnName: "id", nullable: false, onDelete: 'CASCADE')]
+    #[ORM\JoinColumn(name: "person_id", referencedColumnName: "id", nullable: false)]
     private ?Person $person = null;
 
     #[ORM\ManyToOne(targetEntity: Person::class, inversedBy: 'relationshipsAsContactPerson')]
-    #[ORM\JoinColumn(name: "contact_person_id", referencedColumnName: "id", nullable: false, onDelete: 'CASCADE')]
+    #[ORM\JoinColumn(name: "contact_person_id", referencedColumnName: "id", nullable: false)]
     private ?Person $contactPerson = null;
 
     #[ORM\Column(name: 'type', enumType: RelationshipType::class)]

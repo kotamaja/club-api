@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Tests\Factory;
+namespace App\Factory;
 
 use App\Entity\Club;
 use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
@@ -34,7 +34,7 @@ final class ClubFactory extends PersistentObjectFactory
     protected function defaults(): array|callable
     {
         return [
-            'name' => self::faker()->text(150),
+            'name' => self::faker()->text(20),
         ];
     }
 

@@ -3,8 +3,8 @@
 namespace App\Tests\Api\PersonContact;
 
 use App\Tests\ApiTestCase;
-use App\Tests\Factory\PersonFactory;
-use App\Tests\Factory\PersonContactFactory;
+use App\Factory\PersonFactory;
+use App\Factory\PersonContactFactory;
 
 final class PersonContactGetTest extends ApiTestCase
 {

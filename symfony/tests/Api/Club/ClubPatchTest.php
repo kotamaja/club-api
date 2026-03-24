@@ -3,7 +3,7 @@
 namespace App\Tests\Api\Club;
 
 use App\Tests\ApiTestCase;
-use App\Tests\Factory\ClubFactory;
+use App\Factory\ClubFactory;
 
 final class ClubPatchTest extends ApiTestCase
 {

@@ -123,6 +123,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Table(name: 'person')]
 #[ORM\Entity(repositoryClass: PersonRepository::class)]
 #[ORM\UniqueConstraint(name: 'uniq_person_public_id', columns: ['public_id'])]
+#[ORM\UniqueConstraint(name: 'uniq_person_email', columns: ['email'])]
 class Person
 {
     #[ORM\Id]
@@ -225,27 +226,7 @@ class Person
         return $this->relationshipsAsPerson;
     }
 
-    public function addRelationshipsAsPerson(PersonContact $relationshipsAsPerson): static
-    {
-        if (!$this->relationshipsAsPerson->contains($relationshipsAsPerson)) {
-            $this->relationshipsAsPerson->add($relationshipsAsPerson);
-            $relationshipsAsPerson->setPerson($this);
-        }
 
-        return $this;
-    }
-
-    public function removeRelationshipsAsPerson(PersonContact $relationshipsAsPerson): static
-    {
-        if ($this->relationshipsAsPerson->removeElement($relationshipsAsPerson)) {
-            // set the owning side to null (unless already changed)
-            if ($relationshipsAsPerson->getPerson() === $this) {
-                $relationshipsAsPerson->setPerson(null);
-            }
-        }
-
-        return $this;
-    }
 
     /**
      * @return Collection<int, PersonContact>
@@ -253,28 +234,6 @@ class Person
     public function getRelationshipsAsContactPerson(): Collection
     {
         return $this->relationshipsAsContactPerson;
-    }
-
-    public function addRelationshipsAsContactPerson(PersonContact $relationshipsAsContactPerson): static
-    {
-        if (!$this->relationshipsAsContactPerson->contains($relationshipsAsContactPerson)) {
-            $this->relationshipsAsContactPerson->add($relationshipsAsContactPerson);
-            $relationshipsAsContactPerson->setContactPerson($this);
-        }
-
-        return $this;
-    }
-
-    public function removeRelationshipsAsContactPerson(PersonContact $relationshipsAsContactPerson): static
-    {
-        if ($this->relationshipsAsContactPerson->removeElement($relationshipsAsContactPerson)) {
-            // set the owning side to null (unless already changed)
-            if ($relationshipsAsContactPerson->getContactPerson() === $this) {
-                $relationshipsAsContactPerson->setContactPerson(null);
-            }
-        }
-
-        return $this;
     }
 
 
@@ -286,26 +245,5 @@ class Person
         return $this->memberships;
     }
 
-    public function addMembership(Membership $membership): static
-    {
-        if (!$this->memberships->contains($membership)) {
-            $this->memberships->add($membership);
-            $membership->setPerson($this);
-        }
-
-        return $this;
-    }
-
-    public function removeMembership(Membership $membership): static
-    {
-        if ($this->memberships->removeElement($membership)) {
-            // set the owning side to null (unless already changed)
-            if ($membership->getPerson() === $this) {
-                $membership->setPerson(null);
-            }
-        }
-
-        return $this;
-    }
 
 }

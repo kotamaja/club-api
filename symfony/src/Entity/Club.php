@@ -106,6 +106,7 @@ use Doctrine\Common\Collections\Collection;
 #[ORM\Table(name: 'club')]
 #[ORM\Entity(repositoryClass: ClubRepository::class)]
 #[ORM\UniqueConstraint(name: 'uniq_club_public_id', columns: ['public_id'])]
+#[ORM\UniqueConstraint(name: 'uniq_club_name', columns: ['name'])]
 class Club
 {
     #[ORM\Id]
@@ -129,11 +130,25 @@ class Club
     #[ORM\OneToMany(targetEntity: Membership::class, mappedBy: 'club')]
     private Collection $memberships;
 
+    /**
+     * @var Collection<int, ClubMembershipGroup>
+     */
+    #[ORM\OneToMany(targetEntity: ClubMembershipGroup::class, mappedBy: 'club')]
+    private Collection $clubMembershipGroups;
+
+    /**
+     * @var Collection<int, InterclubMembershipGroup>
+     */
+    #[ORM\OneToMany(targetEntity: InterclubMembershipGroup::class, mappedBy: 'club')]
+    private Collection $interclubMembershipGroups;
+
 
     public function __construct()
     {
         $this->publicId = (string) new Ulid();
         $this->memberships = new ArrayCollection();
+        $this->clubMembershipGroups = new ArrayCollection();
+        $this->interclubMembershipGroups = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -167,26 +182,24 @@ class Club
         return $this->memberships;
     }
 
-    public function addMembership(Membership $membership): static
-    {
-        if (!$this->memberships->contains($membership)) {
-            $this->memberships->add($membership);
-            $membership->setClub($this);
-        }
 
-        return $this;
+    /**
+     * @return Collection<int, ClubMembershipGroup>
+     */
+    public function getClubMembershipGroups(): Collection
+    {
+        return $this->clubMembershipGroups;
     }
 
-    public function removeMembership(Membership $membership): static
-    {
-        if ($this->memberships->removeElement($membership)) {
-            // set the owning side to null (unless already changed)
-            if ($membership->getClub() === $this) {
-                $membership->setClub(null);
-            }
-        }
 
-        return $this;
+
+    /**
+     * @return Collection<int, InterclubMembershipGroup>
+     */
+    public function getInterclubMembershipGroups(): Collection
+    {
+        return $this->interclubMembershipGroups;
     }
+
 
 }

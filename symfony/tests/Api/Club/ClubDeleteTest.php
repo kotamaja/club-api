@@ -4,7 +4,8 @@ namespace App\Tests\Api\Club;
 
 
 use App\Tests\ApiTestCase;
-use App\Tests\Factory\ClubFactory;
+use App\Factory\ClubFactory;
+use App\Factory\MembershipFactory;
 
 final class ClubDeleteTest extends ApiTestCase
 {
@@ -22,4 +23,20 @@ final class ClubDeleteTest extends ApiTestCase
 
         $this->assertResponseStatusCodeSame(404);
     }
+
+
+//    public function testDeleteWithMembership(): void
+//    {
+//        $club = ClubFactory::createOne();
+//
+//        MembershipFactory::createOne([
+//            'club' => $club,
+//        ]);
+//
+//
+//        $this->apiDelete('/api/v1/clubs/'.$club->getPublicId());
+//        $this->assertResponseStatusCodeSame(409);
+//
+//    }
+
 }

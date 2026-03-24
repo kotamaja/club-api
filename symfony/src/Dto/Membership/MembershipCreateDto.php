@@ -16,7 +16,7 @@ final class MembershipCreateDto
     public string $clubId;
 
     #[Assert\NotNull]
-    public \DateTimeImmutable $joinedAt;
+    public ?\DateTimeImmutable $joinedAt;
 
     public ?\DateTimeImmutable $endedAt = null;
 

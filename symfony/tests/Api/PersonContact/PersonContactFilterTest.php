@@ -4,8 +4,8 @@ namespace App\Tests\Api\PersonContact;
 
 use App\Enum\RelationshipType;
 use App\Tests\ApiTestCase;
-use App\Tests\Factory\PersonContactFactory;
-use App\Tests\Factory\PersonFactory;
+use App\Factory\PersonContactFactory;
+use App\Factory\PersonFactory;
 
 final class PersonContactFilterTest extends ApiTestCase
 {

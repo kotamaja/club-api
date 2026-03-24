@@ -38,15 +38,15 @@ class PersonContactCreateProcessor extends AbstractCreateProcessor
         }
     }
 
-    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
-    {
-
-        try {
-            return parent::process($data, $operation, $uriVariables, $context);
-        } catch (UniqueConstraintViolationException) {
-            throw new ConflictHttpException('Relationship already exists for this person, contactPerson person and type.');
-        }
-    }
+//    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
+//    {
+//
+//        try {
+//            return parent::process($data, $operation, $uriVariables, $context);
+//        } catch (UniqueConstraintViolationException) {
+//            throw new ConflictHttpException('Relationship already exists for this person, contactPerson person and type.');
+//        }
+//    }
 
     protected function beforePersist(mixed $data, object $entity, array $context): void
     {
@@ -71,7 +71,7 @@ class PersonContactCreateProcessor extends AbstractCreateProcessor
 
     protected function uniqueConstraintViolationMessage(mixed $data, object $entity, array $context): ?string
     {
-        return 'This relationship already exists.';
+        return 'TRelationship already exists for this person, contactPerson person and type.';
     }
 
 }

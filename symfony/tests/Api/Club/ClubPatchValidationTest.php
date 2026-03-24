@@ -2,7 +2,7 @@
 
 namespace App\Tests\Api\Club;
 
-use App\Tests\Factory\ClubFactory;
+use App\Factory\ClubFactory;
 use App\Tests\ApiTestCase;
 
 final class ClubPatchValidationTest extends ApiTestCase

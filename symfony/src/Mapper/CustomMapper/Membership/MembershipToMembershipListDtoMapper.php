@@ -33,7 +33,13 @@ final class MembershipToMembershipListDtoMapper implements CustomMapperInterface
 
         $dto->id = $source->getPublicId();
         $dto->personId = $person->getPublicId();
+        $target->personFirstName = $person->getFirstname();
+        $target->personLastName = $person->getLastname();
+
+
         $dto->clubId = $club->getPublicId();
+        $target->clubName = $club->getName();
+
         $dto->joinedAt = $source->getJoinedAt();
         $dto->endedAt = $source->getEndedAt();
         $dto->isActive = $source->isActive();

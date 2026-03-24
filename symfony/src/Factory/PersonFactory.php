@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Tests\Factory;
+namespace App\Factory;
 
 use App\Entity\Person;
 use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
@@ -34,9 +34,9 @@ final class PersonFactory extends PersistentObjectFactory
     protected function defaults(): array|callable
     {
         return [
-            'email' => self::faker()->text(180),
-            'firstname' => self::faker()->text(150),
-            'lastname' => self::faker()->text(150),
+            'email' => self::faker()->unique()->email(),
+            'firstname' => self::faker()->firstName(),
+            'lastname' => self::faker()->lastName(),
         ];
     }
 

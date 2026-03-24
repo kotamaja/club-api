@@ -4,7 +4,7 @@ namespace App\Tests\Api\PersonContact;
 
 use App\Enum\RelationshipType;
 use App\Tests\ApiTestCase;
-use App\Tests\Factory\PersonContactFactory;
+use App\Factory\PersonContactFactory;
 
 final class PersonContactPatchTest extends ApiTestCase
 {

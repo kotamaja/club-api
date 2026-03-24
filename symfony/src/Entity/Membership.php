@@ -2,6 +2,11 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Doctrine\Common\Filter\DateFilterInterface;
+use ApiPlatform\Doctrine\Orm\Filter\DateFilter;
+use ApiPlatform\Doctrine\Orm\Filter\ExactFilter;
+use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
+use ApiPlatform\Doctrine\Orm\Filter\SortFilter;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Delete;
@@ -9,6 +14,7 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\QueryParameter;
 use App\Dto\Membership\MembershipCreateDto;
 use App\Dto\Membership\MembershipItemDto;
 use App\Dto\Membership\MembershipListDto;
@@ -19,6 +25,8 @@ use App\State\ItemProvider;
 use App\State\Membership\MembershipCreateProcessor;
 use App\State\Membership\MembershipDeleteProcessor;
 use App\State\Membership\MembershipPatchProcessor;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Ulid;
@@ -31,8 +39,76 @@ use ApiPlatform\Metadata\Link;
             uriTemplate: '/memberships',
             output: MembershipListDto::class,
             provider: CollectionProvider::class,
-//            parameters: [
-//                ],
+            parameters: [
+                'id' => new QueryParameter(
+                    schema: [
+                        'type' => 'array',
+                        'items' => ['type' => 'string'],
+                        'uniqueItems' => true,
+                    ],
+                    filter: new ExactFilter(),
+                    property: 'publicId',
+                    constraints: [
+                        new Assert\All([
+                            new Assert\NotBlank(),
+                            new Assert\Ulid(),
+                        ]),
+                    ],
+                    castToArray: true,
+                ),
+                'personId' => new QueryParameter(
+                    schema: [
+                        'type' => 'array',
+                        'items' => ['type' => 'string'],
+                        'uniqueItems' => true,
+                    ],
+                    filter: new ExactFilter(),
+                    property: 'person.publicId',
+                    constraints: [
+                        new Assert\All([
+                            new Assert\NotBlank(),
+                            new Assert\Ulid(),
+                        ]),
+                    ],
+                    castToArray: true,
+                ),
+                'clubId' => new QueryParameter(
+                    schema: [
+                        'type' => 'array',
+                        'items' => ['type' => 'string'],
+                        'uniqueItems' => true,
+                    ],
+                    filter: new ExactFilter(),
+                    property: 'club.publicId',
+                    constraints: [
+                        new Assert\All([
+                            new Assert\NotBlank(),
+                            new Assert\Ulid(),
+                        ]),
+                    ],
+                    castToArray: true,
+                ),
+
+                'joinedAt' => new QueryParameter(
+                    filter: new DateFilter(),
+                    property: 'joinedAt',
+                ),
+                'endedAt' => new QueryParameter(
+                    filter: new DateFilter(),
+                    property: 'endedAt',
+                    filterContext: DateFilterInterface::EXCLUDE_NULL,
+                ),
+                'order[:property]' => new QueryParameter(
+                    filter: new SortFilter(),
+                    properties: [
+                        'person.lastname',
+                        'person.firstname',
+                        'club.name',
+                        'joinedAt',
+                        'endedAt',
+                    ],
+                ),
+            ],
         ),
         new Get(
             uriTemplate: '/memberships/{id}',
@@ -91,11 +167,11 @@ class Membership
     private string $publicId;
 
     #[ORM\ManyToOne(targetEntity: Person::class, inversedBy: 'memberships')]
-    #[ORM\JoinColumn(name: 'person_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
+    #[ORM\JoinColumn(name: 'person_id', referencedColumnName: 'id', nullable: false)]
     private ?Person $person = null;
 
     #[ORM\ManyToOne(targetEntity: Club::class, inversedBy: 'memberships')]
-    #[ORM\JoinColumn(name: 'club_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
+    #[ORM\JoinColumn(name: 'club_id', referencedColumnName: 'id', nullable: false)]
     private ?Club $club = null;
 
     #[ORM\Column(name: 'joined_at', type: Types::DATETIME_IMMUTABLE, nullable: false)]
@@ -105,9 +181,23 @@ class Membership
     #[ORM\Column(name: 'ended_at', type: Types::DATETIME_IMMUTABLE, nullable: true)]
     private ?\DateTimeImmutable $endedAt = null;
 
+    /**
+     * @var Collection<int, InterclubMembershipGroupMembership>
+     */
+    #[ORM\OneToMany(targetEntity: InterclubMembershipGroupMembership::class, mappedBy: 'membership')]
+    private Collection $interclubMembershipGroupMemberships;
+
+    /**
+     * @var Collection<int, ClubMembershipGroupMembership>
+     */
+    #[ORM\OneToMany(targetEntity: ClubMembershipGroupMembership::class, mappedBy: 'membership')]
+    private Collection $clubMembershipGroupMemberships;
+
     public function __construct()
     {
         $this->publicId = (string) new Ulid();
+        $this->interclubMembershipGroupMemberships = new ArrayCollection();
+        $this->clubMembershipGroupMemberships = new ArrayCollection();
     }
 
     #[Assert\Callback]
@@ -187,4 +277,22 @@ class Membership
     {
         return null === $this->endedAt;
     }
+
+    /**
+     * @return Collection<int, InterclubMembershipGroupMembership>
+     */
+    public function getInterclubMembershipGroupMemberships(): Collection
+    {
+        return $this->interclubMembershipGroupMemberships;
+    }
+
+    /**
+     * @return Collection<int, ClubMembershipGroupMembership>
+     */
+    public function getClubMembershipGroupMemberships(): Collection
+    {
+        return $this->clubMembershipGroupMemberships;
+    }
+
+
 }

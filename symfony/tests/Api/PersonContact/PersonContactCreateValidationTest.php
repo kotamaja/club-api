@@ -3,7 +3,7 @@
 namespace App\Tests\Api\PersonContact;
 
 use App\Tests\ApiTestCase;
-use App\Tests\Factory\PersonFactory;
+use App\Factory\PersonFactory;
 
 final class PersonContactCreateValidationTest extends ApiTestCase
 {

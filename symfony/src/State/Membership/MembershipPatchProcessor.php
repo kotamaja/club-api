@@ -24,6 +24,16 @@ class MembershipPatchProcessor  extends AbstractPatchProcessor
     protected function afterMap(mixed $data, object $entity, array $context): void
     {
 
+        if (
+            null !== $entity->getEndedAt()
+            && null !== $entity->getJoinedAt()
+            && $entity->getEndedAt() < $entity->getJoinedAt()
+        ) {
+            throw new UnprocessableEntityHttpException(
+                'The end date must be greater than or equal to the join date.'
+            );
+        }
+
         $person = $entity->getPerson();
         $club = $entity->getClub();
 

@@ -3,7 +3,7 @@
 namespace App\Tests\Api\Person;
 
 use App\Tests\ApiTestCase;
-use App\Tests\Factory\PersonFactory;
+use App\Factory\PersonFactory;
 use Symfony\Component\Uid\Ulid;
 
 final class PersonGetTest extends ApiTestCase

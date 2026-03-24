@@ -3,6 +3,7 @@
 namespace App\Tests;
 
 use ApiPlatform\Symfony\Bundle\Test\ApiTestCase as BaseApiTestCase;
+use DateTimeImmutable;
 use Symfony\Component\Uid\Ulid;
 use Zenstruck\Foundry\Test\ResetDatabase;
 
@@ -65,5 +66,13 @@ abstract class ApiTestCase extends BaseApiTestCase
         $this->assertArrayHasKey($key, $data);
         $this->assertIsString($data[$key]);
         $this->assertValidUlid($data[$key]);
+    }
+
+    protected function assertApiDateTimeSameLocal(string $expected, string $actual): void
+    {
+        $this->assertSame(
+            (new DateTimeImmutable($expected))->format('Y-m-d H:i:s'),
+            (new DateTimeImmutable($actual))->format('Y-m-d H:i:s')
+        );
     }
 }

@@ -20,10 +20,16 @@ final class ClubDeleteProcessor extends AbstractDeleteProcessor
             throw new \LogicException('Expected Club entity.');
         }
 
-//        // Option 1: count() (recommandé)
-//        $count = $this->personRepository->count(['club' => $entity]);
-//        if ($count > 0) {
-//            return 'Cannot delete club: people still exist.';
+        if ($entity->getMemberships()->count() > 0) {
+            return 'Cannot delete club: memberships still exist.';
+        }
+
+        if ($entity->getClubMembershipGroups()->count() > 0) {
+            return 'Cannot delete club: clubMembershipGroups still exist.';
+        }
+
+//        if ($entity->getInterclubMembershipGroups()->count() > 0) {
+//            return 'Cannot delete club: interclubMembershipGroups still exist.';
 //        }
 
         return null;
