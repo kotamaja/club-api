@@ -7,11 +7,11 @@
         "php": ">=8.4",
         "ext-ctype": "*",
         "ext-iconv": "*",
-        "api-platform/doctrine-orm": "^4.3.3",
-        "api-platform/symfony": "^4.3.3",
+        "api-platform/doctrine-orm": "^4.3.6",
+        "api-platform/symfony": "^4.3.6",
         "doctrine/doctrine-bundle": "^3.2.2",
         "doctrine/doctrine-migrations-bundle": "^4.0",
-        "doctrine/orm": "^3.6.3",
+        "doctrine/orm": "^3.6.7",
         "nelmio/cors-bundle": "^2.6.1",
         "phpdocumentor/reflection-docblock": "^6.0.3",
         "phpstan/phpdoc-parser": "^2.3.2",
@@ -86,11 +86,11 @@
     "require-dev": {
         "doctrine/doctrine-fixtures-bundle": "^4.3.1",
         "fakerphp/faker": "^1.24.1",
-        "phpunit/phpunit": "^13.1.7",
+        "phpunit/phpunit": "^13.1.12",
         "symfony/browser-kit": "8.0.*",
         "symfony/css-selector": "8.0.*",
         "symfony/http-client": "8.0.*",
         "symfony/maker-bundle": "^1.67",
-        "zenstruck/foundry": "^2.9.2"
+        "zenstruck/foundry": "^2.10.1"
     }
 }
