@@ -149,10 +149,6 @@ use ApiPlatform\Metadata\Link;
 
 #[ORM\Table(name: 'membership')]
 #[ORM\Entity(repositoryClass: MembershipRepository::class)]
-#[ORM\UniqueConstraint(name: 'uniq_membership_public_id', columns: ['public_id'])]
-#[ORM\Index(name: 'idx_membership_person', columns: ['person_id'])]
-#[ORM\Index(name: 'idx_membership_club', columns: ['club_id'])]
-#[ORM\Index(name: 'idx_membership_person_club', columns: ['person_id', 'club_id'])]
 #[ORM\Index(name: 'idx_membership_person_club_ended_at', columns: ['person_id', 'club_id', 'ended_at'])]
 class Membership
 {

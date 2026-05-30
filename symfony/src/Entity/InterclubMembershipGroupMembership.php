@@ -9,9 +9,6 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Ulid;
 
 #[ORM\Table(name: 'interclub_membership_group_membership')]
-#[ORM\UniqueConstraint(name: 'uniq_imgm_public_id', columns: ['public_id'])]
-#[ORM\Index(name: 'idx_imgm_membership', columns: ['membership_id'])]
-#[ORM\Index(name: 'idx_imgm_group', columns: ['group_id'])]
 #[ORM\Index(name: 'idx_imgm_membership_group', columns: ['membership_id', 'group_id'])]
 #[ORM\Entity(repositoryClass: InterclubMembershipGroupMembershipRepository::class)]
 class InterclubMembershipGroupMembership

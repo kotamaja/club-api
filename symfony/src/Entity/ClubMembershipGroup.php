@@ -141,9 +141,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 )]
 
 #[ORM\Table(name: 'club_membership_group')]
-#[ORM\UniqueConstraint(name: 'uniq_cmg_public_id', columns: ['public_id'])]
 #[ORM\UniqueConstraint(name: 'uniq_cmg_name_club_id', columns: ['name', 'club_id'])]
-#[ORM\Index(name: 'idx_cmg_club', columns: ['club_id'])]
 #[ORM\Entity(repositoryClass: ClubMembershipGroupRepository::class)]
 class ClubMembershipGroup
 {

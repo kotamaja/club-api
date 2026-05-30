@@ -11,8 +11,6 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Ulid;
 
 #[ORM\Table(name: 'interclub_membership_group')]
-#[ORM\UniqueConstraint(name: 'uniq_img_public_id', columns: ['public_id'])]
-#[ORM\UniqueConstraint(name: 'uniq_img_name', columns: ['name'])]
 #[ORM\Entity(repositoryClass: InterclubMembershipGroupRepository::class)]
 class InterclubMembershipGroup
 {
@@ -26,7 +24,7 @@ class InterclubMembershipGroup
     #[ApiProperty(identifier: true)]
     private string $publicId;
 
-    #[ORM\Column(name: 'name',  type: Types::STRING, length: 512)]
+    #[ORM\Column(name: 'name',  type: Types::STRING, unique:true, length: 512)]
     private ?string $name = null;
 
     #[ORM\Column(name:'description', type: Types::TEXT, nullable: true)]

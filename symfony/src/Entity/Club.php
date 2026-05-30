@@ -105,8 +105,6 @@ use Doctrine\Common\Collections\Collection;
 
 #[ORM\Table(name: 'club')]
 #[ORM\Entity(repositoryClass: ClubRepository::class)]
-#[ORM\UniqueConstraint(name: 'uniq_club_public_id', columns: ['public_id'])]
-#[ORM\UniqueConstraint(name: 'uniq_club_name', columns: ['name'])]
 class Club
 {
     #[ORM\Id]
@@ -120,7 +118,7 @@ class Club
     private string $publicId;
 
 
-    #[ORM\Column(name: 'name',  type: Types::STRING, length: 150)]
+    #[ORM\Column(name: 'name', type: Types::STRING, length: 150, unique: true)]
     private ?string $name = null;
 
 
@@ -136,11 +134,6 @@ class Club
     #[ORM\OneToMany(targetEntity: ClubMembershipGroup::class, mappedBy: 'club')]
     private Collection $clubMembershipGroups;
 
-    /**
-     * @var Collection<int, InterclubMembershipGroup>
-     */
-    #[ORM\OneToMany(targetEntity: InterclubMembershipGroup::class, mappedBy: 'club')]
-    private Collection $interclubMembershipGroups;
 
 
     public function __construct()
@@ -148,7 +141,7 @@ class Club
         $this->publicId = (string) new Ulid();
         $this->memberships = new ArrayCollection();
         $this->clubMembershipGroups = new ArrayCollection();
-        $this->interclubMembershipGroups = new ArrayCollection();
+
     }
 
     public function getId(): ?int
@@ -193,13 +186,6 @@ class Club
 
 
 
-    /**
-     * @return Collection<int, InterclubMembershipGroup>
-     */
-    public function getInterclubMembershipGroups(): Collection
-    {
-        return $this->interclubMembershipGroups;
-    }
 
 
 }

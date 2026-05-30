@@ -122,8 +122,6 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Table(name: 'person')]
 #[ORM\Entity(repositoryClass: PersonRepository::class)]
-#[ORM\UniqueConstraint(name: 'uniq_person_public_id', columns: ['public_id'])]
-#[ORM\UniqueConstraint(name: 'uniq_person_email', columns: ['email'])]
 class Person
 {
     #[ORM\Id]
@@ -143,7 +141,7 @@ class Person
     #[ORM\Column(name: 'lastname',  type: Types::STRING, length: 150)]
     private ?string $lastname = null;
 
-    #[ORM\Column(name: 'email',  type: Types::STRING, length: 180)]
+    #[ORM\Column(name: 'email',  type: Types::STRING, unique: true, length: 180)]
     private ?string $email = null;
 
     /**
@@ -163,6 +161,9 @@ class Person
      */
     #[ORM\OneToMany(targetEntity: Membership::class, mappedBy: 'person')]
     private Collection $memberships;
+
+    #[ORM\OneToOne(targetEntity: User::class, mappedBy: 'person')]
+    private ?User $user = null;
 
     public function __construct()
     {
@@ -243,6 +244,22 @@ class Person
     public function getMemberships(): Collection
     {
         return $this->memberships;
+    }
+
+    public function getUser(): ?User
+    {
+        return $this->user;
+    }
+
+    public function setUser(?User $user): static
+    {
+        $this->user = $user;
+
+        if ($user !== null && $user->getPerson() !== $this) {
+            $user->setPerson($this);
+        }
+
+        return $this;
     }
 
 

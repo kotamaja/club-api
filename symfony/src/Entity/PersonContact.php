@@ -148,8 +148,6 @@ use Symfony\Component\Validator\Constraints as Assert;
     routePrefix: '/v1',)]
 #[ORM\Table(name: 'person_contact')]
 #[ORM\Entity(repositoryClass: PersonContactRepository::class)]
-#[ORM\Index(name: 'idx_person_contact_subject', columns: ['person_id'])]
-#[ORM\Index(name: 'idx_person_contact_related', columns: ['contact_person_id'])]
 #[ORM\Index(name: 'idx_person_contact_subject_type', columns: ['person_id', 'type'])]
 #[ORM\UniqueConstraint(name: 'uniq_person_contact', columns: ['person_id', 'contact_person_id', 'type'])]
 #[Assert\Expression(
