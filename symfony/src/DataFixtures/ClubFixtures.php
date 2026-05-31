@@ -16,7 +16,7 @@ class ClubFixtures extends Fixture implements DependentFixtureInterface
     private function create(ObjectManager $manager, string $name, Organization $organization): Club
     {
 
-        $club = new Club($name, $organization);
+        $club = Club::create($name, $organization);
         $club->setName($name);
         $manager->persist($club);
         $this->addReference(sprintf("%s", $name), $club);

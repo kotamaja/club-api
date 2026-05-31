@@ -9,8 +9,12 @@ final class ClubPatchTest extends ApiTestCase
 {
     public function testPatch(): void
     {
+
+        $organization =  $this->getAuthenticatedOrganizationContext()->organization;
+
         $club = ClubFactory::createOne([
             'name' => 'FC Lausanne',
+            'organization' => $organization,
         ]);
 
         $response = $this->apiPatch('/api/v1/clubs/'.$club->getPublicId(), [

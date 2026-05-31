@@ -1,0 +1,16 @@
+framework:
+    rate_limiter:
+        auth_refresh:
+            policy: 'sliding_window'
+            limit: 30
+            interval: '1 minute'
+
+        auth_refresh_user:
+            policy: 'sliding_window'
+            limit: 10
+            interval: '1 minute'
+
+        authenticated_api:
+            policy: 'sliding_window'
+            limit: 300
+            interval: '1 minute'

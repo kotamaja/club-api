@@ -2,14 +2,13 @@
 
 namespace App\Factory;
 
-use App\Entity\Club;
 use App\Entity\Organization;
 use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
 
 /**
- * @extends PersistentObjectFactory<Club>
+ * @extends PersistentObjectFactory<Organization>
  */
-final class ClubFactory extends PersistentObjectFactory
+final class OrganizationFactory extends PersistentObjectFactory
 {
     /**
      * @see https://symfony.com/bundles/ZenstruckFoundryBundle/current/index.html#factories-as-services
@@ -18,12 +17,13 @@ final class ClubFactory extends PersistentObjectFactory
      */
     public function __construct()
     {
+
     }
 
     #[\Override]
     public static function class(): string
     {
-        return Club::class;
+        return Organization::class;
     }
 
     /**
@@ -35,7 +35,8 @@ final class ClubFactory extends PersistentObjectFactory
     protected function defaults(): array|callable
     {
         return [
-            'name' => self::faker()->text(20),
+            'name' => self::faker()->unique()->company(),
+            'slug' => self::faker()->unique()->slug(),
         ];
     }
 
@@ -43,26 +44,18 @@ final class ClubFactory extends PersistentObjectFactory
      * @see https://symfony.com/bundles/ZenstruckFoundryBundle/current/index.html#initialization
      */
     #[\Override]
-
     protected function initialize(): static
     {
-        return $this->instantiateWith(function (array $attributes): Club {
-            $organization = $attributes['organization'] ?? null;
+        return $this
+            // ->afterInstantiate(function(Organization $organization): void {})
+        ;
+    }
 
-            if (!$organization instanceof Organization) {
-                throw new \LogicException('Missing required "organization" attribute for ClubFactory.');
-            }
-
-            $name = $attributes['name'] ?? null;
-
-            if (!\is_string($name) || $name === '') {
-                throw new \LogicException('Missing required "name" attribute for ClubFactory.');
-            }
-
-            return Club::create(
-                organization: $organization,
-                name: $name,
-            );
-        });
+    public function withNameAndSlug(string $name, string $slug): static
+    {
+        return $this->with([
+            'name' => $name,
+            'slug' => $slug,
+        ]);
     }
 }

@@ -26,11 +26,13 @@ use App\State\Club\ClubPatchProcessor;
 use App\State\CollectionProvider;
 use App\State\ItemProvider;
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use JetBrains\PhpStorm\Deprecated;
 use Symfony\Component\Uid\Ulid;
 use Symfony\Component\Validator\Constraints as Assert;
-use Doctrine\Common\Collections\Collection;
+
 #[ApiResource(
     operations: [
         new GetCollection(
@@ -103,7 +105,6 @@ use Doctrine\Common\Collections\Collection;
     ],
     routePrefix: '/v1',
 )]
-
 #[ORM\Table(name: 'club')]
 #[ORM\Entity(repositoryClass: ClubRepository::class)]
 #[ORM\UniqueConstraint(name: 'uniq_club_organization_name', columns: ['organization_id', 'name'])]
@@ -139,14 +140,31 @@ class Club implements OrganizationScopedInterface
     #[ORM\JoinColumn(name: 'organization_id', referencedColumnName: 'id', nullable: false)]
     private ?Organization $organization = null;
 
-    public function __construct(string $name, Organization $organization)
+
+    public function __construct()
     {
-        $this->publicId = (string) new Ulid();
-        $this->name = $name;
-        $this->organization = $organization;
+        $this->publicId = (string)new Ulid();
         $this->memberships = new ArrayCollection();
         $this->clubMembershipGroups = new ArrayCollection();
     }
+
+    public static function create(string $name, Organization $organization): self
+    {
+        $club = new self();
+        $club->initialize(name: $name, organization: $organization);
+        return $club;
+    }
+
+    public function initialize(string $name, Organization $organization): void
+    {
+        if (isset($this->organization)) {
+            throw new \LogicException('Club is already initialized.');
+        }
+
+        $this->name = trim($name);
+        $this->organization = $organization;
+    }
+
 
     public function getId(): ?int
     {
@@ -163,12 +181,21 @@ class Club implements OrganizationScopedInterface
         return $this->name;
     }
 
+    #[Deprecated]
     public function setName(string $name): static
     {
         $this->name = $name;
 
         return $this;
     }
+
+    public function rename(string $name): static
+    {
+        $this->name = $name;
+
+        return $this;
+    }
+
 
 
     /**
@@ -197,7 +224,6 @@ class Club implements OrganizationScopedInterface
 
         return $this->organization;
     }
-
 
 
 }

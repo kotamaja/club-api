@@ -3,7 +3,15 @@
 namespace App\Tests;
 
 use ApiPlatform\Symfony\Bundle\Test\ApiTestCase as BaseApiTestCase;
+use App\Entity\ConnectionUser;
+use App\Factory\ConnectionUserFactory;
+use App\Factory\OrganizationFactory;
+use App\Factory\OrganizationUserFactory;
+use App\Tests\Api\Support\AuthenticatedOrganizationContext;
 use DateTimeImmutable;
+use Doctrine\ORM\EntityManagerInterface;
+use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Uid\Ulid;
 use Zenstruck\Foundry\Test\ResetDatabase;
 
@@ -13,44 +21,127 @@ abstract class ApiTestCase extends BaseApiTestCase
 
     protected static ?bool $alwaysBootKernel = true;
 
-    protected function apiGet(string $uri)
+    private ?AuthenticatedOrganizationContext $authenticatedOrganizationContext = null;
+
+    protected function apiGet(string $uri, array $headers = [])
     {
         return static::createClient()->request('GET', $uri, [
-            'headers' => [
-                'Accept' => 'application/json',
-            ],
+            'headers' => $this->apiHeaders($headers),
         ]);
     }
 
-    protected function apiPost(string $uri, array $data)
+    protected function apiPost(string $uri, array $data, array $headers = [])
     {
         return static::createClient()->request('POST', $uri, [
-            'headers' => [
-                'Accept' => 'application/json',
+            'headers' => $this->apiHeaders([
                 'Content-Type' => 'application/json',
-            ],
+                ...$headers,
+            ]),
             'json' => $data,
         ]);
     }
 
-    protected function apiPatch(string $uri, array $data)
+    protected function apiPatch(string $uri, array $data, array $headers = [])
     {
         return static::createClient()->request('PATCH', $uri, [
-            'headers' => [
-                'Accept' => 'application/json',
+            'headers' => $this->apiHeaders([
                 'Content-Type' => 'application/merge-patch+json',
-            ],
+                ...$headers,
+            ]),
             'json' => $data,
         ]);
     }
 
-    protected function apiDelete(string $uri)
+    protected function apiDelete(string $uri, array $headers = [])
     {
         return static::createClient()->request('DELETE', $uri, [
-            'headers' => [
-                'Accept' => 'application/json',
-            ],
+            'headers' => $this->apiHeaders($headers),
         ]);
+    }
+
+    /**
+     * @param array<string, string> $headers
+     * @return array<string, string>
+     */
+    protected function apiHeaders(array $headers = []): array
+    {
+        $context = $this->getAuthenticatedOrganizationContext();
+
+        return [
+            'Accept' => 'application/json',
+            ...$context->headers(),
+            ...$headers,
+        ];
+    }
+
+    protected function getAuthenticatedOrganizationContext(): AuthenticatedOrganizationContext
+    {
+        if ($this->authenticatedOrganizationContext !== null) {
+            return $this->authenticatedOrganizationContext;
+        }
+
+        return $this->authenticatedOrganizationContext = $this->createAuthenticatedOrganizationContext();
+    }
+
+    protected function createAuthenticatedOrganizationContext(
+        string $email = 'admin@example.test',
+        string $plainPassword = 'password-123456',
+        string $organizationName = 'Test Organization',
+        string $organizationSlug = 'test-organization',
+        array $organizationRoles = ['ORG_ADMIN'],
+    ): AuthenticatedOrganizationContext {
+        $connectionUser = $this->createActiveConnectionUserForApiTest(
+            email: $email,
+            plainPassword: $plainPassword,
+        );
+
+        $organization = OrganizationFactory::new()
+            ->withNameAndSlug($organizationName, $organizationSlug)
+            ->create();
+
+        $organizationUser = OrganizationUserFactory::new()
+            ->forConnectionUser($connectionUser)
+            ->forOrganization($organization)
+            ->withRoles($organizationRoles)
+            ->create();
+
+        /** @var EntityManagerInterface $entityManager */
+        $entityManager = static::getContainer()->get(EntityManagerInterface::class);
+        $entityManager->flush();
+
+        /** @var JWTTokenManagerInterface $jwtTokenManager */
+        $jwtTokenManager = static::getContainer()->get(JWTTokenManagerInterface::class);
+
+        $jwt = $jwtTokenManager->create($connectionUser);
+
+        return new AuthenticatedOrganizationContext(
+            connectionUser: $connectionUser,
+            organization: $organization,
+            organizationUser: $organizationUser,
+            jwt: $jwt,
+        );
+    }
+
+    private function createActiveConnectionUserForApiTest(
+        string $email,
+        string $plainPassword,
+    ): ConnectionUser {
+        $connectionUser = ConnectionUserFactory::new()
+            ->withEmail($email)
+            ->create();
+
+        /** @var UserPasswordHasherInterface $passwordHasher */
+        $passwordHasher = static::getContainer()->get(UserPasswordHasherInterface::class);
+
+        $passwordHash = $passwordHasher->hashPassword($connectionUser, $plainPassword);
+
+        $connectionUser->activate($passwordHash);
+
+        /** @var EntityManagerInterface $entityManager */
+        $entityManager = static::getContainer()->get(EntityManagerInterface::class);
+        $entityManager->flush();
+
+        return $connectionUser;
     }
 
     protected function assertValidUlid(string $value): void

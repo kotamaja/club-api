@@ -21,6 +21,9 @@ security:
             stateless: true
             provider: connection_user_provider
             user_checker: App\Security\ConnectionUserChecker
+            login_throttling:
+                max_attempts: 5
+                interval: '1 minute'
             json_login:
                 check_path: api_auth_login
                 username_path: email
@@ -39,6 +42,8 @@ security:
     # Note: Only the *first* matching rule is applied
     access_control:
         - { path: ^/api/auth/login$, roles: PUBLIC_ACCESS }
+        - { path: ^/api/auth/refresh$, roles: PUBLIC_ACCESS }
+        - { path: ^/api/auth/logout$, roles: PUBLIC_ACCESS }
 
         # Documentation API Platform
         - { path: ^/api/?$, roles: PUBLIC_ACCESS }
