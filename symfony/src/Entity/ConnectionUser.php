@@ -21,39 +21,43 @@ class ConnectionUser implements UserInterface, PasswordAuthenticatedUserInterfac
     #[ApiProperty(identifier: false)]
     private ?int $id = null;
 
-    #[ORM\Column(name: 'public_id', type: TYPES::STRING, length: 26, unique: true, nullable: false)]
+    #[ORM\Column(name: 'public_id', type: Types::STRING, length: 26, unique: true, nullable: false)]
     #[ApiProperty(identifier: true)]
     private string $publicId;
 
-    #[ORM\Column(name:'email', type: TYPES::STRING,  length: 180, unique: true, nullable: false)]
-    private ?string $email;
+    #[ORM\Column(name: 'email', type: Types::STRING, length: 180, unique: true, nullable: false)]
+    private string $email;
 
-    #[ORM\Column(name:'roles', type: Types::JSON, nullable: false)]
+    #[ORM\Column(name: 'roles', type: Types::JSON, nullable: false)]
     private array $roles = [];
 
-    #[ORM\Column(name:'password_hash', type: TYPES::STRING, length: 255, nullable: true)]
+    #[ORM\Column(name: 'password_hash', type: Types::STRING, length: 255, nullable: true)]
     private ?string $passwordHash = null;
 
     #[ORM\Column(name: 'status', nullable: false, enumType: UserStatus::class)]
-    private ?UserStatus $status = null;
+    private UserStatus $status;
 
-    #[ORM\Column(name:'created_at',type: TYPES::DATETIME_IMMUTABLE, nullable: false)]
-    private ?\DateTimeImmutable $createdAt;
+    #[ORM\Column(name: 'created_at', type: Types::DATETIME_IMMUTABLE, nullable: false)]
+    private \DateTimeImmutable $createdAt;
 
-    #[ORM\Column(name:'activated_at',type: TYPES::DATETIME_IMMUTABLE, nullable: true)]
+    #[ORM\Column(name: 'activated_at', type: Types::DATETIME_IMMUTABLE, nullable: true)]
     private ?\DateTimeImmutable $activatedAt = null;
 
-    #[ORM\Column(name:'last_login_at',type: TYPES::DATETIME_IMMUTABLE, nullable: true)]
+    #[ORM\Column(name: 'last_login_at', type: Types::DATETIME_IMMUTABLE, nullable: true)]
     private ?\DateTimeImmutable $lastLoginAt = null;
 
     public function __construct(string $email)
     {
         $this->publicId = (string) new Ulid();
-        $this->email = mb_strtolower(trim($email));
+        $this->email = self::normalizeEmail($email);
         $this->status = UserStatus::Invited;
         $this->createdAt = new \DateTimeImmutable();
     }
 
+    private static function normalizeEmail(string $email): string
+    {
+        return mb_strtolower(trim($email));
+    }
 
     public function getId(): ?int
     {
@@ -65,22 +69,26 @@ class ConnectionUser implements UserInterface, PasswordAuthenticatedUserInterfac
         return $this->publicId;
     }
 
-    public function getEmail(): ?string
+    public function getEmail(): string
     {
         return $this->email;
     }
 
     public function setEmail(string $email): static
     {
-        $this->email = mb_strtolower(trim($email));
+        $this->email = self::normalizeEmail($email);
 
         return $this;
+    }
+
+    public function getUserIdentifier(): string
+    {
+        return $this->email;
     }
 
     public function getRoles(): array
     {
         $roles = $this->roles;
-
         $roles[] = 'ROLE_USER';
 
         return array_values(array_unique($roles));
@@ -88,6 +96,16 @@ class ConnectionUser implements UserInterface, PasswordAuthenticatedUserInterfac
 
     public function setRoles(array $roles): static
     {
+        $roles = array_filter(
+            $roles,
+            static fn (mixed $role): bool => is_string($role) && trim($role) !== ''
+        );
+
+        $roles = array_map(
+            static fn (string $role): string => strtoupper(trim($role)),
+            $roles
+        );
+
         $this->roles = array_values(array_unique($roles));
 
         return $this;
@@ -105,7 +123,12 @@ class ConnectionUser implements UserInterface, PasswordAuthenticatedUserInterfac
         return $this;
     }
 
-    public function getStatus(): ?UserStatus
+    public function getPassword(): ?string
+    {
+        return $this->passwordHash;
+    }
+
+    public function getStatus(): UserStatus
     {
         return $this->status;
     }
@@ -117,13 +140,27 @@ class ConnectionUser implements UserInterface, PasswordAuthenticatedUserInterfac
         return $this;
     }
 
+    public function isActive(): bool
+    {
+        return $this->status === UserStatus::Active;
+    }
 
-    public function getCreatedAt(): ?\DateTimeImmutable
+    public function isInvited(): bool
+    {
+        return $this->status === UserStatus::Invited;
+    }
+
+    public function isDisabled(): bool
+    {
+        return $this->status === UserStatus::Disabled;
+    }
+
+    public function getCreatedAt(): \DateTimeImmutable
     {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(?\DateTimeImmutable $createdAt): static
+    public function setCreatedAt(\DateTimeImmutable $createdAt): static
     {
         $this->createdAt = $createdAt;
 
@@ -135,7 +172,7 @@ class ConnectionUser implements UserInterface, PasswordAuthenticatedUserInterfac
         return $this->activatedAt;
     }
 
-    public function setActivatedAt(\DateTimeImmutable $activatedAt): static
+    public function setActivatedAt(?\DateTimeImmutable $activatedAt): static
     {
         $this->activatedAt = $activatedAt;
 
@@ -154,19 +191,8 @@ class ConnectionUser implements UserInterface, PasswordAuthenticatedUserInterfac
         return $this;
     }
 
-    public function getUserIdentifier(): string
-    {
-        return $this->email;
-    }
-
-    public function getPassword(): ?string
-    {
-        return $this->passwordHash;
-    }
-
     public function eraseCredentials(): void
     {
-        // If you store any temporary sensitive data on the user, clear it here.
     }
 
     public function activate(string $passwordHash): void
@@ -180,5 +206,4 @@ class ConnectionUser implements UserInterface, PasswordAuthenticatedUserInterfac
     {
         $this->status = UserStatus::Disabled;
     }
-
 }
