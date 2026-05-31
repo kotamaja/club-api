@@ -27,6 +27,7 @@ class PersonFixtures extends Fixture implements DependentFixtureInterface
         $organization1 = $this->getReference("Association Vaudoise Aviron", Organization::class);
 
         $this->create($manager, "yves", "a", $organization1);
+        $this->create($manager, "daniel", "a", $organization1);
         $this->create($manager, "marie", "a", $organization1);
         $this->create($manager, "serge", "a", $organization1);
         $this->create($manager, "anna", "a", $organization1);

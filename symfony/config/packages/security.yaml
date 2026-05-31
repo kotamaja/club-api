@@ -15,14 +15,36 @@ security:
             pattern: ^/(_profiler|_wdt|assets|build)/
             security: false
 
+
+        login:
+            pattern: ^/api/auth/login$
+            stateless: true
+            provider: connection_user_provider
+            user_checker: App\Security\ConnectionUserChecker
+            json_login:
+                check_path: api_auth_login
+                username_path: email
+                password_path: password
+                success_handler: App\Security\Authentication\LoginSuccessHandler
+                failure_handler: lexik_jwt_authentication.handler.authentication_failure
+
+
         api:
             pattern: ^/api
             stateless: true
             provider: connection_user_provider
+            user_checker: App\Security\ConnectionUserChecker
+            jwt: ~
 
     # Note: Only the *first* matching rule is applied
     access_control:
+        - { path: ^/api/auth/login$, roles: PUBLIC_ACCESS }
+
+        # Documentation API Platform
+        - { path: ^/api/?$, roles: PUBLIC_ACCESS }
         - { path: ^/api/docs, roles: PUBLIC_ACCESS }
+        - { path: ^/api/contexts, roles: PUBLIC_ACCESS }
+
         - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
 
 when@test:

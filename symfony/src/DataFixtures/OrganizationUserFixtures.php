@@ -16,7 +16,7 @@ class OrganizationUserFixtures  extends Fixture implements DependentFixtureInter
 
     public function load(ObjectManager $manager): void
     {
-        $connectionUser = $this->getReference("connected user", ConnectionUser::class);
+        $connectionUser = $this->getReference("Yves", ConnectionUser::class);
         $person1 = $this->getReference("yves-a", Person::class);
 
         $organization1 = $this->getReference("Association Vaudoise Aviron", Organization::class);
@@ -30,6 +30,13 @@ class OrganizationUserFixtures  extends Fixture implements DependentFixtureInter
 
         $manager->persist($user1);
         $manager->persist($user2);
+
+
+        $connectionUser = $this->getReference("Daniel", ConnectionUser::class);
+        $person = $this->getReference("daniel-a", Person::class);
+        $organization = $this->getReference("Association Vaudoise Aviron", Organization::class);
+        $user = new  OrganizationUser( $connectionUser,$organization, [], $person  );
+        $manager->persist($user);
 
         $manager->flush();
 

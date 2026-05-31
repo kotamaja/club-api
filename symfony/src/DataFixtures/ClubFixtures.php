@@ -29,15 +29,19 @@ class ClubFixtures extends Fixture implements DependentFixtureInterface
 
         $faker = Factory::create('fr_CH');
 
-        $organization = $this->getReference("Association Vaudoise Aviron", Organization::class);
+        $organization1 = $this->getReference("Association Vaudoise Aviron", Organization::class);
 
-        $this->create($manager, "Rowing Club Lausanne", $organization);
-        $this->create($manager, "Lausanne Sport Aviron", $organization);
+        $this->create($manager, "Rowing Club Lausanne", $organization1);
+        $this->create($manager, "Lausanne Sport Aviron", $organization1);
+
+        $organization2 = $this->getReference("Association Jurassienne Aviron", Organization::class);
+        $this->create($manager, "Rowing Club Delemont", $organization2);
+
 
         $manager->flush();
 
 
-        $clubs = ClubFactory::createMany(5, ['organization' => $organization,]);
+        $clubs = ClubFactory::createMany(5, ['organization' => $organization1,]);
         $i = 1;
         foreach ($clubs as $club) {
             $this->addReference(sprintf("ref-%s", $i), $club);
