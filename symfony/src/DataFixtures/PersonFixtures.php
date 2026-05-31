@@ -3,18 +3,18 @@
 namespace App\DataFixtures;
 
 use App\Entity\Club;
+use App\Entity\Organization;
 use App\Entity\Person;
 use App\Factory\PersonFactory;
 use Doctrine\Bundle\FixturesBundle\Fixture;
+use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 
-class PersonFixtures extends Fixture
+class PersonFixtures extends Fixture implements DependentFixtureInterface
 {
 
-    private function create(ObjectManager $manager, string $firstname, string $lastname): Person {
-        $person = new Person();
-        $person->setFirstname($firstname);
-        $person->setLastname($lastname);
+    private function create(ObjectManager $manager, string $firstname, string $lastname, Organization $organization): Person {
+        $person = new Person($firstname, $lastname, $organization);
         $person->setEmail(sprintf("%s.%s@test.com", $firstname, $lastname));
         $manager->persist($person);
         $this->addReference(sprintf("%s-%s", $firstname,$lastname), $person);
@@ -24,22 +24,32 @@ class PersonFixtures extends Fixture
 
     public function load(ObjectManager $manager): void
     {
+        $organization1 = $this->getReference("Association Vaudoise Aviron", Organization::class);
 
+        $this->create($manager, "yves", "a", $organization1);
+        $this->create($manager, "marie", "a", $organization1);
+        $this->create($manager, "serge", "a", $organization1);
+        $this->create($manager, "anna", "a", $organization1);
+        $this->create($manager, "monica", "a", $organization1);
 
-        $this->create($manager, "yves", "a");
-        $this->create($manager, "marie", "a");
-        $this->create($manager, "serge", "a");
-        $this->create($manager, "anna", "a");
-        $this->create($manager, "monica", "a");
+        $organization2 = $this->getReference("Association Jurassienne Aviron", Organization::class);
+        $this->create($manager, "yves", "b", $organization2);
 
         $manager->flush();
 
-        $people = PersonFactory::createMany(200);
+        $people = PersonFactory::createMany(200,[    'organization' => $organization1,]);
         $i = 1;
         foreach ($people as $person) {
             $this->addReference(sprintf("ref-%s", $i), $person);
             $i++;
         }
 
+    }
+
+    public function getDependencies(): array
+    {
+        return [
+            OrganizationFixtures::class,
+        ];
     }
 }

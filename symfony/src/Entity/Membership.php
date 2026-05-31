@@ -5,13 +5,13 @@ namespace App\Entity;
 use ApiPlatform\Doctrine\Common\Filter\DateFilterInterface;
 use ApiPlatform\Doctrine\Orm\Filter\DateFilter;
 use ApiPlatform\Doctrine\Orm\Filter\ExactFilter;
-use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Doctrine\Orm\Filter\SortFilter;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Link;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\QueryParameter;
@@ -19,12 +19,14 @@ use App\Dto\Membership\MembershipCreateDto;
 use App\Dto\Membership\MembershipItemDto;
 use App\Dto\Membership\MembershipListDto;
 use App\Dto\Membership\MembershipPatchDto;
+use App\Entity\Contract\OrganizationScopedInterface;
 use App\Repository\MembershipRepository;
 use App\State\CollectionProvider;
 use App\State\ItemProvider;
 use App\State\Membership\MembershipCreateProcessor;
 use App\State\Membership\MembershipDeleteProcessor;
 use App\State\Membership\MembershipPatchProcessor;
+use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
@@ -32,7 +34,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Ulid;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
-use ApiPlatform\Metadata\Link;
+
 #[ApiResource(
     operations: [
         new GetCollection(
@@ -145,12 +147,12 @@ use ApiPlatform\Metadata\Link;
     ],
     routePrefix: '/v1',
 )]
-
-
 #[ORM\Table(name: 'membership')]
 #[ORM\Entity(repositoryClass: MembershipRepository::class)]
 #[ORM\Index(name: 'idx_membership_person_club_ended_at', columns: ['person_id', 'club_id', 'ended_at'])]
-class Membership
+#[ORM\Index(name: 'idx_membership_organization_club', columns: ['organization_id', 'club_id'])]
+#[ORM\Index(name: 'idx_membership_organization_person', columns: ['organization_id', 'person_id'])]
+class Membership implements OrganizationScopedInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -189,9 +191,28 @@ class Membership
     #[ORM\OneToMany(targetEntity: ClubMembershipGroupMembership::class, mappedBy: 'membership')]
     private Collection $clubMembershipGroupMemberships;
 
-    public function __construct()
+    #[ORM\ManyToOne(targetEntity: Organization::class)]
+    #[ORM\JoinColumn(name: 'organization_id', referencedColumnName: 'id', nullable: false)]
+    private ?Organization $organization;
+
+
+    public function __construct(Person $person, Club $club, DateTimeImmutable $joinedAt)
     {
-        $this->publicId = (string) new Ulid();
+
+        if ($person->getOrganization() !== $club->getOrganization()) {
+            throw new \InvalidArgumentException(
+                'Person and Club must belong to the same organization.'
+            );
+        }
+
+        $this->publicId = (string)new Ulid();
+
+        $this->organization = $club->getOrganization();
+        $this->person = $person;
+        $this->club = $club;
+        $this->joinedAt = $joinedAt;
+        $this->endedAt = null;
+
         $this->interclubMembershipGroupMemberships = new ArrayCollection();
         $this->clubMembershipGroupMemberships = new ArrayCollection();
     }
@@ -290,5 +311,13 @@ class Membership
         return $this->clubMembershipGroupMemberships;
     }
 
+    public function getOrganization(): Organization
+    {
+        if ($this->organization === null) {
+            throw new \LogicException('Membership organization has not been initialized.');
+        }
+
+        return $this->organization;
+    }
 
 }

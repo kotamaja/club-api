@@ -25,3 +25,10 @@ services:
     App\Serializer\PaginatedCollectionNormalizer:
         tags:
             - { name: 'serializer.normalizer', priority: 200 }
+
+
+    App\OpenApi\OpenApiFactory:
+        decorates: 'api_platform.openapi.factory'
+        arguments:
+            $decorated: '@App\OpenApi\OpenApiFactory.inner'
+        autoconfigure: false

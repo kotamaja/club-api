@@ -18,6 +18,7 @@ use App\Dto\Club\ClubCreateDto;
 use App\Dto\Club\ClubItemDto;
 use App\Dto\Club\ClubListDto;
 use App\Dto\Club\ClubPatchDto;
+use App\Entity\Contract\OrganizationScopedInterface;
 use App\Repository\ClubRepository;
 use App\State\Club\ClubCreateProcessor;
 use App\State\Club\ClubDeleteProcessor;
@@ -105,7 +106,8 @@ use Doctrine\Common\Collections\Collection;
 
 #[ORM\Table(name: 'club')]
 #[ORM\Entity(repositoryClass: ClubRepository::class)]
-class Club
+#[ORM\UniqueConstraint(name: 'uniq_club_organization_name', columns: ['organization_id', 'name'])]
+class Club implements OrganizationScopedInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -118,9 +120,8 @@ class Club
     private string $publicId;
 
 
-    #[ORM\Column(name: 'name', type: Types::STRING, length: 150, unique: true)]
-    private ?string $name = null;
-
+    #[ORM\Column(name: 'name', type: Types::STRING, length: 150)]
+    private ?string $name;
 
     /**
      * @var Collection<int, Membership>
@@ -134,14 +135,17 @@ class Club
     #[ORM\OneToMany(targetEntity: ClubMembershipGroup::class, mappedBy: 'club')]
     private Collection $clubMembershipGroups;
 
+    #[ORM\ManyToOne(targetEntity: Organization::class)]
+    #[ORM\JoinColumn(name: 'organization_id', referencedColumnName: 'id', nullable: false)]
+    private ?Organization $organization = null;
 
-
-    public function __construct()
+    public function __construct(string $name, Organization $organization)
     {
         $this->publicId = (string) new Ulid();
+        $this->name = $name;
+        $this->organization = $organization;
         $this->memberships = new ArrayCollection();
         $this->clubMembershipGroups = new ArrayCollection();
-
     }
 
     public function getId(): ?int
@@ -185,6 +189,14 @@ class Club
     }
 
 
+    public function getOrganization(): Organization
+    {
+        if ($this->organization === null) {
+            throw new \LogicException('Club organization has not been initialized.');
+        }
+
+        return $this->organization;
+    }
 
 
 

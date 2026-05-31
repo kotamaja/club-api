@@ -4,16 +4,16 @@ namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiProperty;
 use App\Enum\UserStatus;
-use App\Repository\UserRepository;
+use App\Repository\ConnectionUserRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Uid\Ulid;
 
-#[ORM\Entity(repositoryClass: UserRepository::class)]
-#[ORM\Table(name: 'auth_user')]
-class User implements UserInterface, PasswordAuthenticatedUserInterface
+#[ORM\Entity(repositoryClass: ConnectionUserRepository::class)]
+#[ORM\Table(name: 'connection_user')]
+class ConnectionUser implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -26,7 +26,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private string $publicId;
 
     #[ORM\Column(name:'email', type: TYPES::STRING,  length: 180, unique: true, nullable: false)]
-    private ?string $email = null;
+    private ?string $email;
 
     #[ORM\Column(name:'roles', type: Types::JSON, nullable: false)]
     private array $roles = [];
@@ -37,12 +37,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(name: 'status', nullable: false, enumType: UserStatus::class)]
     private ?UserStatus $status = null;
 
-    #[ORM\OneToOne(targetEntity: Person::class, inversedBy: 'user')]
-    #[ORM\JoinColumn(name: 'person', unique: true, nullable: true)]
-    private ?Person $person = null;
-
     #[ORM\Column(name:'created_at',type: TYPES::DATETIME_IMMUTABLE, nullable: false)]
-    private ?\DateTimeImmutable $createdAt = null;
+    private ?\DateTimeImmutable $createdAt;
 
     #[ORM\Column(name:'activated_at',type: TYPES::DATETIME_IMMUTABLE, nullable: true)]
     private ?\DateTimeImmutable $activatedAt = null;
@@ -54,6 +50,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         $this->publicId = (string) new Ulid();
         $this->email = mb_strtolower(trim($email));
+        $this->status = UserStatus::Invited;
         $this->createdAt = new \DateTimeImmutable();
     }
 
@@ -75,7 +72,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function setEmail(string $email): static
     {
-        $this->email = $email;
+        $this->email = mb_strtolower(trim($email));
 
         return $this;
     }
@@ -120,17 +117,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function getPerson(): ?Person
-    {
-        return $this->person;
-    }
-
-    public function setPerson(?Person $person): static
-    {
-        $this->person = $person;
-
-        return $this;
-    }
 
     public function getCreatedAt(): ?\DateTimeImmutable
     {
@@ -176,6 +162,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function getPassword(): ?string
     {
         return $this->passwordHash;
+    }
+
+    public function eraseCredentials(): void
+    {
+        // If you store any temporary sensitive data on the user, clear it here.
     }
 
     public function activate(string $passwordHash): void

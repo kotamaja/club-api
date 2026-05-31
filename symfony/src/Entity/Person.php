@@ -18,6 +18,7 @@ use App\Dto\Person\PersonCreateDto;
 use App\Dto\Person\PersonItemDto;
 use App\Dto\Person\PersonListDto;
 use App\Dto\Person\PersonPatchDto;
+use App\Entity\Contract\OrganizationScopedInterface;
 use App\Repository\PersonRepository;
 use App\State\CollectionProvider;
 use App\State\ItemProvider;
@@ -119,10 +120,9 @@ use Symfony\Component\Validator\Constraints as Assert;
     ],
     routePrefix: '/v1',
 )]
-
 #[ORM\Table(name: 'person')]
 #[ORM\Entity(repositoryClass: PersonRepository::class)]
-class Person
+class Person implements OrganizationScopedInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -135,13 +135,13 @@ class Person
     private string $publicId;
 
 
-    #[ORM\Column(name: 'firstname',  type: Types::STRING, length: 150)]
+    #[ORM\Column(name: 'firstname', type: Types::STRING, length: 150)]
     private ?string $firstname = null;
 
-    #[ORM\Column(name: 'lastname',  type: Types::STRING, length: 150)]
+    #[ORM\Column(name: 'lastname', type: Types::STRING, length: 150)]
     private ?string $lastname = null;
 
-    #[ORM\Column(name: 'email',  type: Types::STRING, unique: true, length: 180)]
+    #[ORM\Column(name: 'email', type: Types::STRING,  length: 180, nullable: true)]
     private ?string $email = null;
 
     /**
@@ -162,12 +162,17 @@ class Person
     #[ORM\OneToMany(targetEntity: Membership::class, mappedBy: 'person')]
     private Collection $memberships;
 
-    #[ORM\OneToOne(targetEntity: User::class, mappedBy: 'person')]
-    private ?User $user = null;
 
-    public function __construct()
+    #[ORM\ManyToOne(targetEntity: Organization::class)]
+    #[ORM\JoinColumn(name: 'organization_id', referencedColumnName: 'id', nullable: false)]
+    private ?Organization $organization;
+
+    public function __construct(string $firstname, string $lastname, Organization $organization)
     {
-        $this->publicId = (string) new Ulid();
+        $this->publicId = (string)new Ulid();
+        $this->firstname = $firstname;
+        $this->lastname = $lastname;
+        $this->organization = $organization;
         $this->relationshipsAsPerson = new ArrayCollection();
         $this->relationshipsAsContactPerson = new ArrayCollection();
         $this->memberships = new ArrayCollection();
@@ -228,7 +233,6 @@ class Person
     }
 
 
-
     /**
      * @return Collection<int, PersonContact>
      */
@@ -246,21 +250,15 @@ class Person
         return $this->memberships;
     }
 
-    public function getUser(): ?User
-    {
-        return $this->user;
-    }
 
-    public function setUser(?User $user): static
-    {
-        $this->user = $user;
 
-        if ($user !== null && $user->getPerson() !== $this) {
-            $user->setPerson($this);
+    public function getOrganization(): Organization
+    {
+        if ($this->organization === null) {
+            throw new \LogicException('Person organization has not been initialized.');
         }
 
-        return $this;
+        return $this->organization;
     }
-
 
 }

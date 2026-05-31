@@ -3,6 +3,7 @@
 namespace App\Factory;
 
 use App\Entity\Club;
+use App\Entity\Organization;
 use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
 
 /**
@@ -45,7 +46,15 @@ final class ClubFactory extends PersistentObjectFactory
     protected function initialize(): static
     {
         return $this
-            // ->afterInstantiate(function(Club $club): void {})
-        ;
+            ->instantiateWith(function (array $attributes): Club {
+                if (!isset($attributes['organization']) || !$attributes['organization'] instanceof Organization) {
+                    throw new \LogicException('Missing required "organization" attribute for ClubFactory.');
+                }
+
+                return new Club(
+                    $attributes['name'],
+                    $attributes['organization'],
+                );
+            });
     }
 }

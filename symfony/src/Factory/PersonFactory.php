@@ -2,6 +2,7 @@
 
 namespace App\Factory;
 
+use App\Entity\Organization;
 use App\Entity\Person;
 use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
 
@@ -40,14 +41,22 @@ final class PersonFactory extends PersistentObjectFactory
         ];
     }
 
-    /**
-     * @see https://symfony.com/bundles/ZenstruckFoundryBundle/current/index.html#initialization
-     */
+
+
     #[\Override]
     protected function initialize(): static
     {
         return $this
-            // ->afterInstantiate(function(Person $person): void {})
-        ;
+            ->instantiateWith(function (array $attributes): Person {
+                if (!isset($attributes['organization']) || !$attributes['organization'] instanceof Organization) {
+                    throw new \LogicException('Missing required "organization" attribute for PersonFactory.');
+                }
+
+                return new Person(
+                    $attributes['firstname'],
+                    $attributes['lastname'],
+                    $attributes['organization'],
+                );
+            });
     }
 }
