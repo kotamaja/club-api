@@ -2,24 +2,32 @@
 
 namespace App\Tests\Api\Membership;
 
-use App\Tests\ApiTestCase;
 use App\Factory\ClubFactory;
 use App\Factory\MembershipFactory;
 use App\Factory\PersonFactory;
+use App\Tests\ApiTestCase;
 
 final class MembershipGetTest extends ApiTestCase
 {
     public function testGetCollection(): void
     {
-        $person = PersonFactory::createOne();
-        $club = ClubFactory::createOne();
 
-        $membership = MembershipFactory::createOne([
-            'person' => $person,
-            'club' => $club,
-            'joinedAt' => new \DateTimeImmutable('2024-01-01T00:00:00+00:00'),
-            'endedAt' => null,
-        ]);
+        $organization = $this->getAuthenticatedOrganizationContext()->organization;
+
+        $person = PersonFactory::new()
+            ->forOrganization($organization)
+            ->create();
+
+        $club = ClubFactory::new()->forOrganization($organization)->create();
+
+        $membership = MembershipFactory::new()
+            ->forClub($club)
+            ->forPerson($person)
+            ->create([
+                'joinedAt' => new \DateTimeImmutable('2024-01-01T00:00:00+00:00'),
+                'endedAt' => null,
+            ]);
+
 
         $response = $this->apiGet('/api/v1/memberships');
 
@@ -50,17 +58,24 @@ final class MembershipGetTest extends ApiTestCase
 
     public function testGetItem(): void
     {
-        $person = PersonFactory::createOne();
-        $club = ClubFactory::createOne();
+        $organization = $this->getAuthenticatedOrganizationContext()->organization;
 
-        $membership = MembershipFactory::createOne([
-            'person' => $person,
-            'club' => $club,
-            'joinedAt' => new \DateTimeImmutable('2024-01-01T00:00:00+00:00'),
-            'endedAt' => new \DateTimeImmutable('2024-02-01T00:00:00+00:00'),
-        ]);
+        $person = PersonFactory::new()
+            ->forOrganization($organization)
+            ->create();
 
-        $response = $this->apiGet('/api/v1/memberships/'.$membership->getPublicId());
+        $club = ClubFactory::new()->forOrganization($organization)->create();
+
+        $membership = MembershipFactory::new()
+            ->forClub($club)
+            ->forPerson($person)
+            ->create([
+                'joinedAt' => new \DateTimeImmutable('2024-01-01T00:00:00+00:00'),
+                'endedAt' => new \DateTimeImmutable('2024-02-01T00:00:00+00:00'),
+            ]);
+
+
+        $response = $this->apiGet('/api/v1/memberships/' . $membership->getPublicId());
 
         $this->assertResponseIsSuccessful();
 
@@ -82,7 +97,6 @@ final class MembershipGetTest extends ApiTestCase
         $this->assertArrayHasValidUlid($data['club'], 'id');
         $this->assertSame($club->getPublicId(), $data['club']['id']);
         $this->assertSame($club->getName(), $data['club']['name']);
-
 
 
         $this->assertApiDateTimeSameLocal('2024-01-01T00:00:00+00:00', $data['joinedAt']);

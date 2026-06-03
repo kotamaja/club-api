@@ -3,72 +3,42 @@
 namespace App\State\Membership;
 
 use App\Dto\Membership\MembershipCreateDto;
-use App\Entity\Club;
-use App\Entity\Membership;
-use App\Entity\Person;
-use App\State\Util\AbstractCreateProcessor;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
+use App\Mapper\MapperRegistry;
+use App\State\AbstractCreateProcessor;
+use App\Write\Membership\MembershipWriteServiceInterface;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bundle\SecurityBundle\Security;
 
 final class MembershipCreateProcessor extends AbstractCreateProcessor
 {
-    protected function entityClass(): string
+    public function __construct(MapperRegistry                                   $mapperRegistry,
+                                EntityManagerInterface                           $em,
+                                Security                                         $security,
+                                private readonly MembershipWriteServiceInterface $membershipWriteService,
+    )
     {
-        return Membership::class;
+        parent::__construct($mapperRegistry, $em, $security);
     }
 
     protected function assertInput(mixed $data): void
     {
         if (!$data instanceof MembershipCreateDto) {
-            throw new \InvalidArgumentException(sprintf(
-                'Expected %s, got %s.',
-                MembershipCreateDto::class,
-                get_debug_type($data)
-            ));
+            throw new \LogicException('Expected MembershipCreateDto.');
         }
     }
 
-    protected function beforePersist(mixed $data, object $entity, array $context): void
+    protected function createEntity(mixed $data, array $context): object
     {
         \assert($data instanceof MembershipCreateDto);
-        \assert($entity instanceof Membership);
 
-        $person = $this->em->getRepository(Person::class)->findOneBy([
-            'publicId' => $data->personId,
-        ]);
-
-        if (!$person instanceof Person) {
-            throw new NotFoundHttpException('Person not found.');
-        }
-
-        $club = $this->em->getRepository(Club::class)->findOneBy([
-            'publicId' => $data->clubId,
-        ]);
-
-        if (!$club instanceof Club) {
-            throw new NotFoundHttpException('Club not found.');
-        }
-
-        $entity->setPerson($person);
-        $entity->setClub($club);
-
-        $isCreatingActiveMembership = null === $entity->getEndedAt();
-
-        if (!$isCreatingActiveMembership) {
-            return;
-        }
-
-        $existingActiveMembership = $this->em->getRepository(Membership::class)->findOneBy([
-            'person' => $person,
-            'club' => $club,
-            'endedAt' => null,
-        ]);
-
-        if ($existingActiveMembership instanceof Membership) {
-            throw new UnprocessableEntityHttpException(
-                'This person already has an active membership for this club.'
-            );
-        }
+        return $this->membershipWriteService->create(
+            $data,
+            $this->getCurrentConnectionUser(),
+        );
     }
 
+    protected function uniqueConstraintViolationMessage(mixed $data, array $context): string
+    {
+        return 'A Membership with the same name already exists.';
+    }
 }

@@ -11,15 +11,23 @@ final class MembershipPatchTest extends ApiTestCase
 {
     public function testPatchCanCloseMembership(): void
     {
-        $person = PersonFactory::createOne();
-        $club = ClubFactory::createOne();
 
-        $membership = MembershipFactory::createOne([
-            'person' => $person,
-            'club' => $club,
-            'joinedAt' => new \DateTimeImmutable('2024-01-01T00:00:00+00:00'),
-            'endedAt' => null,
-        ]);
+        $organization = $this->getAuthenticatedOrganizationContext()->organization;
+
+        $person = PersonFactory::new()
+            ->forOrganization($organization)
+            ->create();
+
+        $club = ClubFactory::new()->forOrganization($organization)->create();
+
+        $membership = MembershipFactory::new()
+            ->forClub($club)
+            ->forPerson($person)
+            ->create([
+                'joinedAt' => new \DateTimeImmutable('2024-01-01T00:00:00+00:00'),
+                'endedAt' => null,
+            ]);
+
 
         $response = $this->apiPatch('/api/v1/memberships/'.$membership->getPublicId(), [
             'endedAt' => '2024-06-01T00:00:00+00:00',

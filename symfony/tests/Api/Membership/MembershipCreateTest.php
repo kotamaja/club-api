@@ -10,8 +10,10 @@ final class MembershipCreateTest extends ApiTestCase
 {
     public function testCreateActiveMembership(): void
     {
-        $person = PersonFactory::createOne();
-        $club = ClubFactory::createOne();
+
+        $organization =  $this->getAuthenticatedOrganizationContext()->organization;
+        $club = ClubFactory::new()->forOrganization($organization)->create();
+        $person = PersonFactory::new()->forOrganization($organization)->create();
 
         $response = $this->apiPost('/api/v1/memberships', [
             'personId' => $person->getPublicId(),
@@ -47,8 +49,9 @@ final class MembershipCreateTest extends ApiTestCase
 
     public function testCreateHistoricalMembership(): void
     {
-        $person = PersonFactory::createOne();
-        $club = ClubFactory::createOne();
+        $organization =  $this->getAuthenticatedOrganizationContext()->organization;
+        $club = ClubFactory::new()->forOrganization($organization)->create();
+        $person = PersonFactory::new()->forOrganization($organization)->create();
 
         $response = $this->apiPost('/api/v1/memberships', [
             'personId' => $person->getPublicId(),
@@ -86,8 +89,9 @@ final class MembershipCreateTest extends ApiTestCase
 
     public function testCreateRejectsSecondActiveMembershipForSamePersonAndClub(): void
     {
-        $person = PersonFactory::createOne();
-        $club = ClubFactory::createOne();
+        $organization =  $this->getAuthenticatedOrganizationContext()->organization;
+        $club = ClubFactory::new()->forOrganization($organization)->create();
+        $person = PersonFactory::new()->forOrganization($organization)->create();
 
         $this->apiPost('/api/v1/memberships', [
             'personId' => $person->getPublicId(),
@@ -110,8 +114,9 @@ final class MembershipCreateTest extends ApiTestCase
 
     public function testCreateAllowsHistoricalMembershipEvenIfActiveMembershipExists(): void
     {
-        $person = PersonFactory::createOne();
-        $club = ClubFactory::createOne();
+        $organization =  $this->getAuthenticatedOrganizationContext()->organization;
+        $club = ClubFactory::new()->forOrganization($organization)->create();
+        $person = PersonFactory::new()->forOrganization($organization)->create();
 
         $this->apiPost('/api/v1/memberships', [
             'personId' => $person->getPublicId(),

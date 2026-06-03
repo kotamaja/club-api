@@ -2,31 +2,34 @@
 
 namespace App\Tests\Api\Membership;
 
-use App\Tests\ApiTestCase;
 use App\Factory\ClubFactory;
 use App\Factory\MembershipFactory;
 use App\Factory\PersonFactory;
+use App\Tests\ApiTestCase;
 
 class MembershipDeleteTest extends ApiTestCase
 {
     public function testDelete(): void
     {
-        $person = PersonFactory::createOne([
-            'firstname' => 'Yves',
-            'lastname' => 'Dupont',
-            'email' => 'yves.dupont@example.com',
-        ]);
+        $organization = $this->getAuthenticatedOrganizationContext()->organization;
 
-        $club = ClubFactory::createOne([
-            'name' => 'Judo Lausanne',
-        ]);
+        $person = PersonFactory::new()
+            ->forOrganization($organization)
+            ->create([
+                'firstname' => 'Yves',
+                'lastname' => 'Dupont',
+                'email' => 'yves.dupont@example.com',
+            ]);
 
-        $membership = MembershipFactory::createOne([
-            'person' => $person,
-            'club' => $club,
+        $club = ClubFactory::new()->forOrganization($organization)->create(['name' => 'Judo Lausanne',]);
+
+        $membership = MembershipFactory::new()->
+        forClub($club)->
+        forPerson($person)->
+        create([
             'joinedAt' => new \DateTimeImmutable('2024-01-10 10:00:00'),
-            'endedAt' => null,
-        ]);
+            'endedAt' => null,]);
+
 
         $this->apiDelete('/api/v1/memberships/' . $membership->getPublicId());
 

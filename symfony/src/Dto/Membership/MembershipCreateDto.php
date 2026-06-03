@@ -23,7 +23,11 @@ final class MembershipCreateDto
     #[Assert\Callback]
     public function validateDates(ExecutionContextInterface $context): void
     {
-        if (null === $this->endedAt) {
+        if (!$this->joinedAt instanceof \DateTimeImmutable) {
+            return;
+        }
+
+        if (!$this->endedAt instanceof \DateTimeImmutable) {
             return;
         }
 

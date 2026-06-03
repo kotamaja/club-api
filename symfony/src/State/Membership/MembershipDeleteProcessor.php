@@ -3,29 +3,31 @@
 namespace App\State\Membership;
 
 use App\Entity\Membership;
-use App\State\Util\AbstractDeleteProcessor;
+use App\State\AbstractDeleteProcessor;
+use App\Write\Membership\MembershipWriteServiceInterface;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
+use Symfony\Bundle\SecurityBundle\Security;
 
-class MembershipDeleteProcessor extends AbstractDeleteProcessor
+final class MembershipDeleteProcessor extends AbstractDeleteProcessor
 {
-    public function __construct(EntityManagerInterface $em)
+
+    public function __construct(EntityManagerInterface                           $em,
+                                Security                                         $security,
+                                private readonly MembershipWriteServiceInterface $membershipWriteService)
     {
-        parent::__construct($em);
+        parent::__construct($em, $security);
     }
 
-    protected function denyReason(object $entity, array $context): ?string
+    protected function entityClass(): string
     {
-        if (!$entity instanceof Membership) {
-            throw new \LogicException('Expected Membership entity.');
-        }
-
-        if (null !== $entity->getEndedAt()) {
-            return 'Cannot delete a membership that has already ended. Use it as historical data.';
-        }
-
-        return null;
+        return Membership::class;
     }
 
+    protected function deleteEntity(object $entity, array $context): void
+    {
+        \assert($entity instanceof Membership);
+
+        $this->membershipWriteService->delete($entity, $this->getCurrentConnectionUser());
+    }
 
 }

@@ -2,48 +2,43 @@
 
 namespace App\Tests\Api\Membership;
 
-use App\Tests\ApiTestCase;
 use App\Factory\ClubFactory;
 use App\Factory\MembershipFactory;
-use App\Factory\MembershipGroupFactory;
 use App\Factory\PersonFactory;
+use App\Tests\ApiTestCase;
 
 class MembershipFilterTest extends ApiTestCase
 {
     public function testFilterByPersonId(): void
     {
-        $targetPerson = PersonFactory::createOne([
+        $organization = $this->getAuthenticatedOrganizationContext()->organization;
+
+        $targetPerson = PersonFactory::new()->forOrganization($organization)->create([
             'firstname' => 'Alice',
             'lastname' => 'Martin',
             'email' => 'alice.martin@example.com',
         ]);
 
-        $otherPerson = PersonFactory::createOne([
+        $otherPerson = PersonFactory::new()->forOrganization($organization)->create([
             'firstname' => 'Bob',
             'lastname' => 'Durand',
             'email' => 'bob.durand@example.com',
         ]);
 
-        $club1 = ClubFactory::createOne(['name' => 'FC Lausanne']);
-        $club2 = ClubFactory::createOne(['name' => 'FC Sion']);
+        $club1 = ClubFactory::new()->forOrganization($organization)->create(['name' => 'FC Lausanne']);
+        $club2 = ClubFactory::new()->forOrganization($organization)->create(['name' => 'FC Sion']);
 
-        $membership1 = MembershipFactory::createOne([
-            'person' => $targetPerson,
-            'club' => $club1,
+        $membership1 = MembershipFactory::new()->forPerson($targetPerson)->forClub($club1)->create([
             'joinedAt' => new \DateTimeImmutable('2024-01-10 10:00:00'),
             'endedAt' => null,
         ]);
 
-        $membership2 = MembershipFactory::createOne([
-            'person' => $targetPerson,
-            'club' => $club2,
+        $membership2 = MembershipFactory::new()->forPerson($targetPerson)->forClub($club2)->create([
             'joinedAt' => new \DateTimeImmutable('2024-02-10 10:00:00'),
             'endedAt' => new \DateTimeImmutable('2024-06-01 10:00:00'),
         ]);
 
-        MembershipFactory::createOne([
-            'person' => $otherPerson,
-            'club' => $club1,
+        MembershipFactory::new()->forPerson($otherPerson)->forClub($club1)->create([
             'joinedAt' => new \DateTimeImmutable('2024-03-10 10:00:00'),
             'endedAt' => null,
         ]);
@@ -62,36 +57,34 @@ class MembershipFilterTest extends ApiTestCase
 
     public function testFilterByClubId(): void
     {
-        $person1 = PersonFactory::createOne([
+        $organization = $this->getAuthenticatedOrganizationContext()->organization;
+
+        $person1 = PersonFactory::new()->forOrganization($organization)->create([
             'firstname' => 'Alice',
             'lastname' => 'Martin',
             'email' => 'alice.martin@example.com',
         ]);
 
-        $person2 = PersonFactory::createOne([
+        $person2 = PersonFactory::new()->forOrganization($organization)->create([
             'firstname' => 'Bob',
             'lastname' => 'Durand',
             'email' => 'bob.durand@example.com',
         ]);
 
-        $targetClub = ClubFactory::createOne([
+        $targetClub = ClubFactory::new()->forOrganization($organization)->create([
             'name' => 'FC Lausanne',
         ]);
 
-        $otherClub = ClubFactory::createOne([
+        $otherClub = ClubFactory::new()->forOrganization($organization)->create([
             'name' => 'FC Sion',
         ]);
 
-        $membership = MembershipFactory::createOne([
-            'person' => $person1,
-            'club' => $targetClub,
+        $membership = MembershipFactory::new()->forPerson($person1)->forClub($targetClub)->create([
             'joinedAt' => new \DateTimeImmutable('2024-01-10 10:00:00'),
             'endedAt' => null,
         ]);
 
-        MembershipFactory::createOne([
-            'person' => $person2,
-            'club' => $otherClub,
+        MembershipFactory::new()->forPerson($person2)->forClub($otherClub)->create([
             'joinedAt' => new \DateTimeImmutable('2024-02-10 10:00:00'),
             'endedAt' => null,
         ]);
@@ -107,31 +100,31 @@ class MembershipFilterTest extends ApiTestCase
 
     public function testFilterByIdArray(): void
     {
-        $person = PersonFactory::createOne([
+        $organization = $this->getAuthenticatedOrganizationContext()->organization;
+
+        $person = PersonFactory::new()->forOrganization($organization)->create([
             'firstname' => 'Alice',
             'lastname' => 'Martin',
             'email' => 'alice.martin@example.com',
         ]);
 
-        $club = ClubFactory::createOne([
+        $club = ClubFactory::new()->forOrganization($organization)->create([
             'name' => 'FC Lausanne',
         ]);
 
-        $membership1 = MembershipFactory::createOne([
-            'person' => $person,
-            'club' => $club,
+        $membership1 = MembershipFactory::new()->forPerson($person)->forClub($club)->create([
             'joinedAt' => new \DateTimeImmutable('2024-01-10 10:00:00'),
             'endedAt' => null,
         ]);
 
-        $membership2 = MembershipFactory::createOne([
+        $membership2 = MembershipFactory::new()->forPerson($person)->forClub($club)->create([
             'person' => $person,
             'club' => $club,
             'joinedAt' => new \DateTimeImmutable('2024-02-10 10:00:00'),
             'endedAt' => null,
         ]);
 
-        MembershipFactory::createOne([
+        MembershipFactory::new()->forPerson($person)->forClub($club)->create([
             'person' => $person,
             'club' => $club,
             'joinedAt' => new \DateTimeImmutable('2024-03-10 10:00:00'),
@@ -156,24 +149,24 @@ class MembershipFilterTest extends ApiTestCase
 
     public function testFilterByJoinedAtAfter(): void
     {
-        $person = PersonFactory::createOne([
+        $organization = $this->getAuthenticatedOrganizationContext()->organization;
+
+        $person = PersonFactory::new()->forOrganization($organization)->create([
             'firstname' => 'Alice',
             'lastname' => 'Martin',
             'email' => 'alice.martin@example.com',
         ]);
 
-        $club = ClubFactory::createOne([
+        $club = ClubFactory::new()->forOrganization($organization)->create([
             'name' => 'FC Lausanne',
         ]);
 
-        MembershipFactory::createOne([
-            'person' => $person,
-            'club' => $club,
+        MembershipFactory::new()->forPerson($person)->forClub($club)->create([
             'joinedAt' => new \DateTimeImmutable('2024-01-10 10:00:00'),
             'endedAt' => null,
         ]);
 
-        $membership2 = MembershipFactory::createOne([
+        $membership2 = MembershipFactory::new()->forPerson($person)->forClub($club)->create([
             'person' => $person,
             'club' => $club,
             'joinedAt' => new \DateTimeImmutable('2024-03-10 10:00:00'),
@@ -191,26 +184,24 @@ class MembershipFilterTest extends ApiTestCase
 
     public function testFilterByEndedAtBeforeExcludesNullValues(): void
     {
-        $person = PersonFactory::createOne([
+        $organization = $this->getAuthenticatedOrganizationContext()->organization;
+
+        $person = PersonFactory::new()->forOrganization($organization)->create([
             'firstname' => 'Alice',
             'lastname' => 'Martin',
             'email' => 'alice.martin@example.com',
         ]);
 
-        $club = ClubFactory::createOne([
+        $club = ClubFactory::new()->forOrganization($organization)->create([
             'name' => 'FC Lausanne',
         ]);
 
-        $endedMembership = MembershipFactory::createOne([
-            'person' => $person,
-            'club' => $club,
+        $endedMembership = MembershipFactory::new()->forPerson($person)->forClub($club)->create([
             'joinedAt' => new \DateTimeImmutable('2024-01-10 10:00:00'),
             'endedAt' => new \DateTimeImmutable('2024-04-01 10:00:00'),
         ]);
 
-        MembershipFactory::createOne([
-            'person' => $person,
-            'club' => $club,
+        MembershipFactory::new()->forPerson($person)->forClub($club)->create([
             'joinedAt' => new \DateTimeImmutable('2024-02-10 10:00:00'),
             'endedAt' => null,
         ]);
@@ -223,7 +214,6 @@ class MembershipFilterTest extends ApiTestCase
 
         $this->assertSame([$endedMembership->getPublicId()], $this->extractIds($data));
     }
-
 
 
     private function extractIds(array $data): array

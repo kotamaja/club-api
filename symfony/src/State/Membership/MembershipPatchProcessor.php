@@ -4,63 +4,53 @@ namespace App\State\Membership;
 
 use App\Dto\Membership\MembershipPatchDto;
 use App\Entity\Membership;
-use App\State\Util\AbstractPatchProcessor;
-use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
+use App\Mapper\MapperRegistry;
+use App\State\AbstractPatchProcessor;
+use App\Write\Membership\MembershipWriteServiceInterface;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bundle\SecurityBundle\Security;
 
-class MembershipPatchProcessor  extends AbstractPatchProcessor
+final class MembershipPatchProcessor extends AbstractPatchProcessor
 {
+    public function __construct(MapperRegistry                                   $mapperRegistry,
+                                EntityManagerInterface                           $em,
+                                Security                                         $security,
+                                private readonly MembershipWriteServiceInterface $membershipWriteService,
+    )
+    {
+        parent::__construct($mapperRegistry, $em, $security);
+    }
 
     protected function assertInput(mixed $data): void
     {
         if (!$data instanceof MembershipPatchDto) {
-            throw new \InvalidArgumentException(sprintf(
-                'Expected %s, got %s.',
-                MembershipPatchDto::class,
-                get_debug_type($data)
-            ));
+            throw new \LogicException('Expected MembershipPatchDto.');
         }
     }
 
-    protected function afterMap(mixed $data, object $entity, array $context): void
+    protected function entityClass(): string
     {
-
-        if (
-            null !== $entity->getEndedAt()
-            && null !== $entity->getJoinedAt()
-            && $entity->getEndedAt() < $entity->getJoinedAt()
-        ) {
-            throw new UnprocessableEntityHttpException(
-                'The end date must be greater than or equal to the join date.'
-            );
-        }
-
-        $person = $entity->getPerson();
-        $club = $entity->getClub();
-
-        if (!$person || !$club) {
-            throw new \LogicException('Membership must have a person and a club.');
-        }
-
-        $isActive = null === $entity->getEndedAt();
-
-        // Si on rend le membership actif
-        if ($isActive) {
-            $existingActiveMembership = $this->em->getRepository(Membership::class)->findOneBy([
-                'person' => $person,
-                'club' => $club,
-                'endedAt' => null,
-            ]);
-
-            // Attention : exclure soi-même
-            if (
-                $existingActiveMembership instanceof Membership &&
-                $existingActiveMembership->getId() !== $entity->getId()
-            ) {
-                throw new UnprocessableEntityHttpException(
-                    'This person already has an active membership for this club.'
-                );
-            }
-        }
+        return Membership::class;
     }
 
+    protected function patchEntity(mixed $data, object $entity, array $context): void
+    {
+        \assert($data instanceof MembershipPatchDto);
+        \assert($entity instanceof Membership);
+
+        $this->membershipWriteService->patch(
+            $data,
+            $entity,
+            $this->getCurrentConnectionUser(),
+        );
+    }
+
+    protected function uniqueConstraintViolationMessage(
+        mixed  $data,
+        object $entity,
+        array  $context,
+    ): string
+    {
+        return 'A membership with the same name already exists.';
+    }
 }

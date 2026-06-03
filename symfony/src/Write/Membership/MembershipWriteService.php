@@ -41,8 +41,17 @@ class MembershipWriteService implements MembershipWriteServiceInterface
         $this->organizationScopeGuard->assertBelongsToCurrentOrganization($person);
         $this->organizationScopeGuard->assertBelongsToCurrentOrganization($club);
 
-        $joinedAt = new DateTimeImmutable();
-        $endedAt = null;
+        if (!$input->joinedAt instanceof DateTimeImmutable) {
+            throw new BusinessRuleViolationException('Membership joinedAt date is required.');
+        }
+
+        $joinedAt = $input->joinedAt;
+        $endedAt = $input->endedAt;
+
+        $this->membershipBusinessRules->assertDatesAreValid(
+            joinedAt: $joinedAt,
+            endedAt: $endedAt,
+        );
 
         $this->membershipBusinessRules->assertPeriodDoesNotOverlap(
             person: $person,
@@ -51,7 +60,13 @@ class MembershipWriteService implements MembershipWriteServiceInterface
             endedAt: $endedAt,
         );
 
-        $membership = Membership::create(person: $person, club: $club, joinedAt: $joinedAt);
+        $membership = Membership::create(
+            person: $person,
+            club: $club,
+            joinedAt: $joinedAt,
+        );
+
+        $membership->setEndedAt($endedAt);
 
         $this->applyCreateData($input, $membership);
 
@@ -143,14 +158,13 @@ class MembershipWriteService implements MembershipWriteServiceInterface
         return $changed;
     }
 
-
     private function applyJoinedAtDate(MembershipPatchDto $input, Membership $membership): bool
     {
         if (!$input->isJoinedAtProvided()) {
             return false;
         }
 
-        $newDate = DateUtils::fromString($input->getJoinedAt(), 'Y-m-d');
+        $newDate = $input->getJoinedAt();
 
         if (!$newDate instanceof DateTimeImmutable) {
             throw new BusinessRuleViolationException('Membership joinedAt date is required.');
@@ -158,7 +172,7 @@ class MembershipWriteService implements MembershipWriteServiceInterface
 
         $current = $membership->getJoinedAt();
 
-        if ($newDate->format('Y-m-d') === $current?->format('Y-m-d')) {
+        if ($this->isSameBusinessDate($newDate, $current)) {
             return false;
         }
 
@@ -173,16 +187,21 @@ class MembershipWriteService implements MembershipWriteServiceInterface
             return false;
         }
 
-        $newDate = DateUtils::fromString($input->getEndedAt(), 'Y-m-d');
+        $newDate = $input->getEndedAt();
         $current = $membership->getEndedAt();
 
-        if ($newDate?->format('Y-m-d') === $current?->format('Y-m-d')) {
+        if ($this->isSameBusinessDate($newDate, $current)) {
             return false;
         }
 
         $membership->setEndedAt($newDate);
 
         return true;
+    }
+
+    private function isSameBusinessDate(?DateTimeImmutable $left, ?DateTimeImmutable $right): bool
+    {
+        return $left?->format('Y-m-d') === $right?->format('Y-m-d');
     }
 
 

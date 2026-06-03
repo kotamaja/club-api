@@ -10,7 +10,8 @@ final class MembershipCreateValidationTest extends ApiTestCase
 {
     public function testCreateRejectsBlankPersonId(): void
     {
-        $club = ClubFactory::createOne();
+        $organization =  $this->getAuthenticatedOrganizationContext()->organization;
+        $club = ClubFactory::new()->forOrganization($organization)->create();
 
         $this->apiPost('/api/v1/memberships', [
             'personId' => '',
@@ -24,7 +25,8 @@ final class MembershipCreateValidationTest extends ApiTestCase
 
     public function testCreateRejectsBlankClubId(): void
     {
-        $person = PersonFactory::createOne();
+        $organization =  $this->getAuthenticatedOrganizationContext()->organization;
+        $person = PersonFactory::new()->forOrganization($organization)->create();
 
         $this->apiPost('/api/v1/memberships', [
             'personId' => $person->getPublicId(),
@@ -38,7 +40,8 @@ final class MembershipCreateValidationTest extends ApiTestCase
 
     public function testCreateRejectsInvalidPersonId(): void
     {
-        $club = ClubFactory::createOne();
+        $organization =  $this->getAuthenticatedOrganizationContext()->organization;
+        $club = ClubFactory::new()->forOrganization($organization)->create();
 
         $this->apiPost('/api/v1/memberships', [
             'personId' => 'not-a-valid-ulid',
@@ -52,7 +55,8 @@ final class MembershipCreateValidationTest extends ApiTestCase
 
     public function testCreateRejectsInvalidClubId(): void
     {
-        $person = PersonFactory::createOne();
+        $organization =  $this->getAuthenticatedOrganizationContext()->organization;
+        $person = PersonFactory::new()->forOrganization($organization)->create();
 
         $this->apiPost('/api/v1/memberships', [
             'personId' => $person->getPublicId(),
@@ -66,8 +70,10 @@ final class MembershipCreateValidationTest extends ApiTestCase
 
     public function testCreateRejectsNullJoinedAt(): void
     {
-        $person = PersonFactory::createOne();
-        $club = ClubFactory::createOne();
+
+        $organization =  $this->getAuthenticatedOrganizationContext()->organization;
+        $club = ClubFactory::new()->forOrganization($organization)->create();
+        $person = PersonFactory::new()->forOrganization($organization)->create();
 
         $this->apiPost('/api/v1/memberships', [
             'personId' => $person->getPublicId(),
@@ -81,8 +87,9 @@ final class MembershipCreateValidationTest extends ApiTestCase
 
     public function testCreateRejectsEndedAtBeforeJoinedAt(): void
     {
-        $person = PersonFactory::createOne();
-        $club = ClubFactory::createOne();
+        $organization =  $this->getAuthenticatedOrganizationContext()->organization;
+        $club = ClubFactory::new()->forOrganization($organization)->create();
+        $person = PersonFactory::new()->forOrganization($organization)->create();
 
         $this->apiPost('/api/v1/memberships', [
             'personId' => $person->getPublicId(),
@@ -96,7 +103,8 @@ final class MembershipCreateValidationTest extends ApiTestCase
 
     public function testCreateRejectsUnknownPerson(): void
     {
-        $club = ClubFactory::createOne();
+        $organization =  $this->getAuthenticatedOrganizationContext()->organization;
+        $club = ClubFactory::new()->forOrganization($organization)->create();
 
         $this->apiPost('/api/v1/memberships', [
             'personId' => '01ARZ3NDEKTSV4RRFFQ69G5FAV',
@@ -110,7 +118,9 @@ final class MembershipCreateValidationTest extends ApiTestCase
 
     public function testCreateRejectsUnknownClub(): void
     {
-        $person = PersonFactory::createOne();
+        $organization =  $this->getAuthenticatedOrganizationContext()->organization;
+        $person = PersonFactory::new()->forOrganization($organization)->create();
+
 
         $this->apiPost('/api/v1/memberships', [
             'personId' => $person->getPublicId(),
