@@ -12,10 +12,11 @@ final class ClubPatchTest extends ApiTestCase
 
         $organization =  $this->getAuthenticatedOrganizationContext()->organization;
 
-        $club = ClubFactory::createOne([
-            'name' => 'FC Lausanne',
-            'organization' => $organization,
-        ]);
+        $club = ClubFactory::new()
+            ->forOrganization($organization)
+            ->create([
+                'name' => 'FC Lausanne',
+            ]);
 
         $response = $this->apiPatch('/api/v1/clubs/'.$club->getPublicId(), [
             'name' => 'FC Lausanne-Sport',
@@ -34,9 +35,13 @@ final class ClubPatchTest extends ApiTestCase
 
     public function testPatchValidation(): void
     {
-        $club = ClubFactory::createOne([
-            'name' => 'FC Lausanne',
-        ]);
+        $organization =  $this->getAuthenticatedOrganizationContext()->organization;
+
+        $club = ClubFactory::new()
+            ->forOrganization($organization)
+            ->create([
+                'name' => 'FC Lausanne',
+            ]);
 
         $this->apiPatch('/api/v1/clubs/'.$club->getPublicId(), [
             'name' => '',

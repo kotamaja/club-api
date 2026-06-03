@@ -9,11 +9,15 @@ final class PersonPatchValidationTest extends ApiTestCase
 {
     public function testPatchRejectsBlankFirstname(): void
     {
-        $person = PersonFactory::createOne([
-            'firstname' => 'Yves',
-            'lastname' => 'Dupont',
-            'email' => 'yves.dupont@example.com',
-        ]);
+        $organization =  $this->getAuthenticatedOrganizationContext()->organization;
+
+        $person = PersonFactory::new()
+            ->forOrganization($organization)
+            ->create([
+                'firstname' => 'Yves',
+                'lastname' => 'Dupont',
+                'email' => 'yves.dupont@example.com',
+            ]);
 
         $this->apiPatch('/api/v1/people/'.$person->getPublicId(), [
             'firstname' => '',
@@ -24,11 +28,15 @@ final class PersonPatchValidationTest extends ApiTestCase
 
     public function testPatchRejectsBlankLastname(): void
     {
-        $person = PersonFactory::createOne([
-            'firstname' => 'Yves',
-            'lastname' => 'Dupont',
-            'email' => 'yves.dupont@example.com',
-        ]);
+        $organization =  $this->getAuthenticatedOrganizationContext()->organization;
+
+        $person = PersonFactory::new()
+            ->forOrganization($organization)
+            ->create([
+                'firstname' => 'Yves',
+                'lastname' => 'Dupont',
+                'email' => 'yves.dupont@example.com',
+            ]);
 
         $this->apiPatch('/api/v1/people/'.$person->getPublicId(), [
             'lastname' => '',
@@ -39,11 +47,15 @@ final class PersonPatchValidationTest extends ApiTestCase
 
     public function testPatchRejectsBlankEmail(): void
     {
-        $person = PersonFactory::createOne([
-            'firstname' => 'Yves',
-            'lastname' => 'Dupont',
-            'email' => 'yves.dupont@example.com',
-        ]);
+        $organization =  $this->getAuthenticatedOrganizationContext()->organization;
+
+        $person = PersonFactory::new()
+            ->forOrganization($organization)
+            ->create([
+                'firstname' => 'Yves',
+                'lastname' => 'Dupont',
+                'email' => 'yves.dupont@example.com',
+            ]);
 
         $this->apiPatch('/api/v1/people/'.$person->getPublicId(), [
             'email' => '',
@@ -54,11 +66,15 @@ final class PersonPatchValidationTest extends ApiTestCase
 
     public function testPatchRejectsInvalidEmail(): void
     {
-        $person = PersonFactory::createOne([
-            'firstname' => 'Yves',
-            'lastname' => 'Dupont',
-            'email' => 'yves.dupont@example.com',
-        ]);
+        $organization =  $this->getAuthenticatedOrganizationContext()->organization;
+
+        $person = PersonFactory::new()
+            ->forOrganization($organization)
+            ->create([
+                'firstname' => 'Yves',
+                'lastname' => 'Dupont',
+                'email' => 'yves.dupont@example.com',
+            ]);
 
         $this->apiPatch('/api/v1/people/'.$person->getPublicId(), [
             'email' => 'not-an-email',

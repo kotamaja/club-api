@@ -11,27 +11,12 @@ use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
  */
 final class PersonFactory extends PersistentObjectFactory
 {
-    /**
-     * @see https://symfony.com/bundles/ZenstruckFoundryBundle/current/index.html#factories-as-services
-     *
-     * @todo inject services if required
-     */
-    public function __construct()
-    {
-    }
 
-    #[\Override]
     public static function class(): string
     {
         return Person::class;
     }
 
-    /**
-     * @see https://symfony.com/bundles/ZenstruckFoundryBundle/current/index.html#model-factories
-     *
-     * @todo add your default values here
-     */
-    #[\Override]
     protected function defaults(): array|callable
     {
         return [
@@ -42,21 +27,43 @@ final class PersonFactory extends PersistentObjectFactory
     }
 
 
-
-    #[\Override]
     protected function initialize(): static
     {
-        return $this
-            ->instantiateWith(function (array $attributes): Person {
-                if (!isset($attributes['organization']) || !$attributes['organization'] instanceof Organization) {
-                    throw new \LogicException('Missing required "organization" attribute for PersonFactory.');
-                }
+        return $this->instantiateWith(function (array $attributes): Person {
+            $organization = $attributes['organization'] ?? null;
 
-                return new Person(
-                    $attributes['firstname'],
-                    $attributes['lastname'],
-                    $attributes['organization'],
-                );
-            });
+            if (!$organization instanceof Organization) {
+                throw new \LogicException('Missing required "organization" attribute for PersonFactory.');
+            }
+
+            $firstname = $attributes['firstname'] ?? null;
+
+            if (!\is_string($firstname) || $firstname === '') {
+                throw new \LogicException('Missing required "firstname" attribute for PersonFactory.');
+            }
+
+            $lastname = $attributes['lastname'] ?? null;
+
+            if (!\is_string($lastname) || $lastname === '') {
+                throw new \LogicException('Missing required "lastname" attribute for PersonFactory.');
+            }
+
+            $email = $attributes['email'] ;
+
+            return Person::create(
+                organization: $organization,
+                firstname: $firstname,
+                lastname: $lastname,
+                email: $email
+            );
+        });
     }
+
+    public function forOrganization(Organization $organization): self
+    {
+        return $this->with([
+            'organization' => $organization,
+        ]);
+    }
+
 }

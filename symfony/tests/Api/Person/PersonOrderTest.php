@@ -9,17 +9,26 @@ final class PersonOrderTest extends ApiTestCase
 {
     public function testOrderPeopleByLastnameAscending(): void
     {
-        $zulu = PersonFactory::createOne([
-            'firstname' => 'Yves',
-            'lastname' => 'Zulu',
-            'email' => 'yves.zulu@example.com',
-        ]);
 
-        $alpha = PersonFactory::createOne([
-            'firstname' => 'Anne',
-            'lastname' => 'Alpha',
-            'email' => 'anne.alpha@example.com',
-        ]);
+        $organization = $this->getAuthenticatedOrganizationContext()->organization;
+
+        $zulu = PersonFactory::new()
+            ->forOrganization($organization)
+            ->create([
+                'firstname' => 'Yves',
+                'lastname' => 'Zulu',
+                'email' => 'yves.zulu@example.com',
+            ]);
+
+        $alpha = PersonFactory::new()
+            ->forOrganization($organization)
+            ->create([
+                'firstname' => 'Anne',
+                'lastname' => 'Alpha',
+                'email' => 'anne.alpha@example.com',
+            ]);
+
+
 
         $response = $this->apiGet('/api/v1/people?orderLastname=asc');
 
@@ -40,17 +49,26 @@ final class PersonOrderTest extends ApiTestCase
 
     public function testOrderPeopleByFirstnameDescending(): void
     {
-        $anne = PersonFactory::createOne([
-            'firstname' => 'Anne',
-            'lastname' => 'Martin',
-            'email' => 'anne.martin@example.com',
-        ]);
 
-        $yves = PersonFactory::createOne([
-            'firstname' => 'Yves',
-            'lastname' => 'Dupont',
-            'email' => 'yves.dupont@example.com',
-        ]);
+
+
+        $organization = $this->getAuthenticatedOrganizationContext()->organization;
+
+        $yves = PersonFactory::new()
+            ->forOrganization($organization)
+            ->create([
+                'firstname' => 'Yves',
+                'lastname' => 'Dupont',
+                'email' => 'yves.dupont@example.com',
+            ]);
+
+        $anne = PersonFactory::new()
+            ->forOrganization($organization)
+            ->create([
+                'firstname' => 'Anne',
+                'lastname' => 'Martin',
+                'email' => 'anne.martin@example.com',
+            ]);
 
         $response = $this->apiGet('/api/v1/people?orderFirstname=desc');
 
@@ -72,17 +90,25 @@ final class PersonOrderTest extends ApiTestCase
 
     public function testOrderPeopleByEmailAscending(): void
     {
-        $zeta= PersonFactory::createOne([
-            'firstname' => 'Yves',
-            'lastname' => 'Dupont',
-            'email' => 'zeta@example.com',
-        ]);
 
-        $alpha = PersonFactory::createOne([
-            'firstname' => 'Anne',
-            'lastname' => 'Martin',
-            'email' => 'alpha@example.com',
-        ]);
+        $organization = $this->getAuthenticatedOrganizationContext()->organization;
+
+        $zeta = PersonFactory::new()
+            ->forOrganization($organization)
+            ->create([
+                'firstname' => 'Yves',
+                'lastname' => 'Dupont',
+                'email' => 'zeta@example.com',
+            ]);
+
+        $alpha = PersonFactory::new()
+            ->forOrganization($organization)
+            ->create([
+                'firstname' => 'Anne',
+                'lastname' => 'Martin',
+                'email' => 'alpha@example.com',
+            ]);
+
 
         $response = $this->apiGet('/api/v1/people?orderEmail=asc');
 

@@ -141,7 +141,7 @@ class Person implements OrganizationScopedInterface
     #[ORM\Column(name: 'lastname', type: Types::STRING, length: 150)]
     private ?string $lastname = null;
 
-    #[ORM\Column(name: 'email', type: Types::STRING,  length: 180, nullable: true)]
+    #[ORM\Column(name: 'email', type: Types::STRING, length: 180, nullable: true)]
     private ?string $email = null;
 
     /**
@@ -167,16 +167,34 @@ class Person implements OrganizationScopedInterface
     #[ORM\JoinColumn(name: 'organization_id', referencedColumnName: 'id', nullable: false)]
     private ?Organization $organization;
 
-    public function __construct(string $firstname, string $lastname, Organization $organization)
+    public function __construct()
     {
         $this->publicId = (string)new Ulid();
-        $this->firstname = $firstname;
-        $this->lastname = $lastname;
-        $this->organization = $organization;
         $this->relationshipsAsPerson = new ArrayCollection();
         $this->relationshipsAsContactPerson = new ArrayCollection();
         $this->memberships = new ArrayCollection();
     }
+
+
+    public static function create(string $firstname, string $lastname, ?string $email, Organization $organization): self
+    {
+        $club = new self();
+        $club->initialize(firstname: $firstname, lastname: $lastname, email: $email, organization: $organization);
+        return $club;
+    }
+
+    public function initialize(string $firstname, string $lastname, ?string $email, Organization $organization): void
+    {
+        if (isset($this->organization)) {
+            throw new \LogicException('Person is already initialized.');
+        }
+
+        $this->firstname = $firstname;
+        $this->lastname = $lastname;
+        $this->email = $email;
+        $this->organization = $organization;
+    }
+
 
     public function getId(): ?int
     {
@@ -249,7 +267,6 @@ class Person implements OrganizationScopedInterface
     {
         return $this->memberships;
     }
-
 
 
     public function getOrganization(): Organization

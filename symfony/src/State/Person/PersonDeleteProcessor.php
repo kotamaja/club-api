@@ -3,31 +3,31 @@
 namespace App\State\Person;
 
 use App\Entity\Person;
-use App\State\Util\AbstractDeleteProcessor;
+use App\State\AbstractDeleteProcessor;
+use App\Write\Person\PersonWriteServiceInterface;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bundle\SecurityBundle\Security;
 
 final class PersonDeleteProcessor extends AbstractDeleteProcessor
 {
 
-
-    protected function denyReason(object $entity, array $context): ?string
+    public function __construct(EntityManagerInterface                       $em,
+                                Security                                     $security,
+                                private readonly PersonWriteServiceInterface $personWriteService)
     {
-        if (!$entity instanceof Person) {
-            throw new \LogicException('Expected Person entity.');
-        }
-
-        if ($entity->getRelationshipsAsPerson()->count() > 0) {
-            return 'Cannot delete person: relationshipsAsPerson still exist.' ;
-        }
-
-        if ($entity->getRelationshipsAsContactPerson()->count() > 0) {
-            return 'Cannot delete person: relationshipsAsContactPerson still exist.';
-        }
-
-        if ($entity->getMemberships()->count() > 0) {
-            return 'Cannot delete person: membership still exist.';
-        }
-
-
-        return null;
+        parent::__construct($em, $security);
     }
+
+    protected function entityClass(): string
+    {
+        return Person::class;
+    }
+
+    protected function deleteEntity(object $entity, array $context): void
+    {
+        \assert($entity instanceof Person);
+
+        $this->personWriteService->delete($entity, $this->getCurrentConnectionUser());
+    }
+
 }

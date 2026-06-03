@@ -9,17 +9,24 @@ final class PersonFilterTest extends ApiTestCase
 {
     public function testFilterPeopleByFirstname(): void
     {
-        $yves = PersonFactory::createOne([
-            'firstname' => 'Yves',
-            'lastname' => 'Dupont',
-            'email' => 'yves.dupont@example.com',
-        ]);
+        $organization = $this->getAuthenticatedOrganizationContext()->organization;
 
-        PersonFactory::createOne([
-            'firstname' => 'Anne',
-            'lastname' => 'Martin',
-            'email' => 'anne.martin@example.com',
-        ]);
+        $yves = PersonFactory::new()
+            ->forOrganization($organization)
+            ->create([
+                'firstname' => 'Yves',
+                'lastname' => 'Dupont',
+                'email' => 'yves.dupont@example.com',
+            ]);
+
+        PersonFactory::new()
+            ->forOrganization($organization)
+            ->create([
+                'firstname' => 'Anne',
+                'lastname' => 'Martin',
+                'email' => 'anne.martin@example.com',
+            ]);
+
 
         $response = $this->apiGet('/api/v1/people?firstname=Yves');
 
@@ -35,17 +42,23 @@ final class PersonFilterTest extends ApiTestCase
 
     public function testFilterPeopleByLastname(): void
     {
-        PersonFactory::createOne([
-            'firstname' => 'Yves',
-            'lastname' => 'Dupont',
-            'email' => 'yves.dupont@example.com',
-        ]);
+        $organization = $this->getAuthenticatedOrganizationContext()->organization;
 
-        $anne = PersonFactory::createOne([
-            'firstname' => 'Anne',
-            'lastname' => 'Martin',
-            'email' => 'anne.martin@example.com',
-        ]);
+        $yves = PersonFactory::new()
+            ->forOrganization($organization)
+            ->create([
+                'firstname' => 'Yves',
+                'lastname' => 'Dupont',
+                'email' => 'yves.dupont@example.com',
+            ]);
+
+        $anne = PersonFactory::new()
+            ->forOrganization($organization)
+            ->create([
+                'firstname' => 'Anne',
+                'lastname' => 'Martin',
+                'email' => 'anne.martin@example.com',
+            ]);
 
         $response = $this->apiGet('/api/v1/people?lastname=Martin');
 
@@ -60,17 +73,23 @@ final class PersonFilterTest extends ApiTestCase
 
     public function testFilterPeopleByEmail(): void
     {
-        PersonFactory::createOne([
-            'firstname' => 'Yves',
-            'lastname' => 'Dupont',
-            'email' => 'yves.dupont@example.com',
-        ]);
+        $organization = $this->getAuthenticatedOrganizationContext()->organization;
 
-        $anne = PersonFactory::createOne([
-            'firstname' => 'Anne',
-            'lastname' => 'Martin',
-            'email' => 'anne.martin@example.com',
-        ]);
+        $yves = PersonFactory::new()
+            ->forOrganization($organization)
+            ->create([
+                'firstname' => 'Yves',
+                'lastname' => 'Dupont',
+                'email' => 'yves.dupont@example.com',
+            ]);
+
+        $anne = PersonFactory::new()
+            ->forOrganization($organization)
+            ->create([
+                'firstname' => 'Anne',
+                'lastname' => 'Martin',
+                'email' => 'anne.martin@example.com',
+            ]);
 
         $response = $this->apiGet('/api/v1/people?email=anne.martin');
 
@@ -86,23 +105,33 @@ final class PersonFilterTest extends ApiTestCase
 
     public function testFilterPeopleByIds(): void
     {
-        $person1 = PersonFactory::createOne([
-            'firstname' => 'Yves',
-            'lastname' => 'Dupont',
-            'email' => 'yves.dupont@example.com',
-        ]);
 
-        $person2 = PersonFactory::createOne([
-            'firstname' => 'Anne',
-            'lastname' => 'Martin',
-            'email' => 'anne.martin@example.com',
-        ]);
+        $organization = $this->getAuthenticatedOrganizationContext()->organization;
 
-        PersonFactory::createOne([
-            'firstname' => 'Paul',
-            'lastname' => 'Durand',
-            'email' => 'paul.durand@example.com',
-        ]);
+        $person1 = PersonFactory::new()
+            ->forOrganization($organization)
+            ->create([
+                'firstname' => 'Yves',
+                'lastname' => 'Dupont',
+                'email' => 'yves.dupont@example.com',
+            ]);
+
+        $person2 = PersonFactory::new()
+            ->forOrganization($organization)
+            ->create([
+                'firstname' => 'Anne',
+                'lastname' => 'Martin',
+                'email' => 'anne.martin@example.com',
+            ]);
+
+        PersonFactory::new()
+            ->forOrganization($organization)
+            ->create([
+                'firstname' => 'Paul',
+                'lastname' => 'Durand',
+                'email' => 'paul.durand@example.com',
+            ]);
+
 
         $response = $this->apiGet('/api/v1/people?id[]=' . $person1->getPublicId() . '&id[]=' . $person2->getPublicId());
 

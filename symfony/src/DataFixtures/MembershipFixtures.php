@@ -20,7 +20,7 @@ class MembershipFixtures extends Fixture implements DependentFixtureInterface
         $person = $this->getReference($personRef, Person::class);
 
 
-        $membership = new Membership($person, $club, $joinedAt);
+        $membership =  Membership::create($person, $club, $joinedAt);
 
         $membership->setEndedAt($endedAt);
 
@@ -47,9 +47,7 @@ class MembershipFixtures extends Fixture implements DependentFixtureInterface
 
         $manager->flush();
 
-        $memberships = MembershipFactory::forClub($club)
-            ->many(20)
-            ->create();
+        $memberships = MembershipFactory::new()->forClubWithGeneratedPerson($club)->many(200)->create();
         $i = 1;
         foreach ($memberships as $membership) {
             $this->addReference(sprintf("ref-%s", $i), $membership);

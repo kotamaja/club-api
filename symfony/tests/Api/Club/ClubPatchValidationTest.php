@@ -9,9 +9,13 @@ final class ClubPatchValidationTest extends ApiTestCase
 {
     public function testPatchRejectsBlankName(): void
     {
-        $club = ClubFactory::createOne([
-            'name' => 'FC Lausanne',
-        ]);
+        $organization =  $this->getAuthenticatedOrganizationContext()->organization;
+
+        $club = ClubFactory::new()
+            ->forOrganization($organization)
+            ->create([
+                'name' => 'FC Lausanne',
+            ]);
 
         $this->apiPatch('/api/v1/clubs/'.$club->getPublicId(), [
             'name' => '',

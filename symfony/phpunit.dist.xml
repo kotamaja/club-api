@@ -7,9 +7,11 @@
          failOnDeprecation="true"
          failOnNotice="true"
          failOnWarning="true"
+         failOnPhpunitNotice="true"
          displayDetailsOnTestsThatTriggerNotices="true"
          displayDetailsOnTestsThatTriggerWarnings="true"
          displayDetailsOnTestsThatTriggerDeprecations="true"
+         displayDetailsOnPhpunitNotices="true"
          bootstrap="tests/bootstrap.php"
          cacheDirectory=".phpunit.cache"
 >

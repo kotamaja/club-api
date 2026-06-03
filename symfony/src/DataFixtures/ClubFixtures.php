@@ -17,7 +17,7 @@ class ClubFixtures extends Fixture implements DependentFixtureInterface
     {
 
         $club = Club::create($name, $organization);
-        $club->setName($name);
+        $club->rename($name);
         $manager->persist($club);
         $this->addReference(sprintf("%s", $name), $club);
         return $club;
@@ -41,7 +41,7 @@ class ClubFixtures extends Fixture implements DependentFixtureInterface
         $manager->flush();
 
 
-        $clubs = ClubFactory::createMany(5, ['organization' => $organization1,]);
+        $clubs = ClubFactory::new()->forOrganization($organization1)->many(10)->create();
         $i = 1;
         foreach ($clubs as $club) {
             $this->addReference(sprintf("ref-%s", $i), $club);

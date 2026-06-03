@@ -196,8 +196,26 @@ class Membership implements OrganizationScopedInterface
     private ?Organization $organization;
 
 
-    public function __construct(Person $person, Club $club, DateTimeImmutable $joinedAt)
+    public function __construct()
     {
+        $this->publicId = (string)new Ulid();
+        $this->interclubMembershipGroupMemberships = new ArrayCollection();
+        $this->clubMembershipGroupMemberships = new ArrayCollection();
+    }
+
+
+    public static function create(Person $person, Club $club, DateTimeImmutable $joinedAt): self
+    {
+        $membership = new self();
+        $membership->initialize(person: $person, club: $club, joinedAt: $joinedAt);
+        return $membership;
+    }
+
+    public function initialize(Person $person, Club $club, DateTimeImmutable $joinedAt): void
+    {
+        if (isset($this->organization)) {
+            throw new \LogicException('Membership is already initialized.');
+        }
 
         if ($person->getOrganization() !== $club->getOrganization()) {
             throw new \InvalidArgumentException(
@@ -205,17 +223,14 @@ class Membership implements OrganizationScopedInterface
             );
         }
 
-        $this->publicId = (string)new Ulid();
-
-        $this->organization = $club->getOrganization();
         $this->person = $person;
         $this->club = $club;
         $this->joinedAt = $joinedAt;
-        $this->endedAt = null;
-
-        $this->interclubMembershipGroupMemberships = new ArrayCollection();
-        $this->clubMembershipGroupMemberships = new ArrayCollection();
+        $this->organization = $club->getOrganization();
     }
+
+
+
 
     #[Assert\Callback]
     public function validateDates(ExecutionContextInterface $context): void

@@ -11,9 +11,8 @@ final class ClubDeleteTest extends ApiTestCase
 {
     public function testDelete(): void
     {
-        $club = ClubFactory::createOne([
-            'name' => 'FC Lausanne',
-        ]);
+        $organization =  $this->getAuthenticatedOrganizationContext()->organization;
+        $club = ClubFactory::new()->forOrganization($organization)->create(['name' => 'FC Lausanne']);
 
         $this->apiDelete('/api/v1/clubs/'.$club->getPublicId());
 

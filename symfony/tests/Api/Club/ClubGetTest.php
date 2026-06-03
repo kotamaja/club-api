@@ -9,7 +9,8 @@ final class ClubGetTest extends ApiTestCase
 {
     public function testGetCollection(): void
     {
-        ClubFactory::createMany(3);
+        $organization =  $this->getAuthenticatedOrganizationContext()->organization;
+        ClubFactory::new()->forOrganization($organization)->many(3)->create();
 
         $response = $this->apiGet('/api/v1/clubs');
 
@@ -22,9 +23,8 @@ final class ClubGetTest extends ApiTestCase
 
     public function testGetItem(): void
     {
-        $club = ClubFactory::createOne([
-            'name' => 'FC Lausanne',
-        ]);
+        $organization =  $this->getAuthenticatedOrganizationContext()->organization;
+        $club = ClubFactory::new()->forOrganization($organization)->create(['name' => 'FC Lausanne']);
 
         $response = $this->apiGet('/api/v1/clubs/'.$club->getPublicId());
 

@@ -14,8 +14,8 @@ class PersonFixtures extends Fixture implements DependentFixtureInterface
 {
 
     private function create(ObjectManager $manager, string $firstname, string $lastname, Organization $organization): Person {
-        $person = new Person($firstname, $lastname, $organization);
-        $person->setEmail(sprintf("%s.%s@test.com", $firstname, $lastname));
+
+        $person = Person::create($firstname, $lastname, sprintf("%s.%s@test.com", $firstname, $lastname), $organization);
         $manager->persist($person);
         $this->addReference(sprintf("%s-%s", $firstname,$lastname), $person);
         return $person;
@@ -38,7 +38,7 @@ class PersonFixtures extends Fixture implements DependentFixtureInterface
 
         $manager->flush();
 
-        $people = PersonFactory::createMany(200,[    'organization' => $organization1,]);
+        $people = PersonFactory::new()->forOrganization($organization1)->many(200)->create();
         $i = 1;
         foreach ($people as $person) {
             $this->addReference(sprintf("ref-%s", $i), $person);

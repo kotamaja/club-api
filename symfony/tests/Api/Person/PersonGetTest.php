@@ -2,15 +2,21 @@
 
 namespace App\Tests\Api\Person;
 
-use App\Tests\ApiTestCase;
 use App\Factory\PersonFactory;
+use App\Tests\ApiTestCase;
 use Symfony\Component\Uid\Ulid;
 
 final class PersonGetTest extends ApiTestCase
 {
     public function testGetCollection(): void
     {
-        $people = PersonFactory::createMany(3);
+        $organization = $this->getAuthenticatedOrganizationContext()->organization;
+
+
+        $people = PersonFactory::new()
+            ->forOrganization($organization)->many(3)
+            ->create();
+
 
         $expectedIds = array_map(
             fn($p) => $p->getPublicId(),
@@ -40,11 +46,13 @@ final class PersonGetTest extends ApiTestCase
 
     public function testGetItem(): void
     {
-        $person = PersonFactory::createOne([
-            'firstname' => 'Yves',
-            'lastname' => 'Dupont',
-            'email' => 'yves.dupont@example.com',
-        ]);
+        $organization = $this->getAuthenticatedOrganizationContext()->organization;
+
+
+        $person = PersonFactory::new()->forOrganization($organization)->create();
+
+
+
 
         $response = $this->apiGet('/api/v1/people/' . $person->getPublicId());
 
@@ -57,9 +65,9 @@ final class PersonGetTest extends ApiTestCase
 
         $this->assertJsonContains([
             'id' => $person->getPublicId(),
-            'firstname' => 'Yves',
-            'lastname' => 'Dupont',
-            'email' => 'yves.dupont@example.com',
+            'firstname' => $person->getFirstname(),
+            'lastname' =>$person->getLastname(),
+            'email' => $person->getEmail(),
         ]);
     }
 

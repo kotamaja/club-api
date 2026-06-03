@@ -9,11 +9,17 @@ final class PersonPatchTest extends ApiTestCase
 {
     public function testPatch(): void
     {
-        $person = PersonFactory::createOne([
-            'firstname' => 'Yves',
-            'lastname' => 'Dupont',
-            'email' => 'yves.dupont@example.com',
-        ]);
+
+        $organization =  $this->getAuthenticatedOrganizationContext()->organization;
+
+        $person = PersonFactory::new()
+            ->forOrganization($organization)
+            ->create([
+                'firstname' => 'Yves',
+                'lastname' => 'Dupont',
+                'email' => 'yves.dupont@example.com',
+            ]);
+
 
         $response = $this->apiPatch('/api/v1/people/' . $person->getPublicId(), [
             'lastname' => 'Durand',
