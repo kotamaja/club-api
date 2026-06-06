@@ -3,33 +3,37 @@
 namespace App\Tests\Api\PersonContact;
 
 use App\Enum\RelationshipType;
-use App\Tests\ApiTestCase;
 use App\Factory\PersonContactFactory;
 use App\Factory\PersonFactory;
+use App\Tests\ApiTestCase;
 
 final class PersonContactFilterTest extends ApiTestCase
 {
     public function testFilterByPersonId(): void
     {
-        $person = PersonFactory::createOne();
-        $otherPerson = PersonFactory::createOne();
 
-        $contactPerson1 = PersonFactory::createOne();
-        $contactPerson2 = PersonFactory::createOne();
+        $organization = $this->getAuthenticatedOrganizationContext()->organization;
 
-        $contact1 = PersonContactFactory::createOne([
-            'person' => $person,
-            'contactPerson' => $contactPerson1,
-            'type' => RelationshipType::PARENT,
-        ]);
+        $person = PersonFactory::new()
+            ->forOrganization($organization)
+            ->create();
 
-        PersonContactFactory::createOne([
-            'person' => $otherPerson,
-            'contactPerson' => $contactPerson2,
-            'type' => RelationshipType::LEGAL_GUARDIAN,
-        ]);
+        $otherPerson = PersonFactory::new()
+            ->forOrganization($organization)
+            ->create();
 
-        $response = $this->apiGet('/api/v1/person_contacts?personId[]='.$person->getPublicId());
+        $contactPerson1 = PersonFactory::new()
+            ->forOrganization($organization)
+            ->create();
+        $contactPerson2 = PersonFactory::new()
+            ->forOrganization($organization)
+            ->create();
+
+        $contact1 = PersonContactFactory::new()->forPerson($person)->forContactPerson($contactPerson1)->create(['type' => RelationshipType::PARENT,]);
+        PersonContactFactory::new()->forPerson($otherPerson)->forContactPerson($contactPerson2)->create(['type' => RelationshipType::LEGAL_GUARDIAN,]);
+
+
+        $response = $this->apiGet('/api/v1/person_contacts?personId[]=' . $person->getPublicId());
 
         $this->assertResponseIsSuccessful();
 
@@ -47,25 +51,29 @@ final class PersonContactFilterTest extends ApiTestCase
 
     public function testFilterByContactPersonId(): void
     {
-        $person1 = PersonFactory::createOne();
-        $person2 = PersonFactory::createOne();
 
-        $contactPerson = PersonFactory::createOne();
-        $otherContactPerson = PersonFactory::createOne();
+        $organization = $this->getAuthenticatedOrganizationContext()->organization;
 
-        PersonContactFactory::createOne([
-            'person' => $person1,
-            'contactPerson' => $otherContactPerson,
-            'type' => RelationshipType::PARENT,
-        ]);
+        $person1 = PersonFactory::new()
+            ->forOrganization($organization)
+            ->create();
 
-        $contact = PersonContactFactory::createOne([
-            'person' => $person2,
-            'contactPerson' => $contactPerson,
-            'type' => RelationshipType::LEGAL_GUARDIAN,
-        ]);
+        $person2 = PersonFactory::new()
+            ->forOrganization($organization)
+            ->create();
 
-        $response = $this->apiGet('/api/v1/person_contacts?contactPersonId[]='.$contactPerson->getPublicId());
+        $contactPerson = PersonFactory::new()
+            ->forOrganization($organization)
+            ->create();
+        $otherContactPerson = PersonFactory::new()
+            ->forOrganization($organization)
+            ->create();
+
+        PersonContactFactory::new()->forPerson($person1)->forContactPerson($otherContactPerson)->create(['type' => RelationshipType::PARENT,]);
+        $contact = PersonContactFactory::new()->forPerson($person2)->forContactPerson($contactPerson)->create(['type' => RelationshipType::LEGAL_GUARDIAN,]);
+
+
+        $response = $this->apiGet('/api/v1/person_contacts?contactPersonId[]=' . $contactPerson->getPublicId());
 
         $this->assertResponseIsSuccessful();
 
@@ -83,22 +91,24 @@ final class PersonContactFilterTest extends ApiTestCase
 
     public function testFilterByType(): void
     {
-        $person1 = PersonFactory::createOne();
-        $person2 = PersonFactory::createOne();
-        $person3 = PersonFactory::createOne();
-        $person4 = PersonFactory::createOne();
 
-        $contact = PersonContactFactory::createOne([
-            'person' => $person1,
-            'contactPerson' => $person2,
-            'type' => RelationshipType::PARENT,
-        ]);
+        $organization = $this->getAuthenticatedOrganizationContext()->organization;
 
-        PersonContactFactory::createOne([
-            'person' => $person3,
-            'contactPerson' => $person4,
-            'type' => RelationshipType::LEGAL_GUARDIAN,
-        ]);
+        $person1 = PersonFactory::new()
+            ->forOrganization($organization)
+            ->create();
+        $person2 = PersonFactory::new()
+            ->forOrganization($organization)
+            ->create();
+        $person3 = PersonFactory::new()
+            ->forOrganization($organization)
+            ->create();
+        $person4 = PersonFactory::new()
+            ->forOrganization($organization)
+            ->create();
+
+        $contact = PersonContactFactory::new()->forPerson($person1)->forContactPerson($person2)->create(['type' => RelationshipType::PARENT,]);
+        PersonContactFactory::new()->forPerson($person3)->forContactPerson($person4)->create(['type' => RelationshipType::LEGAL_GUARDIAN,]);
 
         $response = $this->apiGet('/api/v1/person_contacts?type=parent');
 
@@ -118,24 +128,24 @@ final class PersonContactFilterTest extends ApiTestCase
 
     public function testFilterByEmergencyContact(): void
     {
-        $person1 = PersonFactory::createOne();
-        $person2 = PersonFactory::createOne();
-        $person3 = PersonFactory::createOne();
-        $person4 = PersonFactory::createOne();
 
-        $contact = PersonContactFactory::createOne([
-            'person' => $person1,
-            'contactPerson' => $person2,
-            'type' => RelationshipType::PARENT,
-            'isEmergencyContact' => true,
-        ]);
+        $organization = $this->getAuthenticatedOrganizationContext()->organization;
 
-        PersonContactFactory::createOne([
-            'person' => $person3,
-            'contactPerson' => $person4,
-            'type' => RelationshipType::LEGAL_GUARDIAN,
-            'isEmergencyContact' => false,
-        ]);
+        $person1 = PersonFactory::new()
+            ->forOrganization($organization)
+            ->create();
+        $person2 = PersonFactory::new()
+            ->forOrganization($organization)
+            ->create();
+        $person3 = PersonFactory::new()
+            ->forOrganization($organization)
+            ->create();
+        $person4 = PersonFactory::new()
+            ->forOrganization($organization)
+            ->create();
+
+        $contact = PersonContactFactory::new()->forPerson($person1)->forContactPerson($person2)->create(['type' => RelationshipType::PARENT, 'isEmergencyContact' => true,]);
+        PersonContactFactory::new()->forPerson($person3)->forContactPerson($person4)->create(['type' => RelationshipType::LEGAL_GUARDIAN, 'isEmergencyContact' => false,]);
 
         $response = $this->apiGet('/api/v1/person_contacts?isEmergencyContact=true');
 

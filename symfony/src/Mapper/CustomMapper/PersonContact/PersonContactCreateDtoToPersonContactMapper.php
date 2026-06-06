@@ -17,8 +17,8 @@ final class PersonContactCreateDtoToPersonContactMapper implements CustomMapperI
         }
         $personRelationship = $target instanceof PersonContact ? $target : new PersonContact();
 
-        $personRelationship->setType($source->type);
-        $personRelationship->setIsEmergencyContact($source->isEmergencyContact);
+        $personRelationship->changeType($source->type);
+        $personRelationship->changeEmergencyContact($source->isEmergencyContact);
 
         return $personRelationship;
     }

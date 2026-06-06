@@ -2,33 +2,22 @@
 
 namespace App\State\PersonContact;
 
-use ApiPlatform\Metadata\Operation;
 use App\Dto\PersonContact\PersonContactCreateDto;
-use App\Entity\Person;
-use App\Entity\PersonContact;
 use App\Mapper\MapperRegistry;
-use App\Repository\PersonRepository;
-use App\State\Util\AbstractCreateProcessor;
-use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
+use App\State\AbstractCreateProcessor;
+use App\Write\PersonContact\PersonContactWriteServiceInterface;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
+use Symfony\Bundle\SecurityBundle\Security;
 
-class PersonContactCreateProcessor extends AbstractCreateProcessor
+final class PersonContactCreateProcessor extends AbstractCreateProcessor
 {
-
-    public function __construct(MapperRegistry           $mapperRegistry,
-                                EntityManagerInterface   $em,
-                                private PersonRepository $personRepository,
+    public function __construct(MapperRegistry                                      $mapperRegistry,
+                                EntityManagerInterface                              $em,
+                                Security                                            $security,
+                                private readonly PersonContactWriteServiceInterface $personContactWriteService,
     )
     {
-        parent::__construct($mapperRegistry, $em);
-    }
-
-    protected function entityClass(): string
-    {
-        return PersonContact::class;
+        parent::__construct($mapperRegistry, $em, $security);
     }
 
     protected function assertInput(mixed $data): void
@@ -38,40 +27,18 @@ class PersonContactCreateProcessor extends AbstractCreateProcessor
         }
     }
 
-//    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
-//    {
-//
-//        try {
-//            return parent::process($data, $operation, $uriVariables, $context);
-//        } catch (UniqueConstraintViolationException) {
-//            throw new ConflictHttpException('Relationship already exists for this person, contactPerson person and type.');
-//        }
-//    }
-
-    protected function beforePersist(mixed $data, object $entity, array $context): void
+    protected function createEntity(mixed $data, array $context): object
     {
+        \assert($data instanceof PersonContactCreateDto);
 
-        if ($data->personId === $data->contactPersonId) {
-            throw new UnprocessableEntityHttpException('A person cannot be related to themselves.');
-        }
-
-        $person = $this->personRepository->findOneBy(['publicId' => $data->personId]);
-        if (!$person instanceof Person) {
-            throw new NotFoundHttpException('person not found.');
-        }
-
-        $contactPerson = $this->personRepository->findOneBy(['publicId' => $data->contactPersonId]);
-        if (!$contactPerson instanceof Person) {
-            throw new NotFoundHttpException('Related person not found.');
-        }
-
-        $entity->setPerson($person);
-        $entity->setContactPerson($contactPerson);
+        return $this->personContactWriteService->create(
+            $data,
+            $this->getCurrentConnectionUser(),
+        );
     }
 
-    protected function uniqueConstraintViolationMessage(mixed $data, object $entity, array $context): ?string
+    protected function uniqueConstraintViolationMessage(mixed $data, array $context): string
     {
-        return 'TRelationship already exists for this person, contactPerson person and type.';
+        return 'This relationship already exists for this person, contact person and type.';
     }
-
 }

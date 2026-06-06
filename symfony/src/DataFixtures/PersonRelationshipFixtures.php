@@ -20,9 +20,9 @@ class PersonRelationshipFixtures extends Fixture implements DependentFixtureInte
         $relation->setPerson($subject);
         $relation->setContactPerson($relatedPerson);
 
-        $relation->setType($type);
+        $relation->changeType($type);
 
-        $relation->setIsEmergencyContact($emergencyContact);
+        $relation->changeEmergencyContact($emergencyContact);
 
         $manager->persist($relation);
         return $relation;

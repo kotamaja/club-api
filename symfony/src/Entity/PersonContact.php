@@ -185,6 +185,31 @@ class PersonContact
         $this->publicId = (string)new Ulid();
     }
 
+    public static function create(Person $person, Person $contactPerson, RelationshipType $type, bool $isEmergencyContact = false): self
+    {
+        $personContact = new self();
+        $personContact->initialize(person: $person, contactPerson: $contactPerson, type: $type, isEmergencyContact: $isEmergencyContact);
+
+        $personContact->person = $person;
+        $personContact->contactPerson = $contactPerson;
+        $personContact->type = $type;
+        $personContact->isEmergencyContact = $isEmergencyContact;
+
+        return $personContact;
+    }
+
+
+    public function initialize(Person $person, Person $contactPerson, RelationshipType $type, bool $isEmergencyContact = false): void
+    {
+        if (isset($this->organization)) {
+            throw new \LogicException('Membership is already initialized.');
+        }
+
+        $this->person = $person;
+        $this->contactPerson = $contactPerson;
+        $this->type = $type;
+        $this->isEmergencyContact = $isEmergencyContact;
+    }
 
     public function getId(): ?int
     {
@@ -225,7 +250,7 @@ class PersonContact
         return $this->type;
     }
 
-    public function setType(RelationshipType $type): static
+    public function changeType(RelationshipType $type): static
     {
         $this->type = $type;
 
@@ -237,7 +262,7 @@ class PersonContact
         return $this->isEmergencyContact;
     }
 
-    public function setIsEmergencyContact(bool $isEmergencyContact): static
+    public function changeEmergencyContact(bool $isEmergencyContact): static
     {
         $this->isEmergencyContact = $isEmergencyContact;
 

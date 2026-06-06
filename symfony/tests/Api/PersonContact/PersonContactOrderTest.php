@@ -3,31 +3,33 @@
 namespace App\Tests\Api\PersonContact;
 
 use App\Enum\RelationshipType;
-use App\Tests\ApiTestCase;
 use App\Factory\PersonContactFactory;
 use App\Factory\PersonFactory;
+use App\Tests\ApiTestCase;
 
 final class PersonContactOrderTest extends ApiTestCase
 {
     public function testOrderByTypeAscending(): void
     {
-        $person1 = PersonFactory::createOne();
-        $contactPerson1 = PersonFactory::createOne();
+        $organization = $this->getAuthenticatedOrganizationContext()->organization;
 
-        $person2 = PersonFactory::createOne();
-        $contactPerson2 = PersonFactory::createOne();
+        $person1 = PersonFactory::new()
+            ->forOrganization($organization)
+            ->create();
 
-        $legalGuardian = PersonContactFactory::createOne([
-            'person' => $person1,
-            'contactPerson' => $contactPerson1,
-            'type' => RelationshipType::LEGAL_GUARDIAN,
-        ]);
+        $contactPerson1 = PersonFactory::new()
+            ->forOrganization($organization)
+            ->create();
 
-        $parent = PersonContactFactory::createOne([
-            'person' => $person2,
-            'contactPerson' => $contactPerson2,
-            'type' => RelationshipType::PARENT,
-        ]);
+        $person2 = PersonFactory::new()
+            ->forOrganization($organization)
+            ->create();
+        $contactPerson2 = PersonFactory::new()
+            ->forOrganization($organization)
+            ->create();
+
+        $legalGuardian = PersonContactFactory::new()->forPerson($person1)->forContactPerson($contactPerson1)->create(['type' => RelationshipType::LEGAL_GUARDIAN,]);
+        $parent = PersonContactFactory::new()->forPerson($person2)->forContactPerson($contactPerson2)->create(['type' => RelationshipType::PARENT,]);
 
         $response = $this->apiGet('/api/v1/person_contacts?orderType=asc');
 
@@ -52,23 +54,27 @@ final class PersonContactOrderTest extends ApiTestCase
 
     public function testOrderByPersonIdAscending(): void
     {
-        $personA = PersonFactory::createOne();
-        $personB = PersonFactory::createOne();
 
-        $contactPerson1 = PersonFactory::createOne();
-        $contactPerson2 = PersonFactory::createOne();
+        $organization = $this->getAuthenticatedOrganizationContext()->organization;
 
-        $contactA = PersonContactFactory::createOne([
-            'person' => $personA,
-            'contactPerson' => $contactPerson1,
-            'type' => RelationshipType::PARENT,
-        ]);
+        $personA = PersonFactory::new()
+            ->forOrganization($organization)
+            ->create();
 
-        $contactB = PersonContactFactory::createOne([
-            'person' => $personB,
-            'contactPerson' => $contactPerson2,
-            'type' => RelationshipType::LEGAL_GUARDIAN,
-        ]);
+        $personB = PersonFactory::new()
+            ->forOrganization($organization)
+            ->create();
+
+        $contactPerson1 = PersonFactory::new()
+            ->forOrganization($organization)
+            ->create();
+        $contactPerson2 = PersonFactory::new()
+            ->forOrganization($organization)
+            ->create();
+
+        $contactA = PersonContactFactory::new()->forPerson($personA)->forContactPerson($contactPerson1)->create(['type' => RelationshipType::PARENT,]);
+        $contactB = PersonContactFactory::new()->forPerson($personB)->forContactPerson($contactPerson2)->create(['type' => RelationshipType::LEGAL_GUARDIAN,]);
+
 
         $expected = [
             $contactA,
@@ -99,23 +105,28 @@ final class PersonContactOrderTest extends ApiTestCase
 
     public function testOrderByContactPersonIdAscending(): void
     {
-        $person1 = PersonFactory::createOne();
-        $person2 = PersonFactory::createOne();
 
-        $contactPersonA = PersonFactory::createOne();
-        $contactPersonB = PersonFactory::createOne();
 
-        $contactA = PersonContactFactory::createOne([
-            'person' => $person1,
-            'contactPerson' => $contactPersonA,
-            'type' => RelationshipType::PARENT,
-        ]);
+        $organization = $this->getAuthenticatedOrganizationContext()->organization;
 
-        $contactB = PersonContactFactory::createOne([
-            'person' => $person2,
-            'contactPerson' => $contactPersonB,
-            'type' => RelationshipType::LEGAL_GUARDIAN,
-        ]);
+        $personA = PersonFactory::new()
+            ->forOrganization($organization)
+            ->create();
+
+        $personB = PersonFactory::new()
+            ->forOrganization($organization)
+            ->create();
+
+        $contactPersonA = PersonFactory::new()
+            ->forOrganization($organization)
+            ->create();
+        $contactPersonB = PersonFactory::new()
+            ->forOrganization($organization)
+            ->create();
+
+        $contactA = PersonContactFactory::new()->forPerson($personA)->forContactPerson($contactPersonA)->create(['type' => RelationshipType::PARENT,]);
+        $contactB = PersonContactFactory::new()->forPerson($personB)->forContactPerson($contactPersonB)->create(['type' => RelationshipType::LEGAL_GUARDIAN,]);
+
 
         $expected = [
             $contactA,

@@ -10,13 +10,19 @@ final class PersonContactGetTest extends ApiTestCase
 {
     public function testGetCollection(): void
     {
-        $person = PersonFactory::createOne();
-        $contactPerson = PersonFactory::createOne();
 
-        $contact = PersonContactFactory::createOne([
-            'person' => $person,
-            'contactPerson' => $contactPerson,
-        ]);
+        $organization = $this->getAuthenticatedOrganizationContext()->organization;
+
+        $person = PersonFactory::new()
+            ->forOrganization($organization)
+            ->create();
+
+        $contactPerson = PersonFactory::new()
+            ->forOrganization($organization)
+            ->create();
+
+        $contact = PersonContactFactory::new()->forPerson($person)->forContactPerson($contactPerson) ->create();
+
 
         $response = $this->apiGet('/api/v1/person_contacts');
 
@@ -40,13 +46,17 @@ final class PersonContactGetTest extends ApiTestCase
 
     public function testGetItem(): void
     {
-        $person = PersonFactory::createOne();
-        $contactPerson = PersonFactory::createOne();
+        $organization = $this->getAuthenticatedOrganizationContext()->organization;
 
-        $contact = PersonContactFactory::createOne([
-            'person' => $person,
-            'contactPerson' => $contactPerson,
-        ]);
+        $person = PersonFactory::new()
+            ->forOrganization($organization)
+            ->create();
+
+        $contactPerson = PersonFactory::new()
+            ->forOrganization($organization)
+            ->create();
+
+        $contact = PersonContactFactory::new()->forPerson($person)->forContactPerson($contactPerson) ->create();
 
         $response = $this->apiGet('/api/v1/person_contacts/'.$contact->getPublicId());
 

@@ -9,9 +9,11 @@ final class PersonContactCreateValidationTest extends ApiTestCase
 {
     public function testCreateRejectsInvalidPersonId(): void
     {
-        $contactPerson = PersonFactory::createOne();
 
-        $this->apiPost('/api/v1/person_contacts', [
+        $organization =  $this->getAuthenticatedOrganizationContext()->organization;
+        $contactPerson = PersonFactory::new()->forOrganization($organization)->create();
+
+                $this->apiPost('/api/v1/person_contacts', [
             'personId' => 'not-a-valid-ulid',
             'contactPersonId' => $contactPerson->getPublicId(),
             'type' => 'parent',
@@ -23,7 +25,8 @@ final class PersonContactCreateValidationTest extends ApiTestCase
 
     public function testCreateRejectsInvalidContactPersonId(): void
     {
-        $person = PersonFactory::createOne();
+        $organization =  $this->getAuthenticatedOrganizationContext()->organization;
+        $person = PersonFactory::new()->forOrganization($organization)->create();
 
         $this->apiPost('/api/v1/person_contacts', [
             'personId' => $person->getPublicId(),
@@ -37,7 +40,8 @@ final class PersonContactCreateValidationTest extends ApiTestCase
 
     public function testCreateRejectsSamePersonAndContactPerson(): void
     {
-        $person = PersonFactory::createOne();
+        $organization =  $this->getAuthenticatedOrganizationContext()->organization;
+        $person = PersonFactory::new()->forOrganization($organization)->create();
 
         $this->apiPost('/api/v1/person_contacts', [
             'personId' => $person->getPublicId(),
@@ -51,8 +55,11 @@ final class PersonContactCreateValidationTest extends ApiTestCase
 
     public function testCreateRejectsDuplicateRelation(): void
     {
-        $person = PersonFactory::createOne();
-        $contactPerson = PersonFactory::createOne();
+
+        $organization =  $this->getAuthenticatedOrganizationContext()->organization;
+        $person = PersonFactory::new()->forOrganization($organization)->create();
+        $contactPerson = PersonFactory::new()->forOrganization($organization)->create();
+
 
         $this->apiPost('/api/v1/person_contacts', [
             'personId' => $person->getPublicId(),

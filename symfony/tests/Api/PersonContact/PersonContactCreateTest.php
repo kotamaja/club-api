@@ -2,6 +2,7 @@
 
 namespace App\Tests\Api\PersonContact;
 
+use App\Factory\ClubFactory;
 use App\Tests\ApiTestCase;
 use App\Factory\PersonFactory;
 
@@ -9,17 +10,25 @@ final class PersonContactCreateTest extends ApiTestCase
 {
     public function testCreate(): void
     {
-        $person = PersonFactory::createOne([
-            'firstname' => 'Tom',
-            'lastname' => 'Junior',
-            'email' => 'tom.junior@example.com',
-        ]);
 
-        $contactPerson = PersonFactory::createOne([
-            'firstname' => 'Marie',
-            'lastname' => 'Parent',
-            'email' => 'marie.parent@example.com',
-        ]);
+        $organization =  $this->getAuthenticatedOrganizationContext()->organization;
+
+        $person = PersonFactory::new()
+            ->forOrganization($organization)
+            ->create([
+                'firstname' => 'Tom',
+                'lastname' => 'Junior',
+                'email' => 'tom.junior@example.com',
+            ]);
+
+        $contactPerson = PersonFactory::new()
+            ->forOrganization($organization)
+            ->create([
+                'firstname' => 'Marie',
+                'lastname' => 'Parent',
+                'email' => 'marie.parent@example.com',
+            ]);
+
 
         $response = $this->apiPost('/api/v1/person_contacts', [
             'personId' => $person->getPublicId(),

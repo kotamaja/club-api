@@ -20,10 +20,10 @@ final class PersonContactPatchDtoToPersonContactMapper implements CustomMapperIn
 
 
         if ($source->isTypeProvided()) {
-            $personRelationship->setType($source->getType());
+            $personRelationship->changeType($source->getType());
         }
         if ($source->isEmergencyContactProvided()) {
-            $personRelationship->setIsEmergencyContact((bool) $source->getIsEmergencyContact());
+            $personRelationship->changeEmergencyContact((bool) $source->getIsEmergencyContact());
         }
 
         return $personRelationship;

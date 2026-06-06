@@ -19,8 +19,8 @@ final class PersonContactToViewDtoMapperTest extends TestCase
         $contact = new PersonContact();
         $contact->setPerson($person);
         $contact->setContactPerson($contactPerson);
-        $contact->setType(RelationshipType::LEGAL_GUARDIAN);
-        $contact->setIsEmergencyContact(true);
+        $contact->changeType(RelationshipType::LEGAL_GUARDIAN);
+        $contact->changeEmergencyContact(true);
 
         $mapper = new PersonContactToPersonContactViewDtoMapper();
 

@@ -46,8 +46,15 @@ final class MembershipPatchTest extends ApiTestCase
 
     public function testPatchCanUpdateJoinedAt(): void
     {
-        $person = PersonFactory::createOne();
-        $club = ClubFactory::createOne();
+
+        $organization = $this->getAuthenticatedOrganizationContext()->organization;
+
+        $person = PersonFactory::new()
+            ->forOrganization($organization)
+            ->create();
+
+        $club = ClubFactory::new()->forOrganization($organization)->create();
+
 
         $membership = MembershipFactory::createOne([
             'person' => $person,
@@ -71,8 +78,13 @@ final class MembershipPatchTest extends ApiTestCase
 
     public function testPatchCanReactivateMembershipWhenNoOtherActiveMembershipExists(): void
     {
-        $person = PersonFactory::createOne();
-        $club = ClubFactory::createOne();
+        $organization = $this->getAuthenticatedOrganizationContext()->organization;
+
+        $person = PersonFactory::new()
+            ->forOrganization($organization)
+            ->create();
+
+        $club = ClubFactory::new()->forOrganization($organization)->create();
 
         $membership = MembershipFactory::createOne([
             'person' => $person,
@@ -95,8 +107,13 @@ final class MembershipPatchTest extends ApiTestCase
 
     public function testPatchRejectsReactivationWhenAnotherActiveMembershipExists(): void
     {
-        $person = PersonFactory::createOne();
-        $club = ClubFactory::createOne();
+        $organization = $this->getAuthenticatedOrganizationContext()->organization;
+
+        $person = PersonFactory::new()
+            ->forOrganization($organization)
+            ->create();
+
+        $club = ClubFactory::new()->forOrganization($organization)->create();
 
         MembershipFactory::createOne([
             'person' => $person,

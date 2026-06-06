@@ -2,6 +2,7 @@
 
 namespace App\Tests\Api\PersonContact;
 
+use App\Factory\PersonFactory;
 use App\Tests\ApiTestCase;
 use App\Factory\PersonContactFactory;
 
@@ -9,7 +10,18 @@ final class PersonContactPatchValidationTest extends ApiTestCase
 {
     public function testPatchReturns400WhenTypeIsInvalid(): void
     {
-        $contact = PersonContactFactory::createOne();
+
+        $organization = $this->getAuthenticatedOrganizationContext()->organization;
+
+        $person = PersonFactory::new()
+            ->forOrganization($organization)
+            ->create();
+
+        $contactPerson = PersonFactory::new()
+            ->forOrganization($organization)
+            ->create();
+
+        $contact = PersonContactFactory::new()->forPerson($person)->forContactPerson($contactPerson) ->create();
 
         $this->apiPatch(
             '/api/v1/person_contacts/'.$contact->getPublicId(),

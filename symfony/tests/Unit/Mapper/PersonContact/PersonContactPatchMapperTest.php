@@ -13,8 +13,8 @@ final class PersonContactPatchMapperTest extends TestCase
     public function testMapUpdatesOnlyProvidedFields(): void
     {
         $contact = new PersonContact();
-        $contact->setType(RelationshipType::PARENT);
-        $contact->setIsEmergencyContact(false);
+        $contact->changeType(RelationshipType::PARENT);
+        $contact->changeEmergencyContact(false);
 
         $dto = new PersonContactPatchDto();
         $dto->setIsEmergencyContact(true);
@@ -31,8 +31,8 @@ final class PersonContactPatchMapperTest extends TestCase
     public function testMapDoesNothingWhenNoFieldIsProvided(): void
     {
         $contact = new PersonContact();
-        $contact->setType(RelationshipType::LEGAL_GUARDIAN);
-        $contact->setIsEmergencyContact(true);
+        $contact->changeType(RelationshipType::LEGAL_GUARDIAN);
+        $contact->changeEmergencyContact(true);
 
         $dto = new PersonContactPatchDto();
 
@@ -48,8 +48,8 @@ final class PersonContactPatchMapperTest extends TestCase
     public function testMapCanUpdateAllFields(): void
     {
         $contact = new PersonContact();
-        $contact->setType(RelationshipType::PARENT);
-        $contact->setIsEmergencyContact(false);
+        $contact->changeType(RelationshipType::PARENT);
+        $contact->changeEmergencyContact(false);
 
         $dto = new PersonContactPatchDto();
         $dto->setType(RelationshipType::OTHER);
