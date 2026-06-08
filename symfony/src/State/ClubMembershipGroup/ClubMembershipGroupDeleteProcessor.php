@@ -3,26 +3,31 @@
 namespace App\State\ClubMembershipGroup;
 
 use App\Entity\ClubMembershipGroup;
-use App\Entity\ClubMembershipGroupMembership;
-use App\State\Util\AbstractDeleteProcessor;
+use App\State\AbstractDeleteProcessor;
+use App\Write\ClubMembershipGroup\ClubMembershipGroupWriteServiceInterface;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bundle\SecurityBundle\Security;
 
-class ClubMembershipGroupDeleteProcessor extends AbstractDeleteProcessor
+final class ClubMembershipGroupDeleteProcessor extends AbstractDeleteProcessor
 {
-    protected function denyReason(object $entity, array $context): ?string
+
+    public function __construct(EntityManagerInterface                                    $em,
+                                Security                                                  $security,
+                                private readonly ClubMembershipGroupWriteServiceInterface $clubMembershipGroupWriteService)
     {
-        if (!$entity instanceof ClubMembershipGroup) {
-            throw new \LogicException('Expected ClubMembershipGroup entity.');
-        }
-
-        // ClubMembershipGroup should be empty before removal
-        $count = $this->em->getRepository(ClubMembershipGroupMembership::class)->count(['group' => $entity]);
-        if ($count > 0) {
-            return 'Cannot delete group: member still exist.';
-        }
-
-
-        return null;
+        parent::__construct($em, $security);
     }
 
+    protected function entityClass(): string
+    {
+        return ClubMembershipGroup::class;
+    }
+
+    protected function deleteEntity(object $entity, array $context): void
+    {
+        \assert($entity instanceof ClubMembershipGroup);
+
+        $this->clubMembershipGroupWriteService->delete($entity, $this->getCurrentConnectionUser());
+    }
 
 }

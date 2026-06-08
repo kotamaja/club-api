@@ -7,27 +7,17 @@ use App\Dto\Club\ClubListDto;
 class ClubMembershipGroupPatchDto
 {
 
-    private ?string $clubId;
 
     private ?string $name;
 
     private ?string $description;
 
 
-    private bool $clubIdProvided = false;
+
     private bool $nameProvided = false;
     private bool $descriptionProvided = false;
 
-    public function getClubId(): ?string
-    {
-        return $this->clubId;
-    }
 
-    public function setClubId(?string $clubId): void
-    {
-        $this->clubIdProvided = true;
-        $this->clubId = $clubId;
-    }
 
     public function getName(): ?string
     {
@@ -51,10 +41,6 @@ class ClubMembershipGroupPatchDto
         $this->description = $description;
     }
 
-    public function isClubIdProvided(): bool
-    {
-        return $this->clubIdProvided;
-    }
 
     public function isNameProvided(): bool
     {

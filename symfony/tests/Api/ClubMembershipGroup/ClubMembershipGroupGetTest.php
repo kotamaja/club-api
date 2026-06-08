@@ -11,16 +11,16 @@ class ClubMembershipGroupGetTest extends ApiTestCase
 {
     public function testGetCollection(): void
     {
-        $club = ClubFactory::createOne();
 
-        $clubMembershipGroup = ClubMembershipGroupFactory::createMany(3, [
-            'club' => $club,
 
-        ]);
+        $organization =  $this->getAuthenticatedOrganizationContext()->organization;
+        $club = ClubFactory::new()->forOrganization($organization)->create();
+        $clubMembershipGroups = ClubMembershipGroupFactory::new()->forClub($club)->many(3)->create();
+
 
         $expectedIds = array_map(
             fn($p) => $p->getPublicId(),
-            $clubMembershipGroup
+            $clubMembershipGroups
         );
 
         $response = $this->apiGet('/api/v1/club_membership_groups');
@@ -47,13 +47,11 @@ class ClubMembershipGroupGetTest extends ApiTestCase
 
     public function testGetItem(): void
     {
-        $club = ClubFactory::createOne();
+        $organization =  $this->getAuthenticatedOrganizationContext()->organization;
+        $club = ClubFactory::new()->forOrganization($organization)->create();
+        $clubMembershipGroups = ClubMembershipGroupFactory::new()->forClub($club)->many(3)->create();
 
-        $clubMembershipGroup = ClubMembershipGroupFactory::createOne([
-            'name' => 'test',
-            'description' => 'test description',
-            'club' => $club,
-        ]);
+        $clubMembershipGroup = array_first($clubMembershipGroups);
 
         $response = $this->apiGet('/api/v1/club_membership_groups/' . $clubMembershipGroup->getPublicId());
 

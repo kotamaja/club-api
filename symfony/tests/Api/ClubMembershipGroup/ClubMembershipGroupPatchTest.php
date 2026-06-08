@@ -2,30 +2,26 @@
 
 namespace App\Tests\Api\ClubMembershipGroup;
 
-use App\Tests\ApiTestCase;
 use App\Factory\ClubFactory;
 use App\Factory\ClubMembershipGroupFactory;
+use App\Tests\ApiTestCase;
 
 class ClubMembershipGroupPatchTest extends ApiTestCase
 {
 
     public function testPatch(): void
     {
-        $club = ClubFactory::createOne();
 
-        $clubMembershipGroup = ClubMembershipGroupFactory::createOne([
-            'name' => "old name",
-            'description' => "old description",
-            'club' => $club,
 
-        ]);
+        $organization = $this->getAuthenticatedOrganizationContext()->organization;
+        $club = ClubFactory::new()->forOrganization($organization)->create();
+        $clubMembershipGroup = ClubMembershipGroupFactory::new()->forClub($club)->create(['name' => "old name", 'description' => "old description",]);
 
-        $newClub = ClubFactory::createOne();
+        $newClub = ClubFactory::new()->forOrganization($organization)->create();
 
         $response = $this->apiPatch('/api/v1/club_membership_groups/' . $clubMembershipGroup->getPublicId(), [
             'name' => 'new name',
             'description' => 'new description',
-            'clubId'=> $newClub->getPublicId(),
         ]);
 
         $this->assertResponseIsSuccessful();
@@ -43,8 +39,6 @@ class ClubMembershipGroupPatchTest extends ApiTestCase
 
         $this->assertArrayHasKey('club', $data);
         $this->assertIsArray($data['club']);
-        $this->assertArrayHasValidUlid($data['club'], 'id');
-        $this->assertSame($newClub->getPublicId(), $data['club']['id']);
 
     }
 

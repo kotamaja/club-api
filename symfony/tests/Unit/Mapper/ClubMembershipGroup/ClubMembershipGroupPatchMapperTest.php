@@ -18,8 +18,8 @@ class ClubMembershipGroupPatchMapperTest extends TestCase
 
 
         $clubMembershipGroup = new ClubMemberShipGroup();
-        $clubMembershipGroup->setName("Test");
-        $clubMembershipGroup->setDescription("Test Description");
+        $clubMembershipGroup->changeName("Test");
+        $clubMembershipGroup->changeDescription("Test Description");
 
 
         $dto=new ClubMembershipGroupPatchDto();
@@ -39,8 +39,8 @@ class ClubMembershipGroupPatchMapperTest extends TestCase
     public function testMapDoesNothingWhenNoFieldIsProvided(): void
     {
         $clubMembershipGroup = new ClubMemberShipGroup();
-        $clubMembershipGroup->setName("Test");
-        $clubMembershipGroup->setDescription("Test Description");
+        $clubMembershipGroup->changeName("Test");
+        $clubMembershipGroup->changeDescription("Test Description");
 
 
         $dto=new ClubMembershipGroupPatchDto();

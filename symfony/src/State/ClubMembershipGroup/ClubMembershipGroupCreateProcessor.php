@@ -3,19 +3,21 @@
 namespace App\State\ClubMembershipGroup;
 
 use App\Dto\ClubMembershipGroup\ClubMembershipGroupCreateDto;
-use App\Entity\Club;
-use App\Entity\ClubMembershipGroup;
-use App\Entity\Person;
-use App\State\Util\AbstractCreateProcessor;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use App\Mapper\MapperRegistry;
+use App\State\AbstractCreateProcessor;
+use App\Write\ClubMembershipGroup\ClubMembershipGroupWriteServiceInterface;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bundle\SecurityBundle\Security;
 
-class ClubMembershipGroupCreateProcessor extends AbstractCreateProcessor
+final class ClubMembershipGroupCreateProcessor extends AbstractCreateProcessor
 {
-
-
-    protected function entityClass(): string
+    public function __construct(MapperRegistry                                            $mapperRegistry,
+                                EntityManagerInterface                                    $em,
+                                Security                                                  $security,
+                                private readonly ClubMembershipGroupWriteServiceInterface $clubMembershipGroupWriteService,
+    )
     {
-        return ClubMembershipGroup::class;
+        parent::__construct($mapperRegistry, $em, $security);
     }
 
     protected function assertInput(mixed $data): void
@@ -25,22 +27,18 @@ class ClubMembershipGroupCreateProcessor extends AbstractCreateProcessor
         }
     }
 
-
-    protected function beforePersist(mixed $data, object $entity, array $context): void
+    protected function createEntity(mixed $data, array $context): object
     {
+        \assert($data instanceof ClubMembershipGroupCreateDto);
 
-        $club = $this->em->getRepository(Club::class)->findOneBy([
-            'publicId' => $data->clubId,
-        ]);
-        if (!$club instanceof Club) {
-            throw new NotFoundHttpException('club not found.');
-        }
-
-        $entity->setClub($club);
+        return $this->clubMembershipGroupWriteService->create(
+            $data,
+            $this->getCurrentConnectionUser(),
+        );
     }
 
-    protected function uniqueConstraintViolationMessage(mixed $data, object $entity, array $context): ?string
+    protected function uniqueConstraintViolationMessage(mixed $data, array $context): string
     {
-        return 'This relationship already exists.';
+        return 'A membership group with the same name already exists in this club.';
     }
 }

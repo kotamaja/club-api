@@ -9,7 +9,8 @@ class ClubMembershipGroupCreateTest  extends ApiTestCase
 {
     public function testCreate(): void
     {
-        $club = ClubFactory::createOne();
+        $organization =  $this->getAuthenticatedOrganizationContext()->organization;
+        $club = ClubFactory::new()->forOrganization($organization)->create();
 
         $response = $this->apiPost('/api/v1/club_membership_groups', [
             'clubId' => $club->getPublicId(),

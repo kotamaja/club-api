@@ -18,8 +18,8 @@ class ClubMembershipGroupCreateDtoToClubMembershipGroupMapper implements CustomM
         }
         $personRelationship = $target instanceof ClubMembershipGroup ? $target : new ClubMembershipGroup();
 
-        $personRelationship->setName($source->name);
-        $personRelationship->setDescription($source->description);
+        $personRelationship->changeName($source->name);
+        $personRelationship->changeDescription($source->description);
 
         return $personRelationship;
     }

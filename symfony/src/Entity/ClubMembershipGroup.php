@@ -18,8 +18,8 @@ use App\Dto\ClubMembershipGroup\ClubMembershipGroupCreateDto;
 use App\Dto\ClubMembershipGroup\ClubMembershipGroupItemDto;
 use App\Dto\ClubMembershipGroup\ClubMembershipGroupListDto;
 use App\Dto\ClubMembershipGroup\ClubMembershipGroupPatchDto;
+use App\Entity\Contract\OrganizationScopedInterface;
 use App\Repository\ClubMembershipGroupRepository;
-use App\State\Club\ClubDeleteProcessor;
 use App\State\ClubMembershipGroup\ClubMembershipGroupCreateProcessor;
 use App\State\ClubMembershipGroup\ClubMembershipGroupDeleteProcessor;
 use App\State\ClubMembershipGroup\ClubMembershipGroupPatchProcessor;
@@ -139,11 +139,10 @@ use Symfony\Component\Validator\Constraints as Assert;
     ],
     routePrefix: '/v1',
 )]
-
 #[ORM\Table(name: 'club_membership_group')]
 #[ORM\UniqueConstraint(name: 'uniq_cmg_name_club_id', columns: ['name', 'club_id'])]
 #[ORM\Entity(repositoryClass: ClubMembershipGroupRepository::class)]
-class ClubMembershipGroup
+class ClubMembershipGroup implements OrganizationScopedInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -160,10 +159,10 @@ class ClubMembershipGroup
     #[ORM\JoinColumn(name: 'club_id', referencedColumnName: 'id', nullable: false,)]
     private ?Club $club = null;
 
-    #[ORM\Column(name: 'name',  type: Types::STRING, length: 512)]
+    #[ORM\Column(name: 'name', type: Types::STRING, length: 512)]
     private ?string $name = null;
 
-    #[ORM\Column(name:'description', type: Types::TEXT, nullable: true)]
+    #[ORM\Column(name: 'description', type: Types::TEXT, nullable: true)]
     private ?string $description = null;
 
     /**
@@ -172,12 +171,36 @@ class ClubMembershipGroup
     #[ORM\OneToMany(targetEntity: ClubMembershipGroupMembership::class, mappedBy: 'group')]
     private Collection $clubMembershipGroupMemberships;
 
+    #[ORM\ManyToOne(targetEntity: Organization::class)]
+    #[ORM\JoinColumn(name: 'organization_id', referencedColumnName: 'id', nullable: false)]
+    private ?Organization $organization = null;
+
 
     public function __construct()
     {
-        $this->publicId = (string) new Ulid();
+        $this->publicId = (string)new Ulid();
         $this->clubMembershipGroupMemberships = new ArrayCollection();
     }
+
+    public static function create(Club $club, string $name, ?string $description = null): self
+    {
+        $group = new self();
+        $group->initialize(club: $club, name: $name, description: $description);
+        return $group;
+    }
+
+    public function initialize(Club $club, string $name, ?string $description = null): void
+    {
+        if (isset($this->organization)) {
+            throw new \LogicException('ClubMembershipGroup is already initialized.');
+        }
+
+        $this->club = $club;
+        $this->name = trim($name);
+        $this->description = $description;
+        $this->organization = $club->getOrganization();
+    }
+
 
     public function getId(): ?int
     {
@@ -206,7 +229,7 @@ class ClubMembershipGroup
         return $this->name;
     }
 
-    public function setName(string $name): static
+    public function changeName(string $name): static
     {
         $this->name = $name;
 
@@ -218,7 +241,7 @@ class ClubMembershipGroup
         return $this->description;
     }
 
-    public function setDescription(?string $description): static
+    public function changeDescription(?string $description): static
     {
         $this->description = $description;
 
@@ -234,4 +257,12 @@ class ClubMembershipGroup
     }
 
 
+    public function getOrganization(): Organization
+    {
+        if ($this->organization === null) {
+            throw new \LogicException('Club organization has not been initialized.');
+        }
+
+        return $this->organization;
+    }
 }

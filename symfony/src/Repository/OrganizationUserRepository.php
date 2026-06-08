@@ -26,4 +26,23 @@ class OrganizationUserRepository extends ServiceEntityRepository
             'enabled' => true,
         ]);
     }
+
+    /**
+     * @return list<OrganizationUser>
+     */
+    public function findActiveByConnectionUser(ConnectionUser $connectionUser): array
+    {
+        return $this->createQueryBuilder('ou')
+            ->addSelect('o')
+            ->leftJoin('ou.organization', 'o')
+            ->leftJoin('ou.person', 'p')
+            ->addSelect('p')
+            ->andWhere('ou.connectionUser = :connectionUser')
+            ->andWhere('ou.enabled = true')
+            ->andWhere('o.enabled = true')
+            ->setParameter('connectionUser', $connectionUser)
+            ->orderBy('o.name', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 }

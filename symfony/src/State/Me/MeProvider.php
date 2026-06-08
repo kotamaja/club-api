@@ -4,18 +4,35 @@ namespace App\State\Me;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
-use App\Dto\Me\MeViewDto;
+use App\ApiResource\Me;
+use App\Entity\ConnectionUser;
+use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
-class MeProvider implements ProviderInterface
+/**
+ * @implements ProviderInterface<Me>
+ */
+final readonly class MeProvider implements ProviderInterface
 {
-
-
-    public function __construct()
+    public function __construct(
+        private Security $security,
+    )
     {
     }
 
-    public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
+    public function provide(Operation $operation, array $uriVariables = [], array $context = []): Me
     {
-        return new MeViewDto();
+        $user = $this->security->getUser();
+
+        if (!$user instanceof ConnectionUser) {
+            throw new AccessDeniedHttpException('Authenticated ConnectionUser expected.');
+        }
+
+        return new Me(
+            id: $user->getPublicId(),
+            email: $user->getEmail(),
+            status: $user->getStatus()->value,
+            roles: $user->getRoles(),
+        );
     }
 }

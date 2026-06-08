@@ -4,6 +4,7 @@ namespace App\DataFixtures;
 
 use App\Entity\Club;
 use App\Entity\ClubMembershipGroup;
+use App\Factory\ClubMembershipGroupFactory;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
@@ -20,12 +21,10 @@ class ClubMembershipGroupFixtures extends Fixture implements DependentFixtureInt
 
     private function create(ObjectManager $manager, string $name, string $description, string $clubRef): ClubMembershipGroup
     {
-        $group = new ClubMembershipGroup();
+
         $club = $this->getReference($clubRef, Club::class);
 
-        $group->setClub($club);
-        $group->setName($name);
-        $group->setDescription($description);
+        $group = ClubMembershipGroup::create(club: $club, name: $name, description: $description);
 
         $this->addReference($name, $group);
 

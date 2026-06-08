@@ -3,40 +3,50 @@
 namespace App\State\ClubMembershipGroup;
 
 use App\Dto\ClubMembershipGroup\ClubMembershipGroupPatchDto;
-use App\Entity\Club;
 use App\Entity\ClubMembershipGroup;
-use App\State\Util\AbstractPatchProcessor;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use App\Mapper\MapperRegistry;
+use App\State\AbstractPatchProcessor;
+use App\Write\ClubMembershipGroup\ClubMembershipGroupWriteServiceInterface;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bundle\SecurityBundle\Security;
 
-class ClubMembershipGroupPatchProcessor extends AbstractPatchProcessor
+final class ClubMembershipGroupPatchProcessor extends AbstractPatchProcessor
 {
+    public function __construct(MapperRegistry                                            $mapperRegistry,
+                                EntityManagerInterface                                    $em,
+                                Security                                                  $security,
+                                private readonly ClubMembershipGroupWriteServiceInterface $clubMembershipGroupWriteService,
+    )
+    {
+        parent::__construct($mapperRegistry, $em, $security);
+    }
 
     protected function assertInput(mixed $data): void
     {
         if (!$data instanceof ClubMembershipGroupPatchDto) {
-            throw new \InvalidArgumentException(sprintf(
-                'Expected %s, got %s.',
-                ClubMembershipGroupPatchDto::class,
-                get_debug_type($data)
-            ));
+            throw new \LogicException('Expected ClubMembershipGroupPatchDto.');
         }
     }
 
-    /**
-     * @param ClubMembershipGroupPatchDto $data
-     * @param ClubMembershipGroup $entity
-     * @param array $context
-     * @return void
-     */
-    protected function afterMap(mixed $data, object $entity, array $context): void
+    protected function entityClass(): string
     {
-        if ($data->isClubIdProvided()) {
-            $club = $this->em->getRepository(Club::class)->findOneBy(['publicId' => $data->getClubId()]);
-            if (!$club instanceof Club) {
-                throw new NotFoundHttpException('club not found.' . $data->getClubId());
-            }
-            $entity->setClub($club);
-        }
+        return ClubMembershipGroup::class;
     }
 
+    protected function patchEntity(mixed $data, object $entity, array $context): void
+    {
+        \assert($data instanceof ClubMembershipGroupPatchDto);
+        \assert($entity instanceof ClubMembershipGroup);
+
+        $this->clubMembershipGroupWriteService->patch(
+            $data,
+            $entity,
+            $this->getCurrentConnectionUser(),
+        );
+    }
+
+    protected function uniqueConstraintViolationMessage(mixed $data, object $entity, array $context): string
+    {
+        return 'A membership group with the same name already exists in this club.';
+    }
 }

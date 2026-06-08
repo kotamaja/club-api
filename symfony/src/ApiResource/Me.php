@@ -4,24 +4,23 @@ namespace App\ApiResource;
 
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
-use App\Dto\Me\MeViewDto;
 use App\State\Me\MeProvider;
 
 #[ApiResource(
     operations: [
         new Get(
-            uriTemplate: '/auth/me',
-            normalizationContext: [
-                'skip_null_values' => false,
-            ],
-            security: "is_granted('ROLE_USER')",
-            output: MeViewDto::class,
+            uriTemplate: '/me',
             provider: MeProvider::class,
-        )
+        ),
     ],
-    routePrefix: '',
 )]
-final class Me
+final readonly class Me
 {
-
+    public function __construct(
+        public string $id,
+        public string $email,
+        public string $status,
+        public array $roles,
+    ) {
+    }
 }

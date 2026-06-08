@@ -20,11 +20,11 @@ class ClubMembershipGroupPatchDtoToClubMembershipGroupMapper implements CustomMa
         $clubMembershipGroup = $target instanceof ClubMembershipGroup ? $target : new ClubMembershipGroup();
 
         if ($source->isNameProvided()) {
-            $clubMembershipGroup->setName($source->getName());
+            $clubMembershipGroup->changeName($source->getName());
         }
 
         if ($source->isDescriptionProvided()) {
-            $clubMembershipGroup->setDescription($source->getDescription());
+            $clubMembershipGroup->changeDescription($source->getDescription());
         }
 
         return $clubMembershipGroup;
