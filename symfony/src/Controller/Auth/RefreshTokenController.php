@@ -28,7 +28,7 @@ final readonly class RefreshTokenController
     {
     }
 
-    #[Route('/api/auth/refresh', name: 'api_auth_refresh', methods: ['POST'])]
+    #[Route('/api/v1/auth/refresh', name: 'api_auth_refresh', methods: ['POST'])]
     public function __invoke(Request $request): Response
     {
         $ipLimit = $this->authRefreshLimiter

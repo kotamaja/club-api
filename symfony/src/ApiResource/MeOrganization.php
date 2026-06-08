@@ -15,6 +15,7 @@ use App\State\Me\MeOrganizationsProvider;
             provider: MeOrganizationsProvider::class,
         ),
     ],
+    routePrefix: '/v1',
 )]
 final readonly class MeOrganization
 {

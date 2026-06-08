@@ -25,7 +25,7 @@ final class AuthenticationFlowTest extends ApiTestCase
 
         $client = static::createClient();
 
-        $response = $client->request('POST', '/api/auth/login', [
+        $response = $client->request('POST', '/api/v1/auth/login', [
             'json' => [
                 'email' => 'admin@example.test',
                 'password' => 'password-123456',
@@ -66,7 +66,7 @@ final class AuthenticationFlowTest extends ApiTestCase
 
         $client = static::createClient();
 
-        $response = $client->request('POST', '/api/auth/login', [
+        $response = $client->request('POST', '/api/v1/auth/login', [
             'json' => [
                 'email' => 'admin@example.test',
                 'password' => 'password-123456',
@@ -122,7 +122,7 @@ final class AuthenticationFlowTest extends ApiTestCase
 
         $client = static::createClient();
 
-        $response = $client->request('POST', '/api/auth/login', [
+        $response = $client->request('POST', '/api/v1/auth/login', [
             'json' => [
                 'email' => 'admin@example.test',
                 'password' => 'password-123456',
@@ -188,7 +188,7 @@ final class AuthenticationFlowTest extends ApiTestCase
 
         $client = static::createClient();
 
-        $loginResponse = $client->request('POST', '/api/auth/login', [
+        $loginResponse = $client->request('POST', '/api/v1/auth/login', [
             'json' => [
                 'email' => 'admin@example.test',
                 'password' => 'password-123456',
@@ -214,7 +214,7 @@ final class AuthenticationFlowTest extends ApiTestCase
         self::assertNotNull($refreshToken);
         self::assertFalse($refreshToken->isRevoked());
 
-        $logoutResponse = $client->request('POST', '/api/auth/logout', [
+        $logoutResponse = $client->request('POST', '/api/v1/auth/logout', [
             'json' => [
                 'refreshToken' => $plainRefreshToken,
             ],
@@ -236,7 +236,7 @@ final class AuthenticationFlowTest extends ApiTestCase
         self::assertTrue($refreshToken->isRevoked());
         self::assertSame('logout', $refreshToken->getRevocationReason());
 
-        $refreshAfterLogoutResponse = $client->request('POST', '/api/auth/refresh', [
+        $refreshAfterLogoutResponse = $client->request('POST', '/api/v1/auth/refresh', [
             'json' => [
                 'refreshToken' => $plainRefreshToken,
             ],

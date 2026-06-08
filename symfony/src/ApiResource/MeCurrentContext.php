@@ -15,6 +15,7 @@ use App\State\Me\MeCurrentContextProvider;
             provider: MeCurrentContextProvider::class,
         ),
     ],
+    routePrefix: '/v1',
 )]
 class MeCurrentContext
 {

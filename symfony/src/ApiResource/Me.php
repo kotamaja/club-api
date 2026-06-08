@@ -12,7 +12,9 @@ use App\State\Me\MeProvider;
             uriTemplate: '/me',
             provider: MeProvider::class,
         ),
+
     ],
+    routePrefix: '/v1',
 )]
 final readonly class Me
 {

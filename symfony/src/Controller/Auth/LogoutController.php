@@ -20,7 +20,7 @@ final readonly class LogoutController
     {
     }
 
-    #[Route('/api/auth/logout', name: 'api_auth_logout', methods: ['POST'])]
+    #[Route('/api/v1/auth/logout', name: 'api_auth_logout', methods: ['POST'])]
     public function __invoke(Request $request): Response
     {
         $plainRefreshToken = $this->refreshTokenExtractor->extract($request);
