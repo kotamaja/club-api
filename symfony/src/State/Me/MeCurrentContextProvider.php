@@ -4,6 +4,7 @@ namespace App\State\Me;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
+use App\Core\Capability\OrganizationCapabilityProvider;
 use App\Dto\Me\MeCurrentContextDto;
 use App\Dto\Me\MeCurrentOrganizationDto;
 use App\Dto\Me\MeCurrentOrganizationUserDto;
@@ -12,7 +13,9 @@ use App\Security\OrganizationContext\CurrentOrganizationContext;
 
 class MeCurrentContextProvider implements ProviderInterface
 {
-    public function __construct(private CurrentOrganizationContext $currentOrganizationContext)
+    public function __construct(private CurrentOrganizationContext $currentOrganizationContext,
+                                private readonly OrganizationCapabilityProvider $organizationCapabilityProvider,
+    )
     {
     }
 
@@ -42,6 +45,7 @@ class MeCurrentContextProvider implements ProviderInterface
                     firstName: $person->getFirstName(),
                     lastName: $person->getLastName(),
                 ),
+            capabilities: $this->organizationCapabilityProvider->getCapabilities($organization),
         );
 
     }

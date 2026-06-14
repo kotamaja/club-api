@@ -3,10 +3,12 @@
 namespace App\Tests;
 
 use ApiPlatform\Symfony\Bundle\Test\ApiTestCase as BaseApiTestCase;
+use App\Core\Enum\ServicePlan;
 use App\Entity\ConnectionUser;
 use App\Factory\ConnectionUserFactory;
 use App\Factory\OrganizationFactory;
 use App\Factory\OrganizationUserFactory;
+use App\Factory\PersonFactory;
 use App\Tests\Api\Support\AuthenticatedOrganizationContext;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
@@ -74,22 +76,25 @@ abstract class ApiTestCase extends BaseApiTestCase
         ];
     }
 
-    protected function getAuthenticatedOrganizationContext(): AuthenticatedOrganizationContext
+    protected function getAuthenticatedOrganizationContext(ServicePlan $servicePlan = ServicePlan::Community, bool $includePerson = false): AuthenticatedOrganizationContext
     {
         if ($this->authenticatedOrganizationContext !== null) {
             return $this->authenticatedOrganizationContext;
         }
 
-        return $this->authenticatedOrganizationContext = $this->createAuthenticatedOrganizationContext();
+        return $this->authenticatedOrganizationContext = $this->createAuthenticatedOrganizationContext(servicePlan: $servicePlan, includePerson: $includePerson);
     }
 
     protected function createAuthenticatedOrganizationContext(
-        string $email = 'admin@example.test',
-        string $plainPassword = 'password-123456',
-        string $organizationName = 'Test Organization',
-        string $organizationSlug = 'test-organization',
-        array $organizationRoles = ['ORG_ADMIN'],
-    ): AuthenticatedOrganizationContext {
+        string      $email = 'admin@example.test',
+        string      $plainPassword = 'password-123456',
+        string      $organizationName = 'Test Organization',
+        string      $organizationSlug = 'test-organization',
+        array       $organizationRoles = ['ORG_ADMIN'],
+        bool        $includePerson = false,
+        ServicePlan $servicePlan = ServicePlan::Community
+    ): AuthenticatedOrganizationContext
+    {
         $connectionUser = $this->createActiveConnectionUserForApiTest(
             email: $email,
             plainPassword: $plainPassword,
@@ -97,11 +102,20 @@ abstract class ApiTestCase extends BaseApiTestCase
 
         $organization = OrganizationFactory::new()
             ->withNameAndSlug($organizationName, $organizationSlug)
+            ->withServicePlan($servicePlan)
             ->create();
+
+        $person = null;
+        if ($includePerson) {
+            $person = PersonFactory::new()
+                ->forOrganization($organization)
+                ->create();
+        }
 
         $organizationUser = OrganizationUserFactory::new()
             ->forConnectionUser($connectionUser)
             ->forOrganization($organization)
+            ->forPerson($person)
             ->withRoles($organizationRoles)
             ->create();
 
@@ -118,14 +132,16 @@ abstract class ApiTestCase extends BaseApiTestCase
             connectionUser: $connectionUser,
             organization: $organization,
             organizationUser: $organizationUser,
+            person: $person,
             jwt: $jwt,
         );
     }
 
-    private function createActiveConnectionUserForApiTest(
+    protected function createActiveConnectionUserForApiTest(
         string $email,
         string $plainPassword,
-    ): ConnectionUser {
+    ): ConnectionUser
+    {
         $connectionUser = ConnectionUserFactory::new()
             ->withEmail($email)
             ->create();

@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiProperty;
+use App\Core\Enum\ServicePlan;
 use App\Repository\OrganizationRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
@@ -38,14 +39,17 @@ class Organization
     #[ORM\Column(name: 'updated_at', type: Types::DATETIME_IMMUTABLE, nullable: true)]
     private ?\DateTimeImmutable $updatedAt = null;
 
+    #[ORM\Column(enumType: ServicePlan::class, options: ['default' => 'community'])]
+    private ServicePlan $servicePlan;
 
-    public function __construct(string $name, string $slug)
+    public function __construct(string $name, string $slug, ServicePlan $servicePlan = ServicePlan::Community)
     {
         $this->publicId = (string) new Ulid();
         $this->name = $name;
         $this->slug = $slug;
         $this->enabled = true;
         $this->createdAt = new \DateTimeImmutable();
+        $this->servicePlan = $servicePlan;
     }
 
 
@@ -113,6 +117,17 @@ class Organization
     {
         return $this->updatedAt;
     }
+
+    public function getServicePlan(): ServicePlan
+    {
+        return $this->servicePlan;
+    }
+
+    public function changeServicePlan(ServicePlan $servicePlan): void
+    {
+        $this->servicePlan = $servicePlan;
+    }
+
 
     private function touch(): void
     {

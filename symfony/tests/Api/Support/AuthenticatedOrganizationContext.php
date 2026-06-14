@@ -5,6 +5,7 @@ namespace App\Tests\Api\Support;
 use App\Entity\ConnectionUser;
 use App\Entity\Organization;
 use App\Entity\OrganizationUser;
+use App\Entity\Person;
 
 final readonly class AuthenticatedOrganizationContext
 {
@@ -12,6 +13,7 @@ final readonly class AuthenticatedOrganizationContext
         public ConnectionUser $connectionUser,
         public Organization $organization,
         public OrganizationUser $organizationUser,
+        public ?Person $person,
         public string $jwt,
     ) {
     }

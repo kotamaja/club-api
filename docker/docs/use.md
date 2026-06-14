@@ -5,13 +5,15 @@
 ### Création du token JWT
 
 ```shell
-curl -k -i -X POST https://localhost/api/auth/login \
+curl -k -i -X POST https://localhost/api/v1/auth/login \
 -H "Content-Type: application/json" \
 -d '{"email":"test@example.ch","password":"ton-mot-de-passe","refreshTokenMode":"none"}'
 ```
 
 email: email de la l'utilisateur de connection 
+
 password: mot de passe de l'utilisateur de connection
+
 refreshTokenMode: "body", "cookie" ou "none"
 
 
@@ -31,7 +33,7 @@ Le mode body est utilisé dans le cadre d'un application lourde qui nécessite d
 
 Exemple :
 
-Body Request : Body Request : {"email":"test@test.com","password":"xxx", "refreshTokenMode":"body"}
+Body Request : Body Request : {"email":"test@test.com","password":"xxx", "refreshTokenMode":"cookie"}
 
 Body Reponse : {"token": "eyJ0eX...HMYfGe5x5Q"}
 
@@ -54,7 +56,7 @@ La tranmission du JWT s'effectue dans un header de la requête.
 ```shell
 curl -k -i -X GET/POST/PATCH/DELETE https://localhost/api/xxx \
 -H "Content-Type: application/json" \
--H "Authorization: Bearer JWT" \
+-H "Authorization: Bearer ICI-TON-JWT" \
 -d '{"xxx":"yyy"}'
 ```
 
@@ -66,7 +68,7 @@ Pour des raisons de sécurité, la durée de vie du JWT est courte. Une fois ce 
 
 Requête
 ```shell
-curl -k -i -X POST https://localhost/api/auth/refresh \
+curl -k -i -X POST https://localhost/api/v1/auth/refresh \
 -H "Content-Type: application/json" \
 -d '{"refreshToken":"kJcCLkXwb...Q3pWMg"}'
 ```
@@ -87,9 +89,9 @@ Le endpoint /me est utilisé pour lire des informations de l'utilisateur connect
 
 Requête
 ```shell
-curl -k -i -X GET https://localhost/api/me \
+curl -k -i -X GET https://localhost/api/v1/me \
 -H "Content-Type: application/json" \
--H "Authorization: Bearer JWT" \
+-H "Authorization: Bearer ICI-TON-JWT" \
 ```
 Exemple de réponse
 ```json
@@ -107,7 +109,7 @@ Exemple de réponse
 
 Requête
 ```shell
-curl -k -i -X GET https://localhost/api/me/organizations \
+curl -k -i -X GET https://localhost/api/v1/me/organizations \
 -H "Content-Type: application/json" \
 -H "Authorization: Bearer JWT" \
 ```

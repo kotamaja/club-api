@@ -2,6 +2,7 @@
 
 namespace App\Factory;
 
+use App\Core\Enum\ServicePlan;
 use App\Entity\Organization;
 use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
 
@@ -56,6 +57,12 @@ final class OrganizationFactory extends PersistentObjectFactory
         return $this->with([
             'name' => $name,
             'slug' => $slug,
+        ]);
+    }
+
+    public function withServicePlan(ServicePlan $servicePlan): static {
+        return $this->with([
+            'servicePlan' => $servicePlan,
         ]);
     }
 }

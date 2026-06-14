@@ -69,6 +69,17 @@ final class OrganizationUserFactory extends PersistentObjectFactory
         ]);
     }
 
+    public function forPerson(?Person $person): static
+    {
+        if (null === $person) {
+            return $this;
+        }
+
+        return $this->with([
+            'person' => $person,
+        ]);
+    }
+
     public function withRoles(array $roles): static
     {
         return $this->with([

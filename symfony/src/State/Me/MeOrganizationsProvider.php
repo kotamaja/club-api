@@ -5,8 +5,6 @@ namespace App\State\Me;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\ApiResource\MeOrganization;
-use App\Dto\Me\MeOrganizationDto;
-use App\Dto\Me\MePersonSummaryDto;
 use App\Dto\Person\PersonListDto;
 use App\Entity\ConnectionUser;
 use App\Entity\OrganizationUser;
@@ -47,9 +45,9 @@ final readonly class MeOrganizationsProvider implements ProviderInterface
 
                 $personDto = new PersonListDto();
                 $personDto->id = $person->getPublicId();
-                $personDto->firstname= $person->getFirstname();
-                $personDto->lastname= $person->getLastname();
-                $personDto->email= $person->getEmail();
+                $personDto->firstname = $person->getFirstname();
+                $personDto->lastname = $person->getLastname();
+                $personDto->email = $person->getEmail();
 
                 return new MeOrganization(
                     organizationUserId: $organizationUser->getPublicId(),
