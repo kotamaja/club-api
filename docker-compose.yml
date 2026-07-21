@@ -30,6 +30,7 @@ services:
       JWT_SECRET_KEY: '%kernel.project_dir%/config/jwt/private.pem'
       JWT_PUBLIC_KEY: '%kernel.project_dir%/config/jwt/public.pem'
       JWT_PASSPHRASE: '${JWT_PASSPHRASE:?JWT_PASSPHRASE is required}'
+      DEV_AUTO_LOGIN_USER: ${DEV_AUTO_LOGIN_USER}
 
     user: "${UID:-1000}:${GID:-1000}"
 

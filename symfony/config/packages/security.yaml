@@ -52,6 +52,15 @@ security:
 
         - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
 
+
+when@dev:
+    security:
+        firewalls:
+            api:
+                jwt: false
+                custom_authenticators:
+                    - App\Security\Development\DevAutoLoginAuthenticator
+
 when@test:
     security:
         password_hashers:

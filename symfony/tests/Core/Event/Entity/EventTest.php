@@ -52,6 +52,8 @@ class EventTest extends ApiTestCase
 
         self::assertFalse($event->hasRegistrations());
         self::assertSame(0, $event->getRegisteredCount());
+
+        self::assertFalse($event->isPublicRegistrationEnabled());
     }
 
     public function testCreateEventTrimsTitle(): void
@@ -436,6 +438,28 @@ class EventTest extends ApiTestCase
             startsAt: new \DateTimeImmutable('2026-07-09 18:00:00'),
             endsAt: new \DateTimeImmutable('2026-07-01 09:00:00'),
         );
+    }
+
+    public function testPublicRegistrationFlag(): void
+    {
+        $organization = OrganizationFactory::createOne();
+
+        $event = Event::create(
+            organization: $organization,
+            title: 'Cours d’initiation',
+            startsAt: new \DateTimeImmutable('2026-07-10 09:00:00'),
+            endsAt: new \DateTimeImmutable('2026-07-10 17:00:00'),
+        );
+
+        self::assertFalse($event->isPublicRegistrationEnabled());
+
+        $event->enablePublicRegistration();
+
+        self::assertTrue($event->isPublicRegistrationEnabled());
+
+        $event->disablePublicRegistration();
+
+        self::assertFalse($event->isPublicRegistrationEnabled());
     }
 
 }

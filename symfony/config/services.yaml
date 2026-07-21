@@ -32,3 +32,13 @@ services:
         arguments:
             $decorated: '@App\OpenApi\OpenApiFactory.inner'
         autoconfigure: false
+
+
+    App\Core\Event\Contract\Capacity\EventCapacityPolicyInterface:
+        alias: App\Community\Event\Policy\Capacity\CommunityEventCapacityPolicy
+
+    App\Core\Event\Contract\Registration\EventRegistrationEligibilityPolicyInterface:
+        alias: App\Community\Event\Policy\Registration\CommunityEventRegistrationEligibilityPolicy
+
+    App\Core\Event\Contract\Registration\EventRegistrationServiceInterface:
+        alias: App\Community\Event\Service\Registration\CommunityEventRegistrationService

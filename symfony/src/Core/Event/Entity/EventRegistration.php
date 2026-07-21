@@ -5,9 +5,9 @@ namespace App\Core\Event\Entity;
 
 use ApiPlatform\Metadata\ApiProperty;
 use App\Core\Event\Enum\EventRegistrationStatus;
+use App\Core\Event\Repository\EventRegistrationRepository;
 use App\Entity\Membership;
 use App\Entity\Person;
-use App\Repository\Core\Event\Entity\EventRegistrationRepository;
 use DateTimeImmutable;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;

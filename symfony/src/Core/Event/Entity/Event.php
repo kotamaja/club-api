@@ -2,13 +2,37 @@
 
 namespace App\Core\Event\Entity;
 
+use ApiPlatform\Doctrine\Orm\Filter\ExactFilter;
+use ApiPlatform\Doctrine\Orm\Filter\PartialSearchFilter;
+use ApiPlatform\Doctrine\Orm\Filter\SortFilter;
 use ApiPlatform\Metadata\ApiProperty;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Link;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\QueryParameter;
 use App\Core\Event\Enum\EventStatus;
 use App\Core\Event\Enum\EventType;
+use App\Core\Event\Repository\EventRepository;
+use App\Dto\Event\EventCreateDto;
+use App\Dto\Event\EventItemDto;
+use App\Dto\Event\EventListDto;
+use App\Dto\Event\EventPatchDto;
 use App\Entity\Club;
+use App\Entity\Contract\OrganizationScopedInterface;
 use App\Entity\Organization;
 use App\Entity\Person;
-use App\Repository\Core\Event\Entity\EventRepository;
+use App\State\CollectionProvider;
+use App\State\Event\EventArchiveProcessor;
+use App\State\Event\EventCancelProcessor;
+use App\State\Event\EventCreateProcessor;
+use App\State\Event\EventDeleteProcessor;
+use App\State\Event\EventPatchProcessor;
+use App\State\Event\EventPublishProcessor;
+use App\State\ItemProvider;
 use DateTimeImmutable;
 use DateTimeZone;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -16,10 +40,156 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Ulid;
+use Symfony\Component\Validator\Constraints as Assert;
 
+#[ApiResource(
+    operations: [
+        new GetCollection(
+            uriTemplate: '/events',
+            output: EventListDto::class,
+            provider: CollectionProvider::class,
+            parameters: [
+                'id' => new QueryParameter(
+                    schema: [
+                        'type' => 'array',
+                        'items' => ['type' => 'string'],
+                        'uniqueItems' => true,
+                    ],
+                    filter: new ExactFilter(),
+                    property: 'publicId',
+                    constraints: [
+                        new Assert\All([
+                            new Assert\NotBlank(),
+                            new Assert\Ulid(),
+                        ]),
+                    ],
+                    castToArray: true,
+                ),
+                'clubId' => new QueryParameter(
+                    schema: [
+                        'type' => 'array',
+                        'items' => ['type' => 'string'],
+                        'uniqueItems' => true,
+                    ],
+                    filter: new ExactFilter(),
+                    property: 'club.publicId',
+                    constraints: [
+                        new Assert\All([
+                            new Assert\NotBlank(),
+                            new Assert\Ulid(),
+                        ]),
+                    ],
+                    castToArray: true,
+                ),
+                'title' => new QueryParameter(
+                    filter: new PartialSearchFilter(),
+                    property: 'title',
+                ),
+                'location' => new QueryParameter(
+                    filter: new PartialSearchFilter(),
+                    property: 'location',
+                ),
+                'type' => new QueryParameter(
+                    filter: new ExactFilter(),
+                    property: 'type',
+                ),
+                'status' => new QueryParameter(
+                    filter: new ExactFilter(),
+                    property: 'status',
+                ),
+                'orderId' => new QueryParameter(
+                    filter: new SortFilter(),
+                    property: 'publicId',
+                ),
+                'orderTitle' => new QueryParameter(
+                    filter: new SortFilter(),
+                    property: 'title',
+                ),
+                'orderStartsAt' => new QueryParameter(
+                    filter: new SortFilter(),
+                    property: 'startsAt',
+                ),
+                'orderEndsAt' => new QueryParameter(
+                    filter: new SortFilter(),
+                    property: 'endsAt',
+                ),
+                'orderStatus' => new QueryParameter(
+                    filter: new SortFilter(),
+                    property: 'status',
+                ),
+            ],
+        ),
+        new Get(
+            uriTemplate: '/events/{id}',
+            uriVariables: [
+                'id' => new Link(fromClass: Event::class, identifiers: ['publicId']),
+            ],
+            output: EventItemDto::class,
+            provider: ItemProvider::class,
+        ),
+        new Post(
+            uriTemplate: '/events',
+            input: EventCreateDto::class,
+            output: EventItemDto::class,
+            processor: EventCreateProcessor::class,
+        ),
+        new Patch(
+            uriTemplate: '/events/{id}',
+            uriVariables: [
+                'id' => new Link(fromClass: self::class, identifiers: ['publicId']),
+            ],
+            input: EventPatchDto::class,
+            output: EventItemDto::class,
+            read: true,
+            processor: EventPatchProcessor::class,
+        ),
+        new Delete(
+            uriTemplate: '/events/{id}',
+            uriVariables: [
+                'id' => new Link(fromClass: self::class, identifiers: ['publicId']),
+            ],
+            read: true,
+            processor: EventDeleteProcessor::class,
+        ),
+        new Post(
+            uriTemplate: '/events/{id}/publish',
+            uriVariables: [
+                'id' => new Link(fromClass: self::class, identifiers: ['publicId']),
+            ],
+            status: 200,
+            output: EventItemDto::class,
+            read: true,
+            deserialize: false,
+            processor: EventPublishProcessor::class,
+        ),
+        new Post(
+            uriTemplate: '/events/{id}/cancel',
+            uriVariables: [
+                'id' => new Link(fromClass: self::class, identifiers: ['publicId']),
+            ],
+            status: 200,
+            output: EventItemDto::class,
+            read: true,
+            deserialize: false,
+            processor: EventCancelProcessor::class,
+        ),
+        new Post(
+            uriTemplate: '/events/{id}/archive',
+            uriVariables: [
+                'id' => new Link(fromClass: self::class, identifiers: ['publicId']),
+            ],
+            status: 200,
+            output: EventItemDto::class,
+            read: true,
+            deserialize: false,
+            processor: EventArchiveProcessor::class,
+        ),
+    ],
+    routePrefix: '/v1',
+)]
 #[ORM\Entity(repositoryClass: EventRepository::class)]
 #[ORM\Table(name: 'event')]
-class Event
+class Event  implements OrganizationScopedInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -72,6 +242,9 @@ class Event
     #[ORM\Column(name: 'waitlist_enabled', type: Types::BOOLEAN, nullable: false)]
     private bool $waitlistEnabled = false;
 
+    #[ORM\Column(name: 'public_registration_enabled', type: Types::BOOLEAN, nullable: false)]
+    private bool $publicRegistrationEnabled = false;
+
     #[ORM\Column(name: 'registration_starts_at', type: Types::DATETIME_IMMUTABLE, nullable: true)]
     private ?DateTimeImmutable $registrationStartsAt = null;
 
@@ -108,13 +281,17 @@ class Event
         return $this->id;
     }
 
-    public function getPublicId(): Ulid
+    public function getPublicId(): string
     {
         return $this->publicId;
     }
 
     public function getOrganization(): Organization
     {
+        if (!$this->organization instanceof Organization) {
+            throw new \LogicException('Event organization is not initialized.');
+        }
+
         return $this->organization;
     }
 
@@ -125,7 +302,7 @@ class Event
 
     public function attachToClub(?Club $club): void
     {
-        if ($club !== null && $club->getOrganization() !== $this->organization) {
+        if ($club !== null && $club->getOrganization() !== $this->getOrganization()) {
             throw new \InvalidArgumentException('The club must belong to the same organization as the event.');
         }
 
@@ -324,7 +501,7 @@ class Event
     public function getRegisteredCount(): int
     {
         return $this->registrations
-            ->filter(static fn (EventRegistration $registration): bool => $registration->consumesCapacity())
+            ->filter(static fn(EventRegistration $registration): bool => $registration->consumesCapacity())
             ->count();
     }
 
@@ -376,6 +553,21 @@ class Event
         if ($this->endsAt <= $this->startsAt) {
             throw new \InvalidArgumentException('Event end date must be after start date.');
         }
+    }
+
+    public function isPublicRegistrationEnabled(): bool
+    {
+        return $this->publicRegistrationEnabled;
+    }
+
+    public function enablePublicRegistration(): void
+    {
+        $this->publicRegistrationEnabled = true;
+    }
+
+    public function disablePublicRegistration(): void
+    {
+        $this->publicRegistrationEnabled = false;
     }
 
 }
