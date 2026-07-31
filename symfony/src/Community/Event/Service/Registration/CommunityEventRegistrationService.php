@@ -56,4 +56,5 @@ final readonly class CommunityEventRegistrationService implements EventRegistrat
 
         return $registration;
     }
+
 }
