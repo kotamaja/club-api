@@ -47,4 +47,13 @@ final readonly class CommunityEventRegistrationService implements EventRegistrat
 
         return $registration;
     }
+
+    public function cancel(EventRegistration $registration, ?DateTimeImmutable $now = null): EventRegistration
+    {
+        $now ??= new DateTimeImmutable();
+
+        $registration->cancel($now);
+
+        return $registration;
+    }
 }

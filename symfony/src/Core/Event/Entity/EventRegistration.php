@@ -8,13 +8,17 @@ use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Link;
+use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\QueryParameter;
 use App\Core\Event\Enum\EventRegistrationStatus;
 use App\Core\Event\Repository\EventRegistrationRepository;
+use App\Dto\EventRegistration\EventRegistrationCreateDto;
 use App\Dto\EventRegistration\EventRegistrationListDto;
 use App\Entity\Membership;
 use App\Entity\Person;
 use App\State\CollectionProvider;
+use App\State\EventRegistration\EventRegistrationCancelProcessor;
+use App\State\EventRegistration\EventRegistrationCreateProcessor;
 use DateTimeImmutable;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
@@ -51,6 +55,30 @@ use Symfony\Component\Uid\Ulid;
                     property: 'person.lastname',
                 ),
             ],
+        ),
+        new Post(
+            uriTemplate: '/events/{eventId}/registrations',
+            uriVariables: [
+                'eventId' => new Link(
+                    toProperty: 'event',
+                    fromClass: Event::class,
+                    identifiers: ['publicId'],
+                ),
+            ],
+            input: EventRegistrationCreateDto::class,
+            output: EventRegistrationListDto::class,
+            processor: EventRegistrationCreateProcessor::class,
+        ),
+        new Post(
+            uriTemplate: '/event-registrations/{id}/cancel',
+            uriVariables: [
+                'id' => new Link(fromClass: self::class, identifiers: ['publicId']),
+            ],
+            status: 200,
+            output: EventRegistrationListDto::class,
+            read: true,
+            deserialize: false,
+            processor: EventRegistrationCancelProcessor::class,
         ),
     ],
     routePrefix: '/v1',

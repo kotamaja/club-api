@@ -23,4 +23,6 @@ final class EventRegistrationListDto
     public \DateTimeImmutable $requestedAt;
 
     public ?\DateTimeImmutable $cancelledAt = null;
+
+    public ?string $note = null;
 }

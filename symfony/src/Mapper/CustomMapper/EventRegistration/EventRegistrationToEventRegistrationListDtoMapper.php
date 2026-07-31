@@ -37,6 +37,8 @@ final class EventRegistrationToEventRegistrationListDtoMapper implements CustomM
         $dto->requestedAt = $source->getRequestedAt();
         $dto->cancelledAt = $source->getCancelledAt();
 
+        $dto->note = $source->getNote();
+
         return $dto;
     }
 }

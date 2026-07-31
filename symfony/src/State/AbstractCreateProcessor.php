@@ -36,7 +36,10 @@ abstract class AbstractCreateProcessor implements ProcessorInterface
         $this->assertInput($data);
 
         try {
-            $entity = $this->createEntity($data, $context);
+        $entity = $this->createEntity($data, [
+            ...$context,
+            'uriVariables' => $uriVariables,
+        ]);
 
             $this->em->flush();
         } catch (ReferencedResourceNotFoundException $e) {

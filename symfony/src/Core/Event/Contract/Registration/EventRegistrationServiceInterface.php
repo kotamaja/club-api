@@ -11,4 +11,6 @@ use DateTimeImmutable;
 interface EventRegistrationServiceInterface
 {
     public function register(Event $event, Person $person, ?Membership $membership = null, ?DateTimeImmutable $now = null): EventRegistration;
+
+    public function cancel(EventRegistration $registration, ?DateTimeImmutable $now = null): EventRegistration;
 }
