@@ -2,18 +2,59 @@
 
 namespace App\Core\Event\Entity;
 
-
+use ApiPlatform\Doctrine\Orm\Filter\ExactFilter;
+use ApiPlatform\Doctrine\Orm\Filter\SortFilter;
 use ApiPlatform\Metadata\ApiProperty;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Link;
+use ApiPlatform\Metadata\QueryParameter;
 use App\Core\Event\Enum\EventRegistrationStatus;
 use App\Core\Event\Repository\EventRegistrationRepository;
+use App\Dto\EventRegistration\EventRegistrationListDto;
 use App\Entity\Membership;
 use App\Entity\Person;
+use App\State\CollectionProvider;
 use DateTimeImmutable;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Ulid;
 
-
+#[ApiResource(
+    operations: [
+        new GetCollection(
+            uriTemplate: '/events/{eventId}/registrations',
+            uriVariables: [
+                'eventId' => new Link(
+                    toProperty: 'event',
+                    fromClass: Event::class,
+                    identifiers: ['publicId'],
+                ),
+            ],
+            output: EventRegistrationListDto::class,
+            provider: CollectionProvider::class,
+            parameters: [
+                'status' => new QueryParameter(
+                    filter: new ExactFilter(),
+                    property: 'status',
+                ),
+                'orderRequestedAt' => new QueryParameter(
+                    filter: new SortFilter(),
+                    property: 'requestedAt',
+                ),
+                'orderStatus' => new QueryParameter(
+                    filter: new SortFilter(),
+                    property: 'status',
+                ),
+                'orderPersonLastname' => new QueryParameter(
+                    filter: new SortFilter(),
+                    property: 'person.lastname',
+                ),
+            ],
+        ),
+    ],
+    routePrefix: '/v1',
+)]
 #[ORM\Entity(repositoryClass: EventRegistrationRepository::class)]
 #[ORM\Table(name: 'event_registration')]
 class EventRegistration
@@ -76,38 +117,20 @@ class EventRegistration
     }
 
 
-    public static function register(Event               $event,
-                                    Person              $person,
-                                    ?Membership         $membership = null,
-                                    ?DateTimeImmutable $now = null): self
+    public static function register(Event $event, Person $person, ?Membership $membership = null, ?DateTimeImmutable $now = null): self
     {
         $now ??= new DateTimeImmutable();
 
-        return new self(
-            event: $event,
-            person: $person,
-            membership: $membership,
-            status: EventRegistrationStatus::Registered,
-            requestedAt: $now,
-            confirmedAt: $now,
-        );
+        return new self(event: $event, person: $person, membership: $membership, status: EventRegistrationStatus::Registered,
+            requestedAt: $now, confirmedAt: $now);
     }
 
-    public static function waitlist(Event               $event,
-                                    Person              $person,
-                                    ?Membership         $membership = null,
-                                    ?DateTimeImmutable $now = null): self
+    public static function waitlist(Event $event, Person $person, ?Membership $membership = null, ?DateTimeImmutable $now = null): self
     {
         $now ??= new DateTimeImmutable();
 
-        return new self(
-            event: $event,
-            person: $person,
-            membership: $membership,
-            status: EventRegistrationStatus::Waitlisted,
-            requestedAt: $now,
-            confirmedAt: null,
-        );
+        return new self(event: $event, person: $person, membership: $membership, status: EventRegistrationStatus::Waitlisted,
+            requestedAt: $now, confirmedAt: null);
     }
 
     public function getId(): ?int
@@ -115,7 +138,7 @@ class EventRegistration
         return $this->id;
     }
 
-    public function getPublicId(): Ulid
+    public function getPublicId(): string
     {
         return $this->publicId;
     }

@@ -9,6 +9,7 @@ use App\Entity\Person;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
+
 /**
  * @extends ServiceEntityRepository<EventRegistration>
  */
@@ -54,5 +55,15 @@ class EventRegistrationRepository extends ServiceEntityRepository
             ->setMaxResults(1)
             ->getQuery()
             ->getOneOrNullResult();
+    }
+
+    public function findByEventOrderedByRequestedAt(Event $event): array
+    {
+        return $this->createQueryBuilder('registration')
+            ->andWhere('registration.event = :event')
+            ->setParameter('event', $event)
+            ->orderBy('registration.requestedAt', 'ASC')
+            ->getQuery()
+            ->getResult();
     }
 }
