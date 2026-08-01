@@ -8,12 +8,15 @@ use App\Core\Event\Entity\EventRegistration;
 use App\Dto\EventRegistration\EventRegistrationListDto;
 use App\Entity\ConnectionUser;
 use App\Mapper\MapperRegistry;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 abstract class AbstractEventRegistrationActionProcessor implements ProcessorInterface
 {
-    public function __construct(protected readonly MapperRegistry $mapperRegistry, protected readonly Security $security)
+    public function __construct(protected readonly MapperRegistry         $mapperRegistry,
+                                protected readonly EntityManagerInterface $em,
+                                protected readonly Security               $security)
     {
     }
 
@@ -28,6 +31,8 @@ abstract class AbstractEventRegistrationActionProcessor implements ProcessorInte
         }
 
         $registration = $this->processRegistration($data, $this->getCurrentConnectionUser(), $context);
+
+        $this->em->flush();
 
         return $this->mapperRegistry->map($registration, EventRegistrationListDto::class);
     }

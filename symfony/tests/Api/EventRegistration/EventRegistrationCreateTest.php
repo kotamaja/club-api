@@ -242,4 +242,38 @@ final class EventRegistrationCreateTest extends ApiTestCase
         $this->assertSame($membership->getPublicId(), $data['membershipId']);
         $this->assertSame(EventRegistrationStatus::Registered->value, $data['status']);
     }
+
+    public function testRegisterRejectsFullEventWithoutWaitlist(): void
+    {
+        $organization = $this->getAuthenticatedOrganizationContext()->organization;
+
+        $event = EventFactory::new()
+            ->forOrganization($organization)
+            ->create([
+                'capacity' => 1,
+                'waitlistEnabled' => false,
+            ]);
+
+        $event->publish();
+
+        $registeredPerson = PersonFactory::new()
+            ->forOrganization($organization)
+            ->create();
+
+        $newPerson = PersonFactory::new()
+            ->forOrganization($organization)
+            ->create();
+
+        EventRegistrationFactory::new()
+            ->forEvent($event)
+            ->forPerson($registeredPerson)
+            ->registered()
+            ->create();
+
+        $this->apiPost('/api/v1/events/' . $event->getPublicId() . '/registrations', [
+            'personId' => $newPerson->getPublicId(),
+        ]);
+
+        $this->assertResponseStatusCodeSame(422);
+    }
 }

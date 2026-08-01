@@ -18,6 +18,7 @@ use App\Write\Exception\BusinessRuleViolationException;
 use App\Write\Exception\ReferencedResourceNotFoundException;
 use Doctrine\ORM\EntityManagerInterface;
 
+use App\Core\Event\Exception\EventCapacityExceededException;
 final class EventRegistrationWriteService implements EventRegistrationWriteServiceInterface
 {
     public function __construct(private readonly EventRegistrationServiceInterface  $eventRegistrationService,
@@ -61,6 +62,12 @@ final class EventRegistrationWriteService implements EventRegistrationWriteServi
             throw new BusinessRuleViolationException(
                 'Event does not accept registrations.',
                 'eventId',
+                $e,
+            );
+        } catch (EventCapacityExceededException $e) {
+            throw new BusinessRuleViolationException(
+                'Event capacity has been reached.',
+                'capacity',
                 $e,
             );
         }
@@ -122,4 +129,8 @@ final class EventRegistrationWriteService implements EventRegistrationWriteServi
 
         return $membership;
     }
+
+
+
+
 }

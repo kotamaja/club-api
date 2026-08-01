@@ -189,4 +189,76 @@ final class EventMyRegistrationStatusTest extends ApiTestCase
 
         $this->assertNull($itemsById[$notRegisteredEvent->getPublicId()]['myRegistrationStatus'] ?? null);
     }
+
+    public function testMyRegistrationStatusFollowsCreateAndCancelRegistrationApiFlow(): void
+    {
+        $context = $this->getAuthenticatedOrganizationContext(includePerson: true);
+        $organization = $context->organization;
+        $person = $context->person;
+
+        $this->assertNotNull($person);
+
+        $event = EventFactory::new()
+            ->forOrganization($organization)
+            ->create([
+                'capacity' => 10,
+                'waitlistEnabled' => true,
+            ]);
+
+        $event->publish();
+
+        static::getContainer()
+            ->get(EntityManagerInterface::class)
+            ->flush();
+
+        $response = $this->apiGet('/api/v1/events/' . $event->getPublicId());
+
+        $this->assertResponseStatusCodeSame(200);
+
+        $data = $response->toArray();
+
+        $this->assertSame($event->getPublicId(), $data['id']);
+        $this->assertNull($data['myRegistrationStatus'] ?? null);
+
+        $response = $this->apiPost('/api/v1/events/' . $event->getPublicId() . '/registrations', [
+            'personId' => $person->getPublicId(),
+        ]);
+
+        $this->assertResponseStatusCodeSame(201);
+
+        $registrationData = $response->toArray();
+
+        $this->assertArrayHasValidUlid($registrationData, 'id');
+        $this->assertSame($event->getPublicId(), $registrationData['eventId']);
+        $this->assertSame($person->getPublicId(), $registrationData['personId']);
+        $this->assertSame(EventRegistrationStatus::Registered->value, $registrationData['status']);
+
+        $response = $this->apiGet('/api/v1/events/' . $event->getPublicId());
+
+        $this->assertResponseStatusCodeSame(200);
+
+        $data = $response->toArray();
+
+        $this->assertSame($event->getPublicId(), $data['id']);
+        $this->assertSame(EventRegistrationStatus::Registered->value, $data['myRegistrationStatus']);
+
+        $response = $this->apiPost('/api/v1/event-registrations/' . $registrationData['id'] . '/cancel', []);
+
+        $this->assertResponseStatusCodeSame(200);
+
+        $cancelledRegistrationData = $response->toArray();
+
+        $this->assertSame($registrationData['id'], $cancelledRegistrationData['id']);
+        $this->assertSame(EventRegistrationStatus::Cancelled->value, $cancelledRegistrationData['status']);
+        $this->assertNotNull($cancelledRegistrationData['cancelledAt']);
+
+        $response = $this->apiGet('/api/v1/events/' . $event->getPublicId());
+
+        $this->assertResponseStatusCodeSame(200);
+
+        $data = $response->toArray();
+
+        $this->assertSame($event->getPublicId(), $data['id']);
+        $this->assertNull($data['myRegistrationStatus'] ?? null);
+    }
 }
