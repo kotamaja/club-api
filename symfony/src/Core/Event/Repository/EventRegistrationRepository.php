@@ -66,4 +66,31 @@ class EventRegistrationRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * Checks whether the email already has an active registration for the event.
+     *
+     * Only registered and waitlisted registrations are considered active.
+     * Cancelled registrations are historical records and do not block a new request.
+     */
+    public function hasActiveRegistrationForEventAndEmail(Event $event, string $email): bool
+    {
+        $result = $this->createQueryBuilder('registration')
+            ->select('1')
+            ->join('registration.person', 'person')
+            ->andWhere('registration.event = :event')
+            ->andWhere('LOWER(person.email) = :email')
+            ->andWhere('registration.status IN (:statuses)')
+            ->setParameter('event', $event)
+            ->setParameter('email', mb_strtolower(trim($email)))
+            ->setParameter('statuses', [
+                EventRegistrationStatus::Registered,
+                EventRegistrationStatus::Waitlisted,
+            ])
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+
+        return $result !== null;
+    }
 }

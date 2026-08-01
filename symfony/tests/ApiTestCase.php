@@ -62,6 +62,21 @@ abstract class ApiTestCase extends BaseApiTestCase
     }
 
     /**
+     * Sends a public POST request without authentication or organization headers.
+     */
+    protected function apiPublicPost(string $uri, array $data, array $headers = [])
+    {
+        return static::createClient()->request('POST', $uri, [
+            'headers' => [
+                'Accept' => 'application/json',
+                'Content-Type' => 'application/json',
+                ...$headers,
+            ],
+            'json' => $data,
+        ]);
+    }
+
+    /**
      * @param array<string, string> $headers
      * @return array<string, string>
      */

@@ -69,6 +69,8 @@ final class PersonGetTest extends ApiTestCase
             'lastname' =>$person->getLastname(),
             'email' => $person->getEmail(),
         ]);
+
+        $this->assertFalse($data['createdFromPublicRegistration']);
     }
 
 

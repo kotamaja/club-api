@@ -23,6 +23,7 @@ final class PersonToPersonListDtoMapper implements CustomMapperInterface
         $dto->firstname = $source->getFirstname();
         $dto->lastname = $source->getLastname();
         $dto->email = $source->getEmail();
+        $dto->createdFromPublicRegistration = $source->wasCreatedFromPublicRegistration();
 
         return $dto;
     }

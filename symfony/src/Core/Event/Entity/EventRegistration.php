@@ -16,8 +16,8 @@ use App\Dto\EventRegistration\EventRegistrationCreateDto;
 use App\Dto\EventRegistration\EventRegistrationListDto;
 use App\Entity\Membership;
 use App\Entity\Person;
-use App\State\CollectionProvider;
 use App\State\EventRegistration\EventRegistrationCancelProcessor;
+use App\State\EventRegistration\EventRegistrationCollectionProvider;
 use App\State\EventRegistration\EventRegistrationCreateProcessor;
 use DateTimeImmutable;
 use Doctrine\DBAL\Types\Types;
@@ -36,7 +36,7 @@ use Symfony\Component\Uid\Ulid;
                 ),
             ],
             output: EventRegistrationListDto::class,
-            provider: CollectionProvider::class,
+            provider: EventRegistrationCollectionProvider::class,
             parameters: [
                 'status' => new QueryParameter(
                     filter: new ExactFilter(),

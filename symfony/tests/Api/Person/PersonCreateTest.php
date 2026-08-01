@@ -24,6 +24,8 @@ final class PersonCreateTest  extends ApiTestCase
             'email' => 'yves.dupont@example.com',
         ]);
 
+        $this->assertFalse($data['createdFromPublicRegistration']);
+
         $this->assertArrayHasValidUlid($data, 'id');
     }
 

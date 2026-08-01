@@ -2,8 +2,10 @@
 
 namespace App\Tests\Api\Person;
 
+use App\Factory\OrganizationFactory;
 use App\Tests\ApiTestCase;
 use App\Factory\PersonFactory;
+use Doctrine\ORM\EntityManagerInterface;
 
 final class PersonFilterTest extends ApiTestCase
 {
@@ -160,4 +162,111 @@ final class PersonFilterTest extends ApiTestCase
 
         return $data['items'][0];
     }
+
+
+    public function testGetPersonsCanFilterByCreatedFromPublicRegistrationTrue(): void
+    {
+        $organization = $this->getAuthenticatedOrganizationContext()->organization;
+
+        $publicPerson = PersonFactory::new()
+            ->forOrganization($organization)
+            ->create([
+                'firstname' => 'Public',
+                'lastname' => 'Registration',
+            ]);
+
+        $publicPerson->markAsCreatedFromPublicRegistration();
+
+        PersonFactory::new()
+            ->forOrganization($organization)
+            ->create([
+                'firstname' => 'BackOffice',
+                'lastname' => 'Managed',
+            ]);
+
+        static::getContainer()
+            ->get(EntityManagerInterface::class)
+            ->flush();
+
+        $response = $this->apiGet('/api/v1/people?createdFromPublicRegistration=true');
+
+        $this->assertResponseStatusCodeSame(200);
+
+        $data = $response->toArray();
+
+        $this->assertArrayHasKey('items', $data);
+        $this->assertArrayHasKey('pagination', $data);
+
+        $items = $data['items'];
+
+        $this->assertCount(1, $items);
+
+        $this->assertSame($publicPerson->getPublicId(), $items[0]['id']);
+        $this->assertSame('Public', $items[0]['firstname']);
+        $this->assertSame('Registration', $items[0]['lastname']);
+        $this->assertTrue($items[0]['createdFromPublicRegistration']);
+
+        $this->assertSame(1, $data['pagination']['totalItems']);
+    }
+
+    public function testGetPersonsCanFilterByCreatedFromPublicRegistrationFalse(): void
+    {
+        $organization = $this->getAuthenticatedOrganizationContext()->organization;
+
+        PersonFactory::new()
+            ->forOrganization($organization)
+            ->create([
+                'firstname' => 'Public',
+                'lastname' => 'Registration',
+            ])
+            ->markAsCreatedFromPublicRegistration();
+
+        $managedPerson = PersonFactory::new()
+            ->forOrganization($organization)
+            ->create([
+                'firstname' => 'BackOffice',
+                'lastname' => 'Managed',
+            ]);
+
+        static::getContainer()
+            ->get(EntityManagerInterface::class)
+            ->flush();
+
+        $response = $this->apiGet('/api/v1/people?createdFromPublicRegistration=false');
+
+        $this->assertResponseStatusCodeSame(200);
+
+        $data = $response->toArray();
+
+        $this->assertArrayHasKey('items', $data);
+        $this->assertArrayHasKey('pagination', $data);
+
+        $items = $data['items'];
+
+        $this->assertCount(1, $items);
+
+        $this->assertSame($managedPerson->getPublicId(), $items[0]['id']);
+        $this->assertSame('BackOffice', $items[0]['firstname']);
+        $this->assertSame('Managed', $items[0]['lastname']);
+        $this->assertFalse($items[0]['createdFromPublicRegistration']);
+
+        $this->assertSame(1, $data['pagination']['totalItems']);
+    }
+
+
+    public function testGetPersonFromAnotherOrganizationReturnsNotFound(): void
+    {
+        $this->getAuthenticatedOrganizationContext();
+
+        $otherOrganization = OrganizationFactory::new()->create();
+
+        $person = PersonFactory::new()
+            ->forOrganization($otherOrganization)
+            ->create();
+
+        $response = $this->apiGet('/api/v1/people/' . $person->getPublicId());
+
+        self::assertResponseStatusCodeSame(404);
+    }
+
 }

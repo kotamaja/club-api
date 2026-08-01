@@ -11,4 +11,6 @@ final class PersonListDto
     public string $lastname;
 
     public string $email;
+
+    public bool $createdFromPublicRegistration = false;
 }

@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Doctrine\Orm\Filter\BooleanFilter;
 use ApiPlatform\Doctrine\Orm\Filter\ExactFilter;
 use ApiPlatform\Doctrine\Orm\Filter\PartialSearchFilter;
 use ApiPlatform\Doctrine\Orm\Filter\SortFilter;
@@ -82,6 +83,10 @@ use Symfony\Component\Validator\Constraints as Assert;
                 'orderEmail' => new QueryParameter(
                     filter: new SortFilter(),
                     property: 'email',
+                ),
+                'createdFromPublicRegistration' => new QueryParameter(
+                    filter: new BooleanFilter(),
+                    property: 'createdFromPublicRegistration',
                 ),
             ],
         ),
@@ -166,6 +171,9 @@ class Person implements OrganizationScopedInterface
     #[ORM\ManyToOne(targetEntity: Organization::class)]
     #[ORM\JoinColumn(name: 'organization_id', referencedColumnName: 'id', nullable: false)]
     private ?Organization $organization;
+
+    #[ORM\Column(name: 'created_from_public_registration', type: Types::BOOLEAN, nullable: false)]
+    private bool $createdFromPublicRegistration = false;
 
     public function __construct()
     {
@@ -276,6 +284,21 @@ class Person implements OrganizationScopedInterface
         }
 
         return $this->organization;
+    }
+
+    public function wasCreatedFromPublicRegistration(): bool
+    {
+        return $this->createdFromPublicRegistration;
+    }
+
+    public function markAsCreatedFromPublicRegistration(): void
+    {
+        $this->createdFromPublicRegistration = true;
+    }
+
+    public function markAsBackOfficeManaged(): void
+    {
+        $this->createdFromPublicRegistration = false;
     }
 
 }

@@ -570,4 +570,20 @@ class Event  implements OrganizationScopedInterface
         $this->publicRegistrationEnabled = false;
     }
 
+    /**
+     * Checks whether the given instant is inside the configured registration window.
+     */
+    public function isWithinRegistrationWindow(\DateTimeImmutable $now): bool
+    {
+        if ($this->registrationStartsAt !== null && $now < $this->registrationStartsAt) {
+            return false;
+        }
+
+        if ($this->registrationEndsAt !== null && $now > $this->registrationEndsAt) {
+            return false;
+        }
+
+        return true;
+    }
+
 }

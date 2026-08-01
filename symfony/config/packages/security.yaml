@@ -45,6 +45,9 @@ security:
         - { path: ^/api/v1/auth/refresh$, roles: PUBLIC_ACCESS }
         - { path: ^/api/v1/auth/logout$, roles: PUBLIC_ACCESS }
 
+        # Public event registration requests
+        - { path: ^/api/v1/public/events/[^/]+/registration-requests$, methods: [POST], roles: PUBLIC_ACCESS }
+
         # Documentation API Platform
         - { path: ^/api/?$, roles: PUBLIC_ACCESS }
         - { path: ^/api/docs, roles: PUBLIC_ACCESS }

@@ -121,7 +121,10 @@ final class EventRegistrationCollectionTest extends ApiTestCase
         $this->assertIsArray($pagination);
     }
 
-    public function testGetEventRegistrationsFromAnotherOrganizationReturnsEmptyCollection(): void
+    /**
+     * Ensures that registrations of an event from another organization are not visible.
+     */
+    public function testGetEventRegistrationsFromAnotherOrganizationReturnsNotFound(): void
     {
         $this->getAuthenticatedOrganizationContext();
 
@@ -133,15 +136,11 @@ final class EventRegistrationCollectionTest extends ApiTestCase
 
         $response = $this->apiGet('/api/v1/events/' . $event->getPublicId() . '/registrations');
 
-        $this->assertResponseStatusCodeSame(200);
+        self::assertResponseStatusCodeSame(404);
 
-        $data = $response->toArray();
+        $data = $response->toArray(false);
 
-        $this->assertArrayHasKey('items', $data);
-        $this->assertArrayHasKey('pagination', $data);
-
-        $this->assertSame([], $data['items']);
-        $this->assertSame(0, $data['pagination']['totalItems']);
+        self::assertResponseStatusCodeSame(404);
     }
 
     public function testGetEventRegistrationsCanFilterByStatus(): void
