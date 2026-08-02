@@ -534,8 +534,18 @@ class Event  implements OrganizationScopedInterface
         return false;
     }
 
-    private function addRegistration(EventRegistration $registration): void
+    /**
+     * Adds a registration to the in-memory collection.
+     *
+     * This keeps the inverse side of the Doctrine association synchronized when a
+     * registration is created from the owning side.
+     */
+    public function addRegistration(EventRegistration $registration): void
     {
+        if ($registration->getEvent() !== $this) {
+            throw new \InvalidArgumentException('The registration must belong to this event.');
+        }
+
         if (!$this->registrations->contains($registration)) {
             $this->registrations->add($registration);
         }

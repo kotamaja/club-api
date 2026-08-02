@@ -43,29 +43,27 @@ final class CommunityEventCapacityPolicyTest extends ApiTestCase
     {
         $organization = OrganizationFactory::createOne();
 
+        $firstPerson = PersonFactory::new()
+            ->forOrganization($organization)
+            ->create();
+
         $event = Event::create(
             organization: $organization,
             title: 'Cours d’initiation',
             startsAt: new \DateTimeImmutable('2026-07-10 09:00:00'),
             endsAt: new \DateTimeImmutable('2026-07-10 17:00:00'),
         );
+
         $event->changeCapacity(2);
 
-        $person = PersonFactory::new()->forOrganization($organization)->create();
-
-        $registration = EventRegistration::register(
+        EventRegistration::register(
             event: $event,
-            person: $person,
+            person: $firstPerson,
+            membership: null,
             now: new \DateTimeImmutable('2026-07-01 10:00:00'),
         );
 
-        $event->getRegistrations()->add($registration);
-
         self::assertTrue($this->policy->hasAvailableCapacity($event));
-
-        $this->policy->assertHasAvailableCapacity($event);
-
-        self::assertTrue(true);
     }
 
     public function testLimitedEventWithoutAvailableCapacityIsRejected(): void

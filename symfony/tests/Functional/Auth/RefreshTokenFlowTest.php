@@ -30,7 +30,7 @@ final class RefreshTokenFlowTest extends ApiTestCase
 
         $client = static::createClient();
 
-        $loginResponse = $client->request('POST', '/api/auth/login', [
+        $loginResponse = $client->request('POST', '/api/v1/auth/login', [
             'json' => [
                 'email' => 'admin@example.test',
                 'password' => 'password-123456',
@@ -58,7 +58,7 @@ final class RefreshTokenFlowTest extends ApiTestCase
         self::assertFalse($oldRefreshToken->isRevoked());
         self::assertSame('body', $oldRefreshToken->getMode()->value);
 
-        $refreshResponse = $client->request('POST', '/api/auth/refresh', [
+        $refreshResponse = $client->request('POST', '/api/v1/auth/refresh', [
             'json' => [
                 'refreshToken' => $oldPlainRefreshToken,
             ],
@@ -102,7 +102,7 @@ final class RefreshTokenFlowTest extends ApiTestCase
         self::assertFalse($newRefreshToken->isExpired());
         self::assertSame('body', $newRefreshToken->getMode()->value);
 
-        $reuseOldTokenResponse = $client->request('POST', '/api/auth/refresh', [
+        $reuseOldTokenResponse = $client->request('POST', '/api/v1/auth/refresh', [
             'json' => [
                 'refreshToken' => $oldPlainRefreshToken,
             ],
@@ -123,7 +123,7 @@ final class RefreshTokenFlowTest extends ApiTestCase
 
         $client = static::createClient();
 
-        $loginResponse = $client->request('POST', '/api/auth/login', [
+        $loginResponse = $client->request('POST', '/api/v1/auth/login', [
             'json' => [
                 'email' => 'admin@example.test',
                 'password' => 'password-123456',
@@ -155,11 +155,14 @@ final class RefreshTokenFlowTest extends ApiTestCase
         self::assertFalse($oldRefreshToken->isRevoked());
         self::assertSame('cookie', $oldRefreshToken->getMode()->value);
 
-        $refreshResponse = $client->request('POST', '/api/auth/refresh', [
-            'headers' => [
-                'Cookie' => 'refresh_token=' . $oldPlainRefreshToken,
-            ],
-        ]);
+        $client->getCookieJar()->set(new Cookie(
+            'refresh_token',
+            $oldPlainRefreshToken,
+            null,
+            '/api/v1/auth',
+        ));
+
+        $refreshResponse = $client->request('POST', '/api/v1/auth/refresh');
 
         self::assertResponseStatusCodeSame(Response::HTTP_OK);
 
@@ -206,11 +209,10 @@ final class RefreshTokenFlowTest extends ApiTestCase
             'refresh_token',
             $oldPlainRefreshToken,
             null,
-            '/api/auth',
+            '/api/v1/auth',
         ));
 
-        $reuseOldTokenResponse = $oldTokenClient->request('POST', '/api/auth/refresh');
-
+        $reuseOldTokenResponse = $oldTokenClient->request('POST', '/api/v1/auth/refresh');
         self::assertSame(
             Response::HTTP_UNAUTHORIZED,
             $reuseOldTokenResponse->getStatusCode()

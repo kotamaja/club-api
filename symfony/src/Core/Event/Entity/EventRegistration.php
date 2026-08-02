@@ -134,6 +134,8 @@ class EventRegistration
     {
         $this->publicId = new Ulid();
         $this->event = $event;
+        $event->addRegistration($this);
+
         $this->person = $person;
         $this->membership = $membership;
         $this->status = $status;

@@ -35,7 +35,7 @@ final class ConnectionUserSecurityTest extends ApiTestCase
 
         $client = static::createClient();
 
-        $response = $client->request('POST', '/api/auth/login', [
+        $response = $client->request('POST', '/api/v1/auth/login', [
             'json' => [
                 'email' => 'admin@example.test',
                 'password' => 'password-123456',
@@ -59,7 +59,7 @@ final class ConnectionUserSecurityTest extends ApiTestCase
 
         $client = static::createClient();
 
-        $loginResponse = $client->request('POST', '/api/auth/login', [
+        $loginResponse = $client->request('POST', '/api/v1/auth/login', [
             'json' => [
                 'email' => 'admin@example.test',
                 'password' => 'password-123456',
@@ -100,7 +100,7 @@ final class ConnectionUserSecurityTest extends ApiTestCase
         self::assertNotNull($disabledUser);
         self::assertTrue($disabledUser->isDisabled());
 
-        $protectedResponse = $client->request('GET', '/api/auth/me', [
+        $protectedResponse = $client->request('GET', '/api/v1/me', [
             'headers' => [
                 'accept' =>  'application/json',
                 'Authorization' => 'Bearer ' . $jwt,
