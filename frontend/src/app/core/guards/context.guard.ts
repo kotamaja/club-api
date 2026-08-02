@@ -1,11 +1,25 @@
-import { CanActivateFn } from '@angular/router';
+import { inject } from '@angular/core';
+import { CanActivateFn, Router } from '@angular/router';
+
+import { CurrentContextService } from '../context/current-context.service';
 
 /**
- * Ensures that the current organization and club context is available.
+ * Ensures that a usable organization and club context is available.
  *
- * Temporary V1 skeleton: always allows navigation until the context resolver
- * is connected to the API.
+ * Until the real context resolver is connected to the API, unresolved context
+ * states redirect to the organization selection page.
  */
 export const contextGuard: CanActivateFn = () => {
-  return true;
+  const currentContext = inject(CurrentContextService);
+  const router = inject(Router);
+
+  const state = currentContext.state();
+
+  console.log (state)
+
+  if (state.status === 'resolved') {
+    return true;
+  }
+
+  return router.createUrlTree(['/app/select-organization']);
 };

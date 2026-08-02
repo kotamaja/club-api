@@ -3,6 +3,7 @@
     Accueil
   </a>
 
+  @if (canAccessMemberArea()) {
   <section class="desktop-sidebar__section">
     <h2 class="desktop-sidebar__title">Espace membre</h2>
 
@@ -24,7 +25,9 @@
       Mon profil
     </a>
   </section>
+  }
 
+  @if (canAccessManagementArea()) {
   <section class="desktop-sidebar__section">
     <h2 class="desktop-sidebar__title">Gestion</h2>
 
@@ -33,12 +36,17 @@
       Tableau de bord
     </a>
 
+      @if (canManageMembers()) {
     <a class="desktop-sidebar__link" routerLink="/app/manage/members" routerLinkActive="desktop-sidebar__link--active">
       Membres
     </a>
+      }
 
+      @if (canManageEvents()) {
     <a class="desktop-sidebar__link" routerLink="/app/manage/events" routerLinkActive="desktop-sidebar__link--active">
       Événements
     </a>
+      }
   </section>
+  }
 </nav>

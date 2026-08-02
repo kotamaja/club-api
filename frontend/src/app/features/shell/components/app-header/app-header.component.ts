@@ -1,8 +1,9 @@
 import { Component, computed, inject } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 
-import { CurrentContextService } from '../../../../core/context/current-context.service';
+import { AuthService } from '../../../../core/auth/auth.service';
 import { SessionService } from '../../../../core/auth/session.service';
+import { CurrentContextService } from '../../../../core/context/current-context.service';
 
 /**
  * Displays the connected application header.
@@ -17,6 +18,8 @@ import { SessionService } from '../../../../core/auth/session.service';
   styleUrl: './app-header.component.scss',
 })
 export class AppHeaderComponent {
+  private readonly auth = inject(AuthService);
+  private readonly router = inject(Router);
   private readonly session = inject(SessionService);
   private readonly currentContext = inject(CurrentContextService);
 
@@ -28,4 +31,12 @@ export class AppHeaderComponent {
     // Temporary placeholder. Later, this should come from OrganizationContextService.
     return false;
   });
+
+  protected onLogout(): void {
+    this.auth.logout().subscribe({
+      next: () => {
+        void this.router.navigate(['/login']);
+      },
+    });
+}
 }

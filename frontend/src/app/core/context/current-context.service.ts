@@ -1,6 +1,6 @@
 import { computed, Service, signal } from '@angular/core';
 
-import { CurrentContextState } from './current-context.model';
+import { CurrentContext, CurrentContextState } from './current-context.model';
 
 /**
  * Holds the current organization and club context.
@@ -31,4 +31,44 @@ export class CurrentContextService {
 
     return state.status === 'resolved' ? state.context.capabilities : [];
   });
+
+  setContext(context: CurrentContext): void {
+    this.state.set({
+      status: 'resolved',
+      context,
+    });
+  }
+
+  setMissing(): void {
+    this.state.set({ status: 'missing' });
+  }
+
+  reset(): void {
+    this.state.set({ status: 'unknown' });
+  }
+
+  setDevelopmentContext(): void {
+
+    console.log("setDevelopmentContext")
+    this.setContext({
+      organization: {
+        id: 'dev-organization',
+        name: 'Ramalo Dev',
+      },
+      club: {
+        id: 'dev-club',
+        name: 'Club de développement',
+      },
+      capabilities: [
+        'canAccessMemberArea',
+        'canAccessManagementArea',
+        'canManageMembers',
+        'canManageMemberships',
+        'canManageEvents',
+        'canManageEventRegistrations',
+        'canReviewPublicRegistrationRequests',
+        'canManageClubSettings',
+      ],
+    });
+  }
 }

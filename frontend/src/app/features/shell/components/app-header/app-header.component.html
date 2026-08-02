@@ -23,7 +23,17 @@
 
   <div class="app-header__user">
     @if (currentUser(); as user) {
-      <span>{{ user.displayName }}</span>
+      <span class="app-header__username">
+      {{ user.displayName }}
+    </span>
+
+      <button
+        class="app-header__logout"
+        type="button"
+        (click)="onLogout()"
+      >
+        Déconnexion
+      </button>
     } @else {
       <span>Utilisateur</span>
     }

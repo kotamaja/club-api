@@ -1,0 +1,42 @@
+:host {
+  display: block;
+}
+
+.app-home-page__cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.app-home-page__card {
+  display: block;
+  min-height: 140px;
+  padding: 20px;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  color: inherit;
+  text-decoration: none;
+  background: #fff;
+}
+
+.app-home-page__card:hover {
+  background: #f7f7f7;
+}
+
+.app-home-page__card-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.app-home-page__card-description {
+  margin: 12px 0 0;
+  color: #666;
+  line-height: 1.5;
+}
+
+@media (max-width: 768px) {
+  .app-home-page__cards {
+    grid-template-columns: 1fr;
+  }
+}

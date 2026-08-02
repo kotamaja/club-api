@@ -1,0 +1,17 @@
+<section class="forbidden-state">
+  <div class="forbidden-state__icon" aria-hidden="true">
+    !
+  </div>
+
+  <h1 class="forbidden-state__title">
+    {{ title() }}
+  </h1>
+
+  <p class="forbidden-state__message">
+    {{ message() }}
+  </p>
+
+  <a class="forbidden-state__link" [routerLink]="homeLink()">
+    Retour à l’accueil
+  </a>
+</section>

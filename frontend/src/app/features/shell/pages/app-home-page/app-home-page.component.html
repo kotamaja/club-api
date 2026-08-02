@@ -1,0 +1,30 @@
+<app-page-header
+  title="Accueil"
+  description="Choisissez l’espace dans lequel vous souhaitez travailler."
+/>
+
+<div class="app-home-page__cards">
+  @if (canAccessMemberArea()) {
+    <a class="app-home-page__card" routerLink="/app/member">
+      <h2 class="app-home-page__card-title">
+        Espace membre
+      </h2>
+
+      <p class="app-home-page__card-description">
+        Consultez vos événements, vos inscriptions et vos informations personnelles.
+      </p>
+    </a>
+  }
+
+  @if (canAccessManagementArea()) {
+    <a class="app-home-page__card" routerLink="/app/manage">
+      <h2 class="app-home-page__card-title">
+        Espace gestion
+      </h2>
+
+      <p class="app-home-page__card-description">
+        Gérez les membres, les événements et les demandes publiques du club.
+      </p>
+    </a>
+  }
+</div>
