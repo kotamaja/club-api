@@ -46,6 +46,25 @@ services:
       - ./docker/dev/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
       - ./docker/dev/nginx/certs:/etc/nginx/certs:ro
 
+
+
+  node:
+    build:
+      context: .
+      dockerfile: docker/dev/Dockerfile_node
+      target: node-dev
+    working_dir: /app
+    volumes:
+      - ./frontend:/app
+    ports:
+      - "4200:4200"
+    user: "${UID}:${GID}"
+    tty: true
+    stdin_open: true
+    command: bash
+
+
+
 volumes:
   club_api_composer_cache_dev:
   club-api-mysql-dev:
