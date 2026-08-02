@@ -2,12 +2,16 @@
 
 namespace App\Core\Event\Entity;
 
+use ApiPlatform\Doctrine\Orm\Filter\ExactFilter;
+use ApiPlatform\Doctrine\Orm\Filter\PartialSearchFilter;
+use ApiPlatform\Doctrine\Orm\Filter\SortFilter;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Link;
 use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\QueryParameter;
 use App\Core\Event\Enum\PublicEventRegistrationRequestStatus;
 use App\Core\Event\Repository\PublicEventRegistrationRequestRepository;
 use App\Dto\EventRegistrationRequest\PublicEventRegistrationRequestCreateDto;
@@ -55,6 +59,36 @@ use Symfony\Component\Uid\Ulid;
             ],
             output: PublicEventRegistrationRequestListDto::class,
             provider: PublicEventRegistrationRequestCollectionProvider::class,
+            parameters: [
+                'status' => new QueryParameter(
+                    filter: new ExactFilter(),
+                    property: 'status',
+                ),
+                'email' => new QueryParameter(
+                    filter: new PartialSearchFilter(),
+                    property: 'email',
+                ),
+                'lastname' => new QueryParameter(
+                    filter: new PartialSearchFilter(),
+                    property: 'lastname',
+                ),
+                'orderRequestedAt' => new QueryParameter(
+                    filter: new SortFilter(),
+                    property: 'requestedAt',
+                ),
+                'orderStatus' => new QueryParameter(
+                    filter: new SortFilter(),
+                    property: 'status',
+                ),
+                'orderLastname' => new QueryParameter(
+                    filter: new SortFilter(),
+                    property: 'lastname',
+                ),
+                'orderEmail' => new QueryParameter(
+                    filter: new SortFilter(),
+                    property: 'email',
+                ),
+            ],
         ),
         new Get(
             uriTemplate: '/public-registration-requests/{id}',

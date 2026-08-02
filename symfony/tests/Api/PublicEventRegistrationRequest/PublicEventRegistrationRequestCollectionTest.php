@@ -167,6 +167,179 @@ final class PublicEventRegistrationRequestCollectionTest extends ApiTestCase
 
 
     /**
+     * Ensures that the collection can be filtered by request status.
+     */
+    public function testGetPublicRegistrationRequestsForEventCanBeFilteredByStatus(): void
+    {
+        $context = $this->getAuthenticatedOrganizationContext();
+        $event = $this->createClubEventForPublicRegistrationRequest();
+
+        $pendingRequest = PublicEventRegistrationRequest::create(
+            event: $event,
+            firstname: 'Alice',
+            lastname: 'Durand',
+            email: 'alice.durand@example.com',
+            note: 'Demande en attente.',
+            now: new \DateTimeImmutable('-3 hours'),
+        );
+
+        $rejectedRequest = PublicEventRegistrationRequest::create(
+            event: $event,
+            firstname: 'Bruno',
+            lastname: 'Martin',
+            email: 'bruno.martin@example.com',
+            note: 'Demande refusée.',
+            now: new \DateTimeImmutable('-2 hours'),
+        );
+
+        $rejectedRequest->reject(
+            reason: 'Demande incomplète.',
+            reviewedBy: $context->organizationUser,
+            now: new \DateTimeImmutable('-1 hour'),
+        );
+
+        $em = static::getContainer()->get(EntityManagerInterface::class);
+        $em->persist($pendingRequest);
+        $em->persist($rejectedRequest);
+        $em->flush();
+
+        $response = $this->apiGet('/api/v1/events/' . $event->getPublicId() . '/public-registration-requests?status=pending');
+
+        self::assertResponseStatusCodeSame(200);
+
+        $data = $response->toArray(false);
+
+        self::assertArrayHasKey('items', $data);
+        self::assertCount(1, $data['items']);
+        self::assertSame($pendingRequest->getPublicId(), $data['items'][0]['id']);
+        self::assertSame('pending', $data['items'][0]['status']);
+    }
+
+
+    /**
+     * Ensures that the collection can be ordered by request date.
+     */
+    public function testGetPublicRegistrationRequestsForEventCanBeOrderedByRequestedAt(): void
+    {
+        $event = $this->createClubEventForPublicRegistrationRequest();
+
+        $oldRequest = PublicEventRegistrationRequest::create(
+            event: $event,
+            firstname: 'Alice',
+            lastname: 'Durand',
+            email: 'alice.durand@example.com',
+            note: 'Ancienne demande.',
+            now: new \DateTimeImmutable('-3 hours'),
+        );
+
+        $newRequest = PublicEventRegistrationRequest::create(
+            event: $event,
+            firstname: 'Bruno',
+            lastname: 'Martin',
+            email: 'bruno.martin@example.com',
+            note: 'Nouvelle demande.',
+            now: new \DateTimeImmutable('-1 hour'),
+        );
+
+        $em = static::getContainer()->get(EntityManagerInterface::class);
+        $em->persist($oldRequest);
+        $em->persist($newRequest);
+        $em->flush();
+
+        $response = $this->apiGet('/api/v1/events/' . $event->getPublicId() . '/public-registration-requests?orderRequestedAt=desc');
+
+        self::assertResponseStatusCodeSame(200);
+
+        $data = $response->toArray(false);
+
+        self::assertArrayHasKey('items', $data);
+        self::assertCount(2, $data['items']);
+        self::assertSame($newRequest->getPublicId(), $data['items'][0]['id']);
+        self::assertSame($oldRequest->getPublicId(), $data['items'][1]['id']);
+    }
+
+
+    /**
+     * Ensures that the collection can be searched by requester lastname.
+     */
+    public function testGetPublicRegistrationRequestsForEventCanBeFilteredByLastname(): void
+    {
+        $event = $this->createClubEventForPublicRegistrationRequest();
+
+        $matchingRequest = PublicEventRegistrationRequest::create(
+            event: $event,
+            firstname: 'Alice',
+            lastname: 'Durand',
+            email: 'alice.durand@example.com',
+            note: 'Demande correspondant à la recherche.',
+            now: new \DateTimeImmutable('-2 hours'),
+        );
+
+        $otherRequest = PublicEventRegistrationRequest::create(
+            event: $event,
+            firstname: 'Bruno',
+            lastname: 'Martin',
+            email: 'bruno.martin@example.com',
+            note: 'Demande qui ne correspond pas.',
+            now: new \DateTimeImmutable('-1 hour'),
+        );
+
+        $em = static::getContainer()->get(EntityManagerInterface::class);
+        $em->persist($matchingRequest);
+        $em->persist($otherRequest);
+        $em->flush();
+
+        $response = $this->apiGet('/api/v1/events/' . $event->getPublicId() . '/public-registration-requests?lastname=Dur');
+
+        self::assertResponseStatusCodeSame(200);
+
+        $data = $response->toArray(false);
+
+        self::assertArrayHasKey('items', $data);
+        self::assertCount(1, $data['items']);
+        self::assertSame($matchingRequest->getPublicId(), $data['items'][0]['id']);
+        self::assertSame('Alice', $data['items'][0]['firstname']);
+        self::assertSame('Durand', $data['items'][0]['lastname']);
+        self::assertSame('alice.durand@example.com', $data['items'][0]['email']);
+    }
+
+
+    /**
+     * Ensures that public registration request submissions are rate limited.
+     */
+    public function testCreatePublicRegistrationRequestIsRateLimited(): void
+    {
+        $event = $this->createClubEventForPublicRegistrationRequest();
+
+        for ($i = 1; $i <= 5; $i++) {
+            $response = $this->apiPublicPost('/api/v1/public/events/' . $event->getPublicId() . '/registration-requests', [
+                'firstname' => 'Alice',
+                'lastname' => 'Durand',
+                'email' => 'alice.' . $i . '@example.com',
+                'note' => 'Je souhaite participer.',
+                'homepage' => '',
+            ]);
+
+            self::assertResponseStatusCodeSame(201);
+        }
+
+        $response = $this->apiPublicPost('/api/v1/public/events/' . $event->getPublicId() . '/registration-requests', [
+            'firstname' => 'Alice',
+            'lastname' => 'Durand',
+            'email' => 'alice.6@example.com',
+            'note' => 'Je souhaite participer.',
+            'homepage' => '',
+        ]);
+
+        self::assertResponseStatusCodeSame(429);
+
+        $data = $response->toArray(false);
+
+        self::assertSame('Too many registration requests. Please try again later.', $data['detail']);
+    }
+
+
+    /**
      * Creates a published club event that accepts public registration requests.
      */
     private function createClubEventForPublicRegistrationRequest(array $attributes = [], bool $published = true): Event

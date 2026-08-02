@@ -14,9 +14,13 @@ use App\Write\Exception\ReferencedResourceNotFoundException;
 use App\Write\Exception\ResourceConflictException;
 use App\Write\PublicEventRegistrationRequest\PublicEventRegistrationRequestWriteServiceInterface;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
+use Symfony\Component\RateLimiter\RateLimiterFactory;
 
 /**
  * Handles unauthenticated public registration request submissions.
@@ -27,10 +31,12 @@ use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
  */
 final readonly class PublicEventRegistrationRequestCreateProcessor implements ProcessorInterface
 {
-    public function __construct(private EventRepository                                            $eventRepository,
-                                private PublicEventRegistrationRequestWriteServiceInterface       $writeService,
-                                private MapperRegistry                                             $mapperRegistry,
-                                private EntityManagerInterface                                     $em)
+    public function __construct(private EventRepository                                                                      $eventRepository,
+                                private PublicEventRegistrationRequestWriteServiceInterface                                  $writeService,
+                                private MapperRegistry                                                                       $mapperRegistry,
+                                private EntityManagerInterface                                                               $em,
+                                private RequestStack                                                                         $requestStack,
+                                #[Autowire(service: 'limiter.public_event_registration_request')] private RateLimiterFactory $rateLimiterFactory)
     {
     }
 
@@ -39,6 +45,9 @@ final readonly class PublicEventRegistrationRequestCreateProcessor implements Pr
      */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): PublicEventRegistrationRequestItemDto
     {
+
+        $this->consumeRateLimit();
+
         if (!$data instanceof PublicEventRegistrationRequestCreateDto) {
             throw new \LogicException('Expected PublicEventRegistrationRequestCreateDto.');
         }
@@ -69,4 +78,36 @@ final readonly class PublicEventRegistrationRequestCreateProcessor implements Pr
 
         return $this->mapperRegistry->map($request, PublicEventRegistrationRequestItemDto::class);
     }
+
+    /**
+     * Applies a rate limit to public registration request submissions.
+     *
+     * The key is scoped by client IP and request path. This prevents submissions
+     * for one public event from consuming the bucket of another event, while still
+     * limiting repeated submissions to the same public form.
+     */
+    private function consumeRateLimit(): void
+    {
+        $request = $this->requestStack->getCurrentRequest();
+
+        $ip = $request?->getClientIp() ?? 'unknown';
+        $path = $request?->getPathInfo() ?? 'unknown';
+
+        $key = hash('sha256', $ip . '|' . $path);
+
+        $limit = $this->rateLimiterFactory
+            ->create($key)
+            ->consume();
+
+        if (!$limit->isAccepted()) {
+            throw new TooManyRequestsHttpException(
+                retryAfter: max(1, $limit->getRetryAfter()->getTimestamp() - time()),
+                message: 'Too many registration requests. Please try again later.',
+            );
+        }
+    }
+
+
+
+
 }

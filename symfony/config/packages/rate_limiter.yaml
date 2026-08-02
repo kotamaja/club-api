@@ -14,3 +14,8 @@ framework:
             policy: 'sliding_window'
             limit: 300
             interval: '1 minute'
+
+        public_event_registration_request:
+            policy: 'sliding_window'
+            limit: 5
+            interval: '10 minutes'
