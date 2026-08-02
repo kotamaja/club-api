@@ -1,0 +1,31 @@
+<header class="app-header">
+  <a class="app-header__brand" routerLink="/app">
+    Ramalo
+  </a>
+
+  <div class="app-header__context">
+    @if (shouldShowOrganization() && currentOrganization(); as organization) {
+      <span class="app-header__organization">
+        {{ organization.name }}
+      </span>
+    }
+
+    @if (currentClub(); as club) {
+      <span class="app-header__club">
+        {{ club.name }}
+      </span>
+    } @else {
+      <span class="app-header__club app-header__club--empty">
+        Aucun club sélectionné
+      </span>
+    }
+  </div>
+
+  <div class="app-header__user">
+    @if (currentUser(); as user) {
+      <span>{{ user.displayName }}</span>
+    } @else {
+      <span>Utilisateur</span>
+    }
+  </div>
+</header>

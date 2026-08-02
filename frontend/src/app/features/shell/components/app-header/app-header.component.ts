@@ -1,11 +1,31 @@
-import { Component } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
+import { RouterLink } from '@angular/router';
+
+import { CurrentContextService } from '../../../../core/context/current-context.service';
+import { SessionService } from '../../../../core/auth/session.service';
 
 /**
- * Placeholder page displayed while the real implementation is pending.
+ * Displays the connected application header.
+ *
+ * The current club is always shown. The current organization is only shown
+ * when the user has access to multiple organizations.
  */
 @Component({
-  selector: 'app-header',
-  template: '<p>header</p>',
+  selector: 'app-app-header',
+  imports: [RouterLink],
+  templateUrl: './app-header.component.html',
+  styleUrl: './app-header.component.scss',
 })
 export class AppHeaderComponent {
+  private readonly session = inject(SessionService);
+  private readonly currentContext = inject(CurrentContextService);
+
+  protected readonly currentUser = this.session.currentUser;
+  protected readonly currentClub = this.currentContext.currentClub;
+  protected readonly currentOrganization = this.currentContext.currentOrganization;
+
+  protected readonly shouldShowOrganization = computed(() => {
+    // Temporary placeholder. Later, this should come from OrganizationContextService.
+    return false;
+  });
 }

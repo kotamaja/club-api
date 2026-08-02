@@ -1,5 +1,11 @@
-import { CanActivateFn } from '@angular/router';
+import { CanActivateChildFn } from '@angular/router';
 
-export const capabilityGuard: CanActivateFn = (route, state) => {
+/**
+ * Protects child routes according to the required capabilities.
+ *
+ * Temporary V1 skeleton: always allows navigation until capabilities are
+ * returned by the API and checked by CapabilityService.
+ */
+export const capabilityGuard: CanActivateChildFn = () => {
   return true;
 };

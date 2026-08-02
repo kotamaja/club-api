@@ -1,0 +1,54 @@
+.app-header {
+  height: 64px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 0 24px;
+  border-bottom: 1px solid #ddd;
+}
+
+.app-header__brand {
+  font-weight: 600;
+  text-decoration: none;
+  color: inherit;
+}
+
+.app-header__context {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.app-header__organization,
+.app-header__club {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.app-header__club {
+  font-weight: 500;
+}
+
+.app-header__club--empty {
+  color: #777;
+  font-weight: 400;
+}
+
+.app-header__user {
+  white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+  .app-header {
+    height: 56px;
+    padding: 0 16px;
+    gap: 12px;
+  }
+
+  .app-header__user {
+    display: none;
+  }
+}

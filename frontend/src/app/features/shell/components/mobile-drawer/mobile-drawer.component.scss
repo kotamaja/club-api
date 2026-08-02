@@ -1,0 +1,30 @@
+.mobile-drawer {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .mobile-drawer {
+    position: sticky;
+    bottom: 0;
+    display: flex;
+    gap: 4px;
+    padding: 8px;
+    border-top: 1px solid #ddd;
+    background: #fff;
+  }
+
+  .mobile-drawer__link {
+    flex: 1;
+    padding: 8px 4px;
+    border-radius: 6px;
+    text-align: center;
+    font-size: 13px;
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .mobile-drawer__link--active {
+    background: #e0e0e0;
+    font-weight: 500;
+  }
+}

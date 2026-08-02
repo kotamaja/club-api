@@ -1,11 +1,18 @@
 import { Component } from '@angular/core';
 
+import { PageHeaderComponent } from '../../../../shared/ui/page-header/page-header.component';
+
 /**
- * Placeholder page displayed while the real implementation is pending.
+ * Displays the member dashboard entry page.
+ *
+ * This page will later show upcoming events, the user's next registrations,
+ * club information and quick member actions.
  */
 @Component({
   selector: 'app-member-dashboard-page',
-  template: '<p>Member Dashboard page</p>',
+  imports: [PageHeaderComponent],
+  templateUrl: './member-dashboard-page.component.html',
+  styleUrl: './member-dashboard-page.component.scss',
 })
 export class MemberDashboardPageComponent {
 }

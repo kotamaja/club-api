@@ -1,0 +1,44 @@
+<nav class="desktop-sidebar" aria-label="Navigation principale">
+  <a class="desktop-sidebar__link" routerLink="/app/home" routerLinkActive="desktop-sidebar__link--active">
+    Accueil
+  </a>
+
+  <section class="desktop-sidebar__section">
+    <h2 class="desktop-sidebar__title">Espace membre</h2>
+
+    <a class="desktop-sidebar__link" routerLink="/app/member" routerLinkActive="desktop-sidebar__link--active"
+       [routerLinkActiveOptions]="{ exact: true }">
+      Tableau de bord
+    </a>
+
+    <a class="desktop-sidebar__link" routerLink="/app/member/events" routerLinkActive="desktop-sidebar__link--active">
+      Événements
+    </a>
+
+    <a class="desktop-sidebar__link" routerLink="/app/member/registrations"
+       routerLinkActive="desktop-sidebar__link--active">
+      Mes inscriptions
+    </a>
+
+    <a class="desktop-sidebar__link" routerLink="/app/member/profile" routerLinkActive="desktop-sidebar__link--active">
+      Mon profil
+    </a>
+  </section>
+
+  <section class="desktop-sidebar__section">
+    <h2 class="desktop-sidebar__title">Gestion</h2>
+
+    <a class="desktop-sidebar__link" routerLink="/app/manage" routerLinkActive="desktop-sidebar__link--active"
+       [routerLinkActiveOptions]="{ exact: true }">
+      Tableau de bord
+    </a>
+
+    <a class="desktop-sidebar__link" routerLink="/app/manage/members" routerLinkActive="desktop-sidebar__link--active">
+      Membres
+    </a>
+
+    <a class="desktop-sidebar__link" routerLink="/app/manage/events" routerLinkActive="desktop-sidebar__link--active">
+      Événements
+    </a>
+  </section>
+</nav>
