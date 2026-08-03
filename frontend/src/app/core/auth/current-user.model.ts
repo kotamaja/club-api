@@ -1,7 +1,7 @@
 import { UserStatus } from './me.model';
 
 /**
- * Minimal authenticated user representation used by the frontend session.
+ * Authenticated user representation stored in the frontend session.
  */
 export type CurrentUser = {
   id: string;

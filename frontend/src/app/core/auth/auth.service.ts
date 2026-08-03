@@ -1,23 +1,27 @@
 import { inject, Service } from '@angular/core';
-import { map, Observable, tap } from 'rxjs';
+import { map, Observable, switchMap, tap } from 'rxjs';
 
 import { ApiClientService } from '../api/api-client.service';
 import { CurrentContextService } from '../context/current-context.service';
 import { LoginResponse, PasswordLoginCommand } from './auth-api.model';
+import { CurrentUser } from './current-user.model';
 import { LoginResult } from './login-result.model';
+import { Me } from './me.model';
+import { MeService } from './me.service';
 import { SessionService } from './session.service';
 import { TokenService } from './token.service';
 
 /**
  * Coordinates authentication workflows.
  *
- * Password login is now delegated to the backend. Refresh-token handling will
- * be added separately, after the basic API connection is validated.
+ * Password login is delegated to the backend. The refresh token is managed
+ * through a backend cookie, while Angular keeps only the access token.
  */
 @Service()
 export class AuthService {
   private readonly api = inject(ApiClientService);
   private readonly currentContext = inject(CurrentContextService);
+  private readonly me = inject(MeService);
   private readonly session = inject(SessionService);
   private readonly token = inject(TokenService);
 
@@ -31,20 +35,20 @@ export class AuthService {
     return this.api.post<LoginResponse, PasswordLoginCommand>('/auth/login', command, {
       withCredentials: true,
     }).pipe(
-      map((response): LoginResult => {
-        return {
-          accessToken: response.token,
-          user: {
-            id: email,
-            email,
-            displayName: email,
-            status: 'active',
-            roles: [],
-          },
-        };
+      tap((response) => {
+        this.token.setAccessToken(response.token);
+      }),
+      switchMap((response) => {
+        return this.me.getMe().pipe(
+          map((me): LoginResult => {
+            return {
+              accessToken: response.token,
+              user: this.mapMeToCurrentUser(me),
+            };
+          }),
+        );
       }),
       tap((result) => {
-        this.token.setAccessToken(result.accessToken);
         this.session.setAuthenticated(result.user);
 
         // Temporary development context until /me/current-context is connected.
@@ -81,5 +85,15 @@ export class AuthService {
     return this.api.post<void, Record<string, never>>('/auth/logout', {}, {
       withCredentials: true,
     });
+  }
+
+  private mapMeToCurrentUser(me: Me): CurrentUser {
+    return {
+      id: me.id,
+      email: me.email,
+      displayName: me.email,
+      status: me.status,
+      roles: me.roles,
+    };
   }
 }
