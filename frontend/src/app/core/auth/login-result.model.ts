@@ -1,9 +1,10 @@
 import { CurrentUser } from './current-user.model';
 
 /**
- * Result returned after a successful authentication request.
+ * Result exposed by AuthService after successful authentication.
  */
 export type LoginResult = {
   accessToken: string;
+  refreshToken: string;
   user: CurrentUser;
 };

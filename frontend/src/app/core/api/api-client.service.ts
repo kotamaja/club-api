@@ -1,11 +1,11 @@
-import { HttpClient, HttpParams } from '@angular/common/http';
-import { inject, Service } from '@angular/core';
-import { Observable } from 'rxjs';
+import {HttpClient, HttpParams} from '@angular/common/http';
+import {inject, Service} from '@angular/core';
+import {Observable} from 'rxjs';
 
-import { ApiCollection } from './api-collection.model';
-import { ApiPage } from './api-page.model';
-import { ApiQueryParams } from './api-query.model';
-import { ApiUrlService } from './api-url.service';
+import {ApiCollection} from './api-collection.model';
+import {ApiPage} from './api-page.model';
+import {ApiQueryParams} from './api-query.model';
+import {ApiUrlService} from './api-url.service';
 
 /**
  * Small wrapper around HttpClient for Ramalo API calls.
@@ -21,6 +21,7 @@ export class ApiClientService {
   get<TResponse>(path: string, options?: ApiRequestOptions): Observable<TResponse> {
     return this.http.get<TResponse>(this.apiUrl.build(path), {
       params: this.toHttpParams(options?.params),
+      withCredentials: options?.withCredentials,
     });
   }
 
@@ -44,16 +45,22 @@ export class ApiClientService {
     });
   }
 
-  post<TResponse, TBody = unknown>(path: string, body: TBody): Observable<TResponse> {
-    return this.http.post<TResponse>(this.apiUrl.build(path), body);
+  post<TResponse, TBody = unknown>(path: string, body: TBody, options?: ApiRequestOptions): Observable<TResponse> {
+    return this.http.post<TResponse>(this.apiUrl.build(path), body, {
+      withCredentials: options?.withCredentials,
+    });
   }
 
-  patch<TResponse, TBody = unknown>(path: string, body: TBody): Observable<TResponse> {
-    return this.http.patch<TResponse>(this.apiUrl.build(path), body);
+  patch<TResponse, TBody = unknown>(path: string, body: TBody, options?: ApiRequestOptions): Observable<TResponse> {
+    return this.http.patch<TResponse>(this.apiUrl.build(path), body, {
+      withCredentials: options?.withCredentials,
+    });
   }
 
-  delete<TResponse = void>(path: string): Observable<TResponse> {
-    return this.http.delete<TResponse>(this.apiUrl.build(path));
+  delete<TResponse = void>(path: string, options?: ApiRequestOptions): Observable<TResponse> {
+    return this.http.delete<TResponse>(this.apiUrl.build(path), {
+      withCredentials: options?.withCredentials,
+    });
   }
 
   private toHttpParams(params?: ApiQueryParams): HttpParams | undefined {
@@ -88,4 +95,5 @@ export class ApiClientService {
  */
 export type ApiRequestOptions = {
   params?: ApiQueryParams;
+  withCredentials?: boolean;
 };
