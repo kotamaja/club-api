@@ -1,8 +1,8 @@
-import { Component, inject } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import {Component, inject} from '@angular/core';
+import {RouterLink} from '@angular/router';
 
-import { CapabilityService } from '../../../../core/capabilities/capability.service';
-import { PageHeaderComponent } from '../../../../shared/ui/page-header/page-header.component';
+import {CapabilityService} from '../../../../core/capabilities/capability.service';
+import {PageHeaderComponent} from '../../../../shared/ui/page-header/page-header.component';
 
 /**
  * Displays the connected application home page.
@@ -21,7 +21,7 @@ export class AppHomePageComponent {
 
   protected canAccessMemberArea(): boolean {
     return this.capability.can('canAccessMemberArea');
-}
+  }
 
   protected canAccessManagementArea(): boolean {
     return this.capability.can('canAccessManagementArea');

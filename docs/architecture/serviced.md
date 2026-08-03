@@ -556,7 +556,7 @@ Structure possible :
 
 ```txt
 core/interceptors/
-├── auth-token.interceptor.ts
+├── api-request.interceptor.ts
 ├── organization-context.interceptor.ts
 ├── api-error.interceptor.ts
 └── network-error.interceptor.ts

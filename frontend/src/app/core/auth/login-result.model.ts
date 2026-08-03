@@ -5,6 +5,5 @@ import { CurrentUser } from './current-user.model';
  */
 export type LoginResult = {
   accessToken: string;
-  refreshToken: string;
   user: CurrentUser;
 };

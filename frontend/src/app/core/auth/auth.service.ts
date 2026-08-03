@@ -25,6 +25,7 @@ export class AuthService {
     const command: PasswordLoginCommand = {
       email,
       password,
+      refreshTokenMode: 'cookie',
     };
 
     return this.api.post<LoginResponse, PasswordLoginCommand>('/auth/login', command, {
@@ -33,17 +34,17 @@ export class AuthService {
       map((response): LoginResult => {
         return {
           accessToken: response.token,
-          refreshToken: response.refreshToken,
           user: {
             id: email,
             email,
             displayName: email,
+            status: 'active',
+            roles: [],
           },
         };
       }),
       tap((result) => {
         this.token.setAccessToken(result.accessToken);
-        this.token.setRefreshToken(result.refreshToken);
         this.session.setAuthenticated(result.user);
 
         // Temporary development context until /me/current-context is connected.
@@ -73,7 +74,7 @@ export class AuthService {
   }
 
   logout(): Observable<void> {
-    this.token.clearTokens();
+    this.token.clearAccessToken();
     this.session.setAnonymous();
     this.currentContext.reset();
 

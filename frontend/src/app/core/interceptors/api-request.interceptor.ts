@@ -1,27 +1,29 @@
 import { HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
 
-import { AppConfigService } from '../config/app-config.service';
 import { TokenService } from '../auth/token.service';
+import { AppConfigService } from '../config/app-config.service';
 
 /**
- * Adds the current JWT access token to Ramalo API requests.
+ * Prepares outgoing Ramalo API requests.
  *
- * Refresh-token handling is intentionally not implemented here yet. This
- * interceptor only attaches the bearer token when one is available.
+ * It asks the backend for plain JSON responses and attaches the JWT access
+ * token when one is available.
  */
-export const authTokenInterceptor: HttpInterceptorFn = (request, next) => {
+export const apiRequestInterceptor: HttpInterceptorFn = (request, next) => {
   const config = inject(AppConfigService);
-  const token = inject(TokenService).getAccessToken();
 
-  if (!token || !isApiRequest(request.url, config.apiBaseUrl)) {
+  if (!isApiRequest(request.url, config.apiBaseUrl)) {
     return next(request);
   }
+
+  const token = inject(TokenService).getAccessToken();
 
   return next(
     request.clone({
       setHeaders: {
-        Authorization: `Bearer ${token}`,
+        Accept: 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
     }),
   );

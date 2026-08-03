@@ -1,15 +1,14 @@
 import { Service, signal } from '@angular/core';
 
 /**
- * Stores the current JWT access token and refresh token.
+ * Stores the current JWT access token used by authenticated API requests.
  *
- * The current implementation keeps both tokens in memory. A later backend
- * evolution may move the refresh token to an httpOnly cookie.
+ * The refresh token is managed by the backend through an httpOnly cookie and
+ * is intentionally not exposed to frontend code.
  */
 @Service()
 export class TokenService {
   private readonly accessToken = signal<string | null>(null);
-  private readonly refreshToken = signal<string | null>(null);
 
   getAccessToken(): string | null {
     return this.accessToken();
@@ -19,16 +18,7 @@ export class TokenService {
     this.accessToken.set(token);
   }
 
-  getRefreshToken(): string | null {
-    return this.refreshToken();
-  }
-
-  setRefreshToken(token: string): void {
-    this.refreshToken.set(token);
-  }
-
-  clearTokens(): void {
+  clearAccessToken(): void {
     this.accessToken.set(null);
-    this.refreshToken.set(null);
   }
 }
