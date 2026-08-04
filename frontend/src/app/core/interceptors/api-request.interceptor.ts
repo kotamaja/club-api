@@ -1,8 +1,10 @@
 import { HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
 
-import { TokenService } from '../auth/token.service';
+
+import { TokenService } from '../auth/session/token.service';
 import { AppConfigService } from '../config/app-config.service';
+import {isApiRequest} from '../api/api-request-url.utils';
 
 /**
  * Prepares outgoing Ramalo API requests.
@@ -28,33 +30,3 @@ export const apiRequestInterceptor: HttpInterceptorFn = (request, next) => {
     }),
   );
 };
-
-function isApiRequest(url: string, apiBaseUrl: string): boolean {
-  const normalizedApiBaseUrl = normalizePath(apiBaseUrl);
-
-  if (url.startsWith('http://') || url.startsWith('https://')) {
-    try {
-      const parsedUrl = new URL(url);
-
-      return normalizePath(parsedUrl.pathname).startsWith(normalizedApiBaseUrl);
-    } catch {
-      return false;
-    }
-  }
-
-  return normalizePath(url).startsWith(normalizedApiBaseUrl);
-}
-
-function normalizePath(path: string): string {
-  const trimmed = path.trim();
-
-  if (trimmed === '') {
-    return '/';
-  }
-
-  const withLeadingSlash = trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
-
-  return withLeadingSlash.endsWith('/') && withLeadingSlash !== '/'
-    ? withLeadingSlash.slice(0, -1)
-    : withLeadingSlash;
-}

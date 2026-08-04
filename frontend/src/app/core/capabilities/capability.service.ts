@@ -1,6 +1,6 @@
 import { computed, inject, Service } from '@angular/core';
 
-import { CurrentContextService } from '../context/current-context.service';
+import { CurrentContextService } from '../context/current/current-context.service';
 import { Capability } from './capability.model';
 
 /**

@@ -1,7 +1,7 @@
 import { computed, Service, signal } from '@angular/core';
 
 import { AuthState } from './auth-state.model';
-import { CurrentUser } from './current-user.model';
+import { CurrentUser } from '../current-user/current-user.model';
 
 /**
  * Holds the current frontend session state.

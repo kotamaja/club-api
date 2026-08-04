@@ -20,3 +20,12 @@ export type PasswordLoginCommand = {
 export type LoginResponse = {
   token: string;
 };
+
+/**
+ * Response returned after refreshing the JWT access token.
+ *
+ * In cookie mode, Angular receives only the new access token.
+ */
+export type RefreshResponse = {
+  token: string;
+};

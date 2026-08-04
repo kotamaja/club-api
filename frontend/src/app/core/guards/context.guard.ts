@@ -1,7 +1,7 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
 
-import { CurrentContextService } from '../context/current-context.service';
+import { CurrentContextService } from '../context/current/current-context.service';
 
 /**
  * Ensures that a usable organization and club context is available.

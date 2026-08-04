@@ -6,6 +6,8 @@ import { provideServiceWorker } from '@angular/service-worker';
 import {APP_CONFIG} from './core/config/app-config.token';
 import {provideHttpClient, withInterceptors} from '@angular/common/http';
 import {apiRequestInterceptor} from './core/interceptors/api-request.interceptor';
+import { organizationContextInterceptor } from './core/interceptors/organization-context.interceptor';
+import {provideAuthInitializer} from './core/auth/session/auth-initializer';
 
 
 export const appConfig: ApplicationConfig = {
@@ -23,6 +25,7 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(
       withInterceptors([
         apiRequestInterceptor,
+        organizationContextInterceptor,
       ]),
     ),
     {
@@ -32,5 +35,6 @@ export const appConfig: ApplicationConfig = {
         apiVersion: 'v1',
       },
     },
+    provideAuthInitializer(),
   ],
 };

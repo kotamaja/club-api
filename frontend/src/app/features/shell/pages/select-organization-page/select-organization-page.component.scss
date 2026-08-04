@@ -1,0 +1,40 @@
+:host {
+  display: block;
+}
+
+.select-organization-page__list {
+  display: grid;
+  gap: 12px;
+  max-width: 720px;
+}
+
+.select-organization-page__item {
+  display: grid;
+  gap: 6px;
+  width: 100%;
+  padding: 16px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  background: #fff;
+  color: inherit;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+
+.select-organization-page__item:hover {
+  background: #f7f7f7;
+}
+
+.select-organization-page__name {
+  font-weight: 600;
+}
+
+.select-organization-page__person {
+  color: #666;
+  font-size: 14px;
+}
+
+.select-organization-page__error {
+  color: #b00020;
+}

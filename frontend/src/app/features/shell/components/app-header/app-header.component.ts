@@ -1,9 +1,9 @@
 import { Component, computed, inject } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 
-import { AuthService } from '../../../../core/auth/auth.service';
-import { SessionService } from '../../../../core/auth/session.service';
-import { CurrentContextService } from '../../../../core/context/current-context.service';
+import { AuthService } from '../../../../core/auth/services/auth.service';
+import { SessionService } from '../../../../core/auth/session/session.service';
+import { CurrentContextService } from '../../../../core/context/current/current-context.service';
 
 /**
  * Displays the connected application header.

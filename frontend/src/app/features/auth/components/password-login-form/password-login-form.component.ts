@@ -1,7 +1,7 @@
 import { Component, inject, output, signal } from '@angular/core';
 import { FormField, form, email, required, submit } from '@angular/forms/signals';
 
-import { AuthService } from '../../../../core/auth/auth.service';
+import { AuthService } from '../../../../core/auth/services/auth.service';
 import { PasswordLoginFormModel } from './password-login-form.model';
 
 /**

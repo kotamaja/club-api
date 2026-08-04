@@ -1,4 +1,4 @@
-import { CurrentUser } from './current-user.model';
+import { CurrentUser } from '../current-user/current-user.model';
 
 /**
  * Result exposed by AuthService after successful authentication.

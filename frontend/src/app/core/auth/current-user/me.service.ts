@@ -1,7 +1,7 @@
 import { inject, Service } from '@angular/core';
 import { Observable } from 'rxjs';
 
-import { ApiClientService } from '../api/api-client.service';
+import { ApiClientService } from '../../api/api-client.service';
 import { Me } from './me.model';
 
 /**

@@ -1,0 +1,45 @@
+<app-page-header
+  title="Choisir une organisation"
+  description="Sélectionnez l’organisation avec laquelle vous souhaitez travailler."
+/>
+
+@let currentState = state();
+
+@if (currentState.status === 'loading') {
+  <p>
+    Chargement des organisations...
+  </p>
+}
+
+@if (currentState.status === 'empty') {
+  <p>
+    Aucune organisation active n’est disponible pour votre compte.
+  </p>
+}
+
+@if (currentState.status === 'error') {
+  <p class="select-organization-page__error">
+    {{ currentState.message }}
+  </p>
+}
+
+@if (currentState.status === 'loaded') {
+  <div class="select-organization-page__list">
+    @for (organization of currentState.organizations; track organization.organizationId) {
+      <button
+        class="select-organization-page__item"
+        type="button"
+        (click)="selectOrganization(organization)"
+      >
+        <span class="select-organization-page__name">
+          {{ organization.organizationName }}
+        </span>
+
+        <span class="select-organization-page__person">
+          {{ organization.person.firstname }} {{ organization.person.lastname }}
+          — {{ organization.person.email }}
+        </span>
+      </button>
+    }
+  </div>
+}
