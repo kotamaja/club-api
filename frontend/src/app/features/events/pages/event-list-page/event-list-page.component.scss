@@ -1,0 +1,88 @@
+:host {
+  display: block;
+}
+
+.event-list-page__toolbar {
+  margin-bottom: 16px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.event-list-page__button {
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background: #fff;
+  font: inherit;
+  cursor: pointer;
+}
+
+.event-list-page__button:hover:not(:disabled) {
+  background: #f5f5f5;
+}
+
+.event-list-page__button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.event-list-page__reloading {
+  color: #666;
+}
+
+.event-list-page__table-wrapper {
+  overflow-x: auto;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+}
+
+.event-list-page__table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+}
+
+.event-list-page__table th,
+.event-list-page__table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #eee;
+  text-align: left;
+  vertical-align: top;
+}
+
+.event-list-page__table th {
+  font-weight: 600;
+  background: #fafafa;
+}
+
+.event-list-page__table tr:last-child td {
+  border-bottom: 0;
+}
+
+.event-list-page__pagination {
+  margin-top: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.event-list-page__pagination-actions {
+  display: flex;
+  gap: 8px;
+}
+
+@media (max-width: 768px) {
+  .event-list-page__pagination {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .event-list-page__pagination-actions {
+    justify-content: stretch;
+  }
+
+  .event-list-page__pagination-actions .event-list-page__button {
+    flex: 1;
+  }
+}

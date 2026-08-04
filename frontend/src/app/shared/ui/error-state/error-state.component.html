@@ -1,0 +1,19 @@
+<section class="error-state">
+  <h2 class="error-state__title">
+    {{ title() }}
+  </h2>
+
+  <p class="error-state__message">
+    {{ message() }}
+  </p>
+
+  @if (actionLabel() !== null) {
+    <button
+      class="error-state__button"
+      type="button"
+      (click)="onAction()"
+    >
+      {{ actionLabel() }}
+    </button>
+  }
+</section>

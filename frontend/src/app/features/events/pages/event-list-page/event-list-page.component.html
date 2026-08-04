@@ -3,6 +3,111 @@
   description="Gestion des événements, inscriptions et demandes publiques."
 />
 
-<p>
-  La liste des événements sera affichée ici.
-</p>
+@let currentState = state();
+
+<div class="event-list-page__toolbar">
+  <button
+    class="event-list-page__button"
+    type="button"
+    (click)="reload()"
+  >
+    Recharger
+  </button>
+</div>
+
+@if (currentState.status === 'loading') {
+  <p>
+    Chargement des événements...
+  </p>
+}
+
+@if (currentState.status === 'error') {
+  <app-error-state
+    title="Événements indisponibles"
+    [message]="currentState.message"
+    actionLabel="Réessayer"
+    (action)="reload()"
+  />
+}
+
+@if (currentState.status === 'empty') {
+  <p>
+    Aucun événement ne correspond aux critères actuels.
+  </p>
+}
+
+@if (currentState.status === 'loaded' || currentState.status === 'reloading') {
+  <section>
+    @if (currentState.status === 'reloading') {
+      <p class="event-list-page__reloading">
+        Actualisation...
+      </p>
+    }
+
+    <div class="event-list-page__table-wrapper">
+      <table class="event-list-page__table">
+        <thead>
+        <tr>
+          <th>Titre</th>
+          <th>Date</th>
+          <th>Lieu</th>
+          <th>Statut</th>
+          <th>Club</th>
+        </tr>
+        </thead>
+
+        <tbody>
+          @for (event of currentState.page.items; track trackEvent($index, event)) {
+            <tr>
+              <td>
+                <a [routerLink]="['/app/manage/events', event.id]">
+                  {{ event.title }}
+                </a>
+              </td>
+              <td>
+                {{ event.startsAt | date:'dd.MM.yyyy HH:mm' }}
+              </td>
+              <td>
+                {{ event.location ?? '—' }}
+              </td>
+              <td>
+                {{ event.status }}
+              </td>
+              <td>
+                {{ event.clubName ?? '—' }}
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <footer class="event-list-page__pagination">
+      <span>
+        Page {{ currentState.page.page }}
+        —
+        {{ currentState.page.totalItems }} événement(s)
+      </span>
+
+      <div class="event-list-page__pagination-actions">
+        <button
+          class="event-list-page__button"
+          type="button"
+          [disabled]="currentState.page.page <= 1"
+          (click)="previousPage()"
+        >
+          Précédent
+        </button>
+
+        <button
+          class="event-list-page__button"
+          type="button"
+          [disabled]="currentState.page.page * currentState.page.perPage >= currentState.page.totalItems"
+          (click)="nextPage(currentState.page)"
+        >
+          Suivant
+        </button>
+      </div>
+    </footer>
+  </section>
+}
