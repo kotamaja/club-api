@@ -24,7 +24,7 @@ type EventEditForm = {
   endsAt: string;
   timezone: string;
   allDay: boolean;
-  capacity: number | null;
+  capacity: string;
   waitlistEnabled: boolean;
   publicRegistrationEnabled: boolean;
   registrationStartsAt: string;
@@ -47,6 +47,14 @@ type EventEditPageState =
   | { status: 'loading' }
   | { status: 'ready'; event: EventDetail; form: EventEditForm; save: EventEditSaveState }
   | { status: 'error'; message: string };
+
+/**
+ * Validation error displayed by the event edit form.
+ */
+type EventEditValidationError = {
+  field: keyof EventEditForm | 'form';
+  message: string;
+};
 
 /**
  * Displays the event edit form.
@@ -164,12 +172,8 @@ export class EventEditPageComponent {
     this.patchForm({ allDay });
   }
 
-  protected updateCapacity(value: string): void {
-    const trimmed = value.trim();
-
-    this.patchForm({
-      capacity: trimmed === '' ? null : Number(trimmed),
-    });
+  protected updateCapacity(capacity: string): void {
+    this.patchForm({ capacity });
   }
 
   protected updateWaitlistEnabled(waitlistEnabled: boolean): void {
@@ -190,6 +194,10 @@ export class EventEditPageComponent {
 
   protected save(event: EventDetail, form: EventEditForm): void {
     if (this.saveState().status === 'saving') {
+      return;
+    }
+
+    if (!this.canSave()) {
       return;
     }
 
@@ -249,7 +257,7 @@ export class EventEditPageComponent {
       endsAt: this.toDateTimeLocalValue(event.endsAt),
       timezone: event.timezone,
       allDay: event.allDay,
-      capacity: event.capacity,
+      capacity: event.capacity === null ? '' : String(event.capacity),
       waitlistEnabled: event.waitlistEnabled,
       publicRegistrationEnabled: event.publicRegistrationEnabled,
       registrationStartsAt: this.toDateTimeLocalValue(event.registrationStartsAt),
@@ -269,7 +277,7 @@ export class EventEditPageComponent {
       endsAt: this.toApiDateTime(form.endsAt, event.endsAt),
       timezone: form.timezone,
       allDay: form.allDay,
-      capacity: form.capacity,
+      capacity: this.toNullableInteger(form.capacity),
       waitlistEnabled: form.waitlistEnabled,
       publicRegistrationEnabled: form.publicRegistrationEnabled,
       registrationStartsAt: this.toNullableApiDateTime(form.registrationStartsAt, event.registrationStartsAt ?? event.startsAt),
@@ -299,6 +307,16 @@ export class EventEditPageComponent {
     return this.toApiDateTime(value, originalValue);
   }
 
+  private toNullableInteger(value: string): number | null {
+    const trimmed = value.trim();
+
+    if (trimmed === '') {
+      return null;
+    }
+
+    return Number(trimmed);
+  }
+
   /**
    * Converts a datetime-local value to an ISO-like datetime.
    *
@@ -320,5 +338,90 @@ export class EventEditPageComponent {
     const match = value.match(/([+-]\d{2}:\d{2}|Z)$/);
 
     return match?.[1] ?? '';
+  }
+
+
+
+
+
+  protected readonly validationErrors = computed<EventEditValidationError[]>(() => {
+    const form = this.form();
+
+    if (form === null) {
+      return [];
+    }
+
+    return this.validateForm(form);
+  });
+
+  protected readonly isFormValid = computed(() => this.validationErrors().length === 0);
+
+  protected readonly isDirty = computed(() => {
+    const snapshot = this.eventResource.snapshot();
+    const form = this.form();
+
+    if (snapshot.status === 'error' || snapshot.status === 'loading' || snapshot.value === undefined || form === null) {
+      return false;
+    }
+
+    return JSON.stringify(this.createPayload(snapshot.value, form)) !== JSON.stringify(this.createPayload(snapshot.value, this.createForm(snapshot.value)));
+  });
+
+  protected readonly canSave = computed(() => {
+    return this.isFormValid()
+      && this.isDirty()
+      && this.saveState().status !== 'saving';
+  });
+
+  private validateForm(form: EventEditForm): EventEditValidationError[] {
+    const errors: EventEditValidationError[] = [];
+
+    if (form.title.trim() === '') {
+      errors.push({
+        field: 'title',
+        message: 'Le titre est obligatoire.',
+      });
+    }
+
+    if (form.startsAt === '') {
+      errors.push({
+        field: 'startsAt',
+        message: 'La date de début est obligatoire.',
+      });
+    }
+
+    if (form.endsAt === '') {
+      errors.push({
+        field: 'endsAt',
+        message: 'La date de fin est obligatoire.',
+      });
+    }
+
+    if (form.startsAt !== '' && form.endsAt !== '' && form.endsAt <= form.startsAt) {
+      errors.push({
+        field: 'endsAt',
+        message: 'La date de fin doit être postérieure à la date de début.',
+      });
+    }
+
+    if (form.capacity.trim() !== '' && !/^\d+$/.test(form.capacity.trim())) {
+      errors.push({
+        field: 'capacity',
+        message: 'La capacité doit être vide ou être un entier supérieur ou égal à 0.',
+      });
+    }
+
+    if (
+      form.registrationStartsAt !== ''
+      && form.registrationEndsAt !== ''
+      && form.registrationEndsAt <= form.registrationStartsAt
+    ) {
+      errors.push({
+        field: 'registrationEndsAt',
+        message: 'La fin des inscriptions doit être postérieure au début des inscriptions.',
+      });
+    }
+
+    return errors;
   }
 }
