@@ -6,8 +6,8 @@
   margin-bottom: 16px;
   display: flex;
   justify-content: flex-end;
+  gap: 8px;
 }
-
 .event-list-page__button {
   padding: 8px 12px;
   border: 1px solid #ccc;
@@ -133,4 +133,20 @@
   .event-list-page__filters {
     grid-template-columns: 1fr;
   }
+}
+
+.event-list-page__row {
+  cursor: pointer;
+}
+
+.event-list-page__row:hover {
+  background: #f8f8f8;
+}
+
+.event-list-page__row--selected {
+  background: #eef5ff;
+}
+
+.event-list-page__row--selected:hover {
+  background: #e5f0ff;
 }

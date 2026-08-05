@@ -70,6 +70,15 @@
   <button
     class="event-list-page__button"
     type="button"
+    [disabled]="!hasActiveFilters()"
+    (click)="resetFilters()"
+  >
+    Réinitialiser
+  </button>
+
+  <button
+    class="event-list-page__button"
+    type="button"
     (click)="reload()"
   >
     Recharger
@@ -158,21 +167,23 @@
               Statut {{ sortLabel('status') }}
             </button>
           </th>
-
+          <th>Inscriptions</th>
           <th>Club</th>
         </tr>
         </thead>
 
         <tbody>
           @for (event of currentState.page.items; track trackEvent($index, event)) {
-            <tr>
+            <tr
+              class="event-list-page__row"
+              [class.event-list-page__row--selected]="event.id === selectedEventId()"
+              (click)="openEvent(event)"
+            >
               <td>
-                <a [routerLink]="['/app/manage/events', event.id]">
-                  {{ event.title }}
-                </a>
+                {{ event.title }}
               </td>
               <td>
-                {{ event.type }}
+                {{ eventTypeLabel(event.type) }}
               </td>
               <td>
                 {{ event.startsAt | date:'dd.MM.yyyy HH:mm' }}
@@ -181,7 +192,10 @@
                 {{ event.location ?? '—' }}
               </td>
               <td>
-                {{ event.status }}
+                {{ eventStatusLabel(event.status) }}
+              </td>
+              <td>
+                {{ registrationSummary(event) }}
               </td>
               <td>
                 {{ event.clubName ?? '—' }}
@@ -194,7 +208,8 @@
 
     <footer class="event-list-page__pagination">
       <span>
-        Page {{ currentState.page.page }}
+Page {{ currentState.page.page }}
+        sur {{ totalPages(currentState.page) }}
         —
         {{ currentState.page.totalItems }} événement(s)
       </span>

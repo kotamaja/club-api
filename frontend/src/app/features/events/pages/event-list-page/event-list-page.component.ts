@@ -1,12 +1,20 @@
-import { DatePipe } from '@angular/common';
-import { Component, computed, inject, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import {DatePipe} from '@angular/common';
+import {Component, computed, inject, signal} from '@angular/core';
+import {ActivatedRoute, Router, RouterLink} from '@angular/router';
 
-import { PageHeaderComponent } from '../../../../shared/ui/page-header/page-header.component';
-import { defaultEventListQuery, EventListQuery } from '../../data/event-list-query.model';
-import { EventListResource } from '../../data/event-list.resource';
-import { EventListItem, EventListPage } from '../../data/event.schema';
 import {ErrorStateComponent} from '../../../../shared/ui/error-state/error-state.component';
+import {PageHeaderComponent} from '../../../../shared/ui/page-header/page-header.component';
+import {defaultEventListQuery, EventListQuery} from '../../data/event-list-query.model';
+import {
+  eventListQueryFromUrl,
+  eventListQueryToUrl,
+  eventListSelectedIdFromUrl,
+  eventListSelectedIdToUrl,
+} from '../../data/event-list-query-url.mapper';
+import {EventListResource} from '../../data/event-list.resource';
+import {EventListItem, EventListPage} from '../../data/event.schema';
+import { eventStatusLabels, eventTypeLabels } from '../../data/event-labels';
+
 
 /**
  * State used by the event management list page.
@@ -21,8 +29,8 @@ type EventListPageState =
 /**
  * Displays the event management list.
  *
- * This page loads events with a reactive HTTP resource and keeps the visible
- * page state as a single discriminated union.
+ * Filters are synchronized with the URL. The selected row is kept separately
+ * because it is a UI state and does not affect the API query.
  */
 @Component({
   selector: 'app-event-list-page',
@@ -36,13 +44,18 @@ type EventListPageState =
   styleUrl: './event-list-page.component.scss',
 })
 export class EventListPageComponent {
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
   private readonly eventListResource = inject(EventListResource);
 
-  protected readonly query = signal<EventListQuery>(defaultEventListQuery);
+  private searchDebounceId: ReturnType<typeof setTimeout> | null = null;
+
+  protected readonly query = signal<EventListQuery>(this.createInitialQuery());
+  protected readonly selectedEventId = signal<string | null>(this.createInitialSelectedEventId());
+
   protected readonly currentQuery = computed(() => this.query());
 
   protected readonly eventsResource = this.eventListResource.create(this.query);
-
 
 
   protected readonly state = computed<EventListPageState>(() => {
@@ -57,7 +70,7 @@ export class EventListPageComponent {
     }
 
     if (snapshot.status === 'loading') {
-      return { status: 'loading' };
+      return {status: 'loading'};
     }
 
     const page = snapshot.value;
@@ -86,80 +99,91 @@ export class EventListPageComponent {
     this.eventsResource.reload();
   }
 
+  protected updateSearch(search: string): void {
+    if (this.searchDebounceId !== null) {
+      clearTimeout(this.searchDebounceId);
+    }
+
+    this.searchDebounceId = setTimeout(() => {
+      const currentQuery = this.query();
+
+      if (currentQuery.search === search) {
+        this.searchDebounceId = null;
+        return;
+      }
+
+      this.updateQuery({
+        ...currentQuery,
+        search,
+        page: 1,
+      });
+
+      this.searchDebounceId = null;
+    }, 300);
+  }
+
+  protected updatePeriod(period: EventListQuery['period']): void {
+    this.updateQuery({
+      ...this.query(),
+      period,
+      page: 1,
+    });
+  }
+
+  protected updateStatus(status: EventListQuery['status']): void {
+    this.updateQuery({
+      ...this.query(),
+      status,
+      page: 1,
+    });
+  }
+
+  protected updateType(type: EventListQuery['type']): void {
+    this.updateQuery({
+      ...this.query(),
+      type,
+      page: 1,
+    });
+  }
+
+  protected updateSort(sort: EventListQuery['sort']): void {
+    const query = this.query();
+
+    if (query.sort === sort) {
+      this.updateQuery({
+        ...query,
+        direction: query.direction === 'asc' ? 'desc' : 'asc',
+        page: 1,
+      });
+
+      return;
+    }
+
+    this.updateQuery({
+      ...query,
+      sort,
+      direction: 'asc',
+      page: 1,
+    });
+  }
+
   protected nextPage(page: EventListPage): void {
     if (page.page * page.perPage >= page.totalItems) {
       return;
     }
 
-    this.query.update((query) => ({
-      ...query,
-      page: query.page + 1,
-    }));
-  }
-
-  protected previousPage(): void {
-    this.query.update((query) => ({
-      ...query,
-      page: Math.max(1, query.page - 1),
-    }));
-  }
-
-  protected trackEvent(_index: number, event: EventListItem): string {
-    return event.id;
-  }
-
-  protected updateSearch(search: string): void {
-    this.query.update((query) => ({
-      ...query,
-      search,
-      page: 1,
-    }));
-  }
-
-  protected updatePeriod(period: EventListQuery['period']): void {
-    this.query.update((query) => ({
-      ...query,
-      period,
-      page: 1,
-    }));
-  }
-
-  protected updateStatus(status: EventListQuery['status']): void {
-    this.query.update((query) => ({
-      ...query,
-      status,
-      page: 1,
-    }));
-  }
-
-  protected updateType(type: EventListQuery['type']): void {
-    this.query.update((query) => ({
-      ...query,
-      type,
-      page: 1,
-    }));
-  }
-
-  protected updateSort(sort: EventListQuery['sort']): void {
-    this.query.update((query) => {
-      if (query.sort === sort) {
-        return {
-          ...query,
-          direction: query.direction === 'asc' ? 'desc' : 'asc',
-          page: 1,
-        };
-      }
-
-      return {
-        ...query,
-        sort,
-        direction: sort === 'startsAt' ? 'asc' : 'asc',
-        page: 1,
-      };
+    this.updateQuery({
+      ...this.query(),
+      page: this.query().page + 1,
     });
   }
 
-
+  protected previousPage(): void {
+    this.updateQuery({
+      ...this.query(),
+      page: Math.max(1, this.query().page - 1),
+    });
+  }
 
   protected sortLabel(sort: EventListQuery['sort']): string {
     const query = this.query();
@@ -171,4 +195,112 @@ export class EventListPageComponent {
     return query.direction === 'asc' ? '↑' : '↓';
   }
 
+  protected trackEvent(_index: number, event: EventListItem): string {
+    return event.id;
+  }
+
+  private createInitialQuery(): EventListQuery {
+    const queryParamMap = this.route.snapshot.queryParamMap;
+
+    return eventListQueryFromUrl({
+      search: queryParamMap.get('search'),
+      period: queryParamMap.get('period'),
+      status: queryParamMap.get('status'),
+      type: queryParamMap.get('type'),
+      sort: queryParamMap.get('sort'),
+      direction: queryParamMap.get('direction'),
+      page: queryParamMap.get('page'),
+      perPage: queryParamMap.get('perPage'),
+    });
+  }
+
+  private createInitialSelectedEventId(): string | null {
+    return eventListSelectedIdFromUrl({
+      selected: this.route.snapshot.queryParamMap.get('selected'),
+    });
+  }
+
+  private updateQuery(nextQuery: EventListQuery): void {
+    this.query.set(nextQuery);
+
+    void this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: eventListQueryToUrl(nextQuery),
+      queryParamsHandling: 'merge',
+      replaceUrl: true,
+    });
+  }
+
+  /**
+   * Selects an event in the current list URL, then opens its detail page.
+   */
+  protected openEvent(event: EventListItem): void {
+    this.selectedEventId.set(event.id);
+
+    void this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: eventListSelectedIdToUrl(event.id),
+      queryParamsHandling: 'merge',
+      replaceUrl: true,
+    }).then(() => {
+      void this.router.navigate(['/app/manage/events', event.id]);
+    });
+  }
+
+  /**
+   * Returns the total number of pages for a paginated event list.
+   */
+  protected totalPages(page: EventListPage): number {
+    return Math.max(1, Math.ceil(page.totalItems / page.perPage));
+  }
+
+  /**
+   * Resets the event list filters, sort and pagination.
+   */
+  protected resetFilters(): void {
+    this.updateQuery(defaultEventListQuery);
+  }
+
+  /**
+   * Returns the human-readable label for an event type.
+   */
+  protected eventTypeLabel(type: EventListItem['type']): string {
+    return eventTypeLabels[type] ?? type;
+  }
+
+  /**
+   * Returns the human-readable label for an event status.
+   */
+  protected eventStatusLabel(status: EventListItem['status']): string {
+    return eventStatusLabels[status] ?? status;
+  }
+
+  /**
+   * Returns the visible registration/capacity summary for one event.
+   */
+  protected registrationSummary(event: EventListItem): string {
+    if (event.capacity === null) {
+      return `${event.registeredCount} / illimité`;
+    }
+
+    return `${event.registeredCount} / ${event.capacity}`;
+  }
+
+  /**
+   * Returns true when at least one filter or sort value differs from defaults.
+   */
+  protected hasActiveFilters(): boolean {
+    const query = this.query();
+
+    return query.search.trim() !== defaultEventListQuery.search
+      || query.period !== defaultEventListQuery.period
+      || query.status !== defaultEventListQuery.status
+      || query.type !== defaultEventListQuery.type
+      || query.sort !== defaultEventListQuery.sort
+      || query.direction !== defaultEventListQuery.direction
+      || query.page !== defaultEventListQuery.page
+      || query.perPage !== defaultEventListQuery.perPage;
+  }
+
 }
+
