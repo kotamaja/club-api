@@ -1,0 +1,179 @@
+@let currentState = state();
+
+@if (currentState.status === 'loading') {
+  <app-page-header
+    title="Événement"
+    description="Chargement du détail de l’événement."
+  />
+
+  <p>
+    Chargement de l’événement...
+  </p>
+}
+
+@if (currentState.status === 'error') {
+  <app-page-header
+    title="Événement"
+    description="Le détail de l’événement n’a pas pu être chargé."
+  />
+
+  <app-error-state
+    title="Événement indisponible"
+    [message]="currentState.message"
+    actionLabel="Réessayer"
+    (action)="reload()"
+  />
+}
+
+@if (currentState.status === 'loaded' || currentState.status === 'reloading') {
+  @let event = currentState.event;
+
+  <app-page-header
+    [title]="event.title"
+    description="Détail de l’événement."
+  />
+
+  <div class="event-detail-page__actions">
+    <button
+      class="event-detail-page__button"
+      type="button"
+      (click)="goBack()"
+    >
+      Retour à la liste
+    </button>
+
+    <a
+      class="event-detail-page__button"
+      [routerLink]="['/app/manage/events', event.id, 'edit']"
+    >
+      Modifier
+    </a>
+
+    <button
+      class="event-detail-page__button"
+      type="button"
+      (click)="reload()"
+    >
+      Recharger
+    </button>
+  </div>
+
+  @if (currentState.status === 'reloading') {
+    <p class="event-detail-page__reloading">
+      Actualisation...
+    </p>
+  }
+
+  <section class="event-detail-page__hero">
+    <div>
+      <div class="event-detail-page__badges">
+        <span class="event-detail-page__badge">
+          {{ eventTypeLabel(event.type) }}
+        </span>
+
+        <span class="event-detail-page__badge">
+          {{ eventStatusLabel(event.status) }}
+        </span>
+      </div>
+
+      <p class="event-detail-page__hero-meta">
+        {{ event.clubName ?? 'Aucun club associé' }}
+      </p>
+    </div>
+  </section>
+
+  <div class="event-detail-page__main-grid">
+    <section class="event-detail-page__card event-detail-page__card--highlight">
+      <h2>Quand ?</h2>
+
+      <p class="event-detail-page__primary-value">
+        {{ dateRangeLabel(event) }}
+      </p>
+
+      <p class="event-detail-page__secondary-value">
+        {{ timeRangeLabel(event) }}
+      </p>
+
+      <p class="event-detail-page__muted">
+        Fuseau horaire : {{ event.timezone }}
+      </p>
+    </section>
+
+    <section class="event-detail-page__card event-detail-page__card--highlight">
+      <h2>Inscriptions</h2>
+
+      <p class="event-detail-page__primary-value">
+        {{ registrationSummary(event) }}
+      </p>
+
+      <p class="event-detail-page__secondary-value">
+        inscrits / capacité
+      </p>
+
+      <dl class="event-detail-page__compact-list">
+        <div>
+          <dt>Inscription publique</dt>
+          <dd>{{ yesNo(event.publicRegistrationEnabled) }}</dd>
+        </div>
+
+        <div>
+          <dt>Liste d’attente</dt>
+          <dd>{{ yesNo(event.waitlistEnabled) }}</dd>
+        </div>
+      </dl>
+    </section>
+  </div>
+
+  <section class="event-detail-page__card">
+    <h2>Où ?</h2>
+
+    <p class="event-detail-page__primary-value">
+      {{ event.location ?? 'Lieu non renseigné' }}
+    </p>
+  </section>
+
+  @if (event.description !== null) {
+    <section class="event-detail-page__card">
+      <h2>Description</h2>
+
+      <p class="event-detail-page__description">
+        {{ event.description }}
+      </p>
+    </section>
+  }
+
+  <section class="event-detail-page__card">
+    <h2>Détails complémentaires</h2>
+
+    <dl class="event-detail-page__definition-list">
+      <div>
+        <dt>Début des inscriptions</dt>
+        <dd>
+          {{ event.registrationStartsAt ? (event.registrationStartsAt | date:'dd.MM.yyyy HH:mm') : '—' }}
+        </dd>
+      </div>
+
+      <div>
+        <dt>Fin des inscriptions</dt>
+        <dd>
+          {{ event.registrationEndsAt ? (event.registrationEndsAt | date:'dd.MM.yyyy HH:mm') : '—' }}
+        </dd>
+      </div>
+
+      <div>
+        <dt>Journée entière</dt>
+        <dd>{{ yesNo(event.allDay) }}</dd>
+      </div>
+
+      <div>
+        <dt>Organisation</dt>
+        <dd>{{ event.organizationName ?? '—' }}</dd>
+      </div>
+
+      <div>
+        <dt>Identifiant</dt>
+        <dd>{{ event.id }}</dd>
+      </div>
+    </dl>
+  </section>
+}

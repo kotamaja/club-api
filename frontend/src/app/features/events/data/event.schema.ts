@@ -36,17 +36,17 @@ export const MyEventRegistrationStatusSchema = z.enum([
 /**
  * Normalizes an optional nullable string field to null.
  */
-const OptionalNullableStringSchema = z.string().nullish().transform((value) => value ?? null);
+export const OptionalNullableStringSchema = z.string().nullish().transform((value) => value ?? null);
 
 /**
  * Normalizes an optional nullable number field to null.
  */
-const OptionalNullableNumberSchema = z.number().nullish().transform((value) => value ?? null);
+export const OptionalNullableNumberSchema = z.number().nullish().transform((value) => value ?? null);
 
 /**
  * Normalizes an optional nullable registration status field to null.
  */
-const OptionalMyRegistrationStatusSchema = MyEventRegistrationStatusSchema.nullish().transform((value) => value ?? null);
+export const OptionalMyRegistrationStatusSchema = MyEventRegistrationStatusSchema.nullish().transform((value) => value ?? null);
 
 /**
  * Runtime schema for one event item in the management list.
