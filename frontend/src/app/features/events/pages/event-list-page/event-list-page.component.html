@@ -5,6 +5,67 @@
 
 @let currentState = state();
 
+@let queryValue = currentQuery();
+
+<form class="event-list-page__filters">
+  <label class="event-list-page__field">
+    <span>Recherche</span>
+    <input
+      type="search"
+      name="search"
+      [value]="queryValue.search"
+      (input)="updateSearch($any($event.target).value)"
+      placeholder="Titre, lieu..."
+    />
+  </label>
+
+  <label class="event-list-page__field">
+    <span>Type</span>
+    <select
+      name="type"
+      [value]="queryValue.type"
+      (change)="updateType($any($event.target).value)"
+    >
+      <option value="all">Tous</option>
+      <option value="general">Général</option>
+      <option value="course">Cours</option>
+      <option value="training">Entraînement</option>
+      <option value="trip">Sortie</option>
+      <option value="meeting">Réunion</option>
+      <option value="competition">Compétition</option>
+    </select>
+  </label>
+
+  <label class="event-list-page__field">
+    <span>Période</span>
+    <select
+      name="period"
+      [value]="queryValue.period"
+      (change)="updatePeriod($any($event.target).value)"
+    >
+      <option value="upcoming">À venir</option>
+      <option value="past">Passés</option>
+      <option value="all">Tous</option>
+    </select>
+  </label>
+
+  <label class="event-list-page__field">
+    <span>Statut</span>
+    <select
+      name="status"
+      [value]="queryValue.status"
+      (change)="updateStatus($any($event.target).value)"
+    >
+      <option value="all">Tous</option>
+      <option value="draft">Brouillon</option>
+      <option value="published">Publié</option>
+      <option value="cancelled">Annulé</option>
+      <option value="archived">Archivé</option>
+    </select>
+  </label>
+</form>
+
+
 <div class="event-list-page__toolbar">
   <button
     class="event-list-page__button"
@@ -48,10 +109,56 @@
       <table class="event-list-page__table">
         <thead>
         <tr>
-          <th>Titre</th>
-          <th>Date</th>
-          <th>Lieu</th>
-          <th>Statut</th>
+          <th>
+            <button
+              class="event-list-page__sort-button"
+              type="button"
+              (click)="updateSort('title')"
+            >
+              Titre {{ sortLabel('title') }}
+            </button>
+          </th>
+
+          <th>
+            <button
+              class="event-list-page__sort-button"
+              type="button"
+              (click)="updateSort('type')"
+            >
+              Type {{ sortLabel('type') }}
+            </button>
+          </th>
+
+          <th>
+            <button
+              class="event-list-page__sort-button"
+              type="button"
+              (click)="updateSort('startsAt')"
+            >
+              Date {{ sortLabel('startsAt') }}
+            </button>
+          </th>
+
+          <th>
+            <button
+              class="event-list-page__sort-button"
+              type="button"
+              (click)="updateSort('location')"
+            >
+              Lieu {{ sortLabel('location') }}
+            </button>
+          </th>
+
+          <th>
+            <button
+              class="event-list-page__sort-button"
+              type="button"
+              (click)="updateSort('status')"
+            >
+              Statut {{ sortLabel('status') }}
+            </button>
+          </th>
+
           <th>Club</th>
         </tr>
         </thead>
@@ -63,6 +170,9 @@
                 <a [routerLink]="['/app/manage/events', event.id]">
                   {{ event.title }}
                 </a>
+              </td>
+              <td>
+                {{ event.type }}
               </td>
               <td>
                 {{ event.startsAt | date:'dd.MM.yyyy HH:mm' }}

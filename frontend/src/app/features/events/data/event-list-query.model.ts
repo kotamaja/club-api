@@ -1,4 +1,5 @@
 import { SortDirection } from '../../../shared/list-state/list-query-state.model';
+import {EventType} from './event.schema';
 
 /**
  * UI-level period filter for the event list.
@@ -15,13 +16,25 @@ export type EventListPeriod = 'upcoming' | 'past' | 'all';
  */
 export type EventListStatus = 'all' | 'draft' | 'published' | 'cancelled' | 'archived';
 
+
+/**
+ * UI-level event type filter.
+ *
+ * Values must map to event types supported by the API.
+ */
+export type EventListType = 'all' | EventType;
+
 /**
  * Sort fields supported by the event management list.
  *
  * Each value must correspond to a backend-sortable field.
  */
-export type EventListSort = 'startsAt' | 'title';
-
+export type EventListSort =
+  | 'startsAt'
+  | 'title'
+  | 'location'
+  | 'status'
+  | 'type';
 /**
  * Query state used by the event management list.
  *
@@ -33,6 +46,7 @@ export type EventListQuery = {
   search: string;
   period: EventListPeriod;
   status: EventListStatus;
+  type: EventListType;
   sort: EventListSort;
   direction: SortDirection;
   page: number;
@@ -46,6 +60,7 @@ export const defaultEventListQuery: EventListQuery = {
   search: '',
   period: 'upcoming',
   status: 'all',
+  type: 'all',
   sort: 'startsAt',
   direction: 'asc',
   page: 1,

@@ -35,21 +35,27 @@ export class EventListResource {
       pagination: true,
       page: query.page,
       perPage: query.perPage,
-      sort: query.sort,
-      direction: query.direction,
+      ...this.toSortParams(query),
       ...this.toSearchParam(query),
       ...this.toStatusParam(query),
+      ...this.toTypeParam(query),
       ...this.toPeriodParams(query),
     };
   }
 
+
+  /**
+   * Converts the UI search text to the API free-text search filter.
+   */
   private toSearchParam(query: EventListQuery): Record<string, string> {
-    if (query.search.trim() === '') {
+    const search = query.search.trim();
+
+    if (search === '') {
       return {};
     }
 
     return {
-      search: query.search.trim(),
+      search,
     };
   }
 
@@ -60,6 +66,19 @@ export class EventListResource {
 
     return {
       status: query.status,
+    };
+  }
+
+  /**
+   * Converts the UI type filter to the API type filter.
+   */
+  private toTypeParam(query: EventListQuery): Record<string, string> {
+    if (query.type === 'all') {
+      return {};
+    }
+
+    return {
+      type: query.type,
     };
   }
 
@@ -79,5 +98,14 @@ export class EventListResource {
     }
 
     return {};
+  }
+
+  /**
+   * Converts the UI sort state to the API Platform order filter format.
+   */
+  private toSortParams(query: EventListQuery): Record<string, string> {
+    return {
+      [`order[${query.sort}]`]: query.direction,
+    };
   }
 }

@@ -39,8 +39,11 @@ export class EventListPageComponent {
   private readonly eventListResource = inject(EventListResource);
 
   protected readonly query = signal<EventListQuery>(defaultEventListQuery);
+  protected readonly currentQuery = computed(() => this.query());
 
   protected readonly eventsResource = this.eventListResource.create(this.query);
+
+
 
   protected readonly state = computed<EventListPageState>(() => {
     const snapshot = this.eventsResource.snapshot();
@@ -104,4 +107,68 @@ export class EventListPageComponent {
   protected trackEvent(_index: number, event: EventListItem): string {
     return event.id;
   }
+
+  protected updateSearch(search: string): void {
+    this.query.update((query) => ({
+      ...query,
+      search,
+      page: 1,
+    }));
+  }
+
+  protected updatePeriod(period: EventListQuery['period']): void {
+    this.query.update((query) => ({
+      ...query,
+      period,
+      page: 1,
+    }));
+  }
+
+  protected updateStatus(status: EventListQuery['status']): void {
+    this.query.update((query) => ({
+      ...query,
+      status,
+      page: 1,
+    }));
+  }
+
+  protected updateType(type: EventListQuery['type']): void {
+    this.query.update((query) => ({
+      ...query,
+      type,
+      page: 1,
+    }));
+  }
+
+  protected updateSort(sort: EventListQuery['sort']): void {
+    this.query.update((query) => {
+      if (query.sort === sort) {
+        return {
+          ...query,
+          direction: query.direction === 'asc' ? 'desc' : 'asc',
+          page: 1,
+        };
+      }
+
+      return {
+        ...query,
+        sort,
+        direction: sort === 'startsAt' ? 'asc' : 'asc',
+        page: 1,
+      };
+    });
+  }
+
+
+
+  protected sortLabel(sort: EventListQuery['sort']): string {
+    const query = this.query();
+
+    if (query.sort !== sort) {
+      return '';
+    }
+
+    return query.direction === 'asc' ? '↑' : '↓';
+  }
+
 }

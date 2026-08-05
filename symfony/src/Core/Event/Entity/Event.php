@@ -2,7 +2,11 @@
 
 namespace App\Core\Event\Entity;
 
+use ApiPlatform\Doctrine\Orm\Filter\DateFilter;
 use ApiPlatform\Doctrine\Orm\Filter\ExactFilter;
+use ApiPlatform\Doctrine\Orm\Filter\FreeTextQueryFilter;
+use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
+use ApiPlatform\Doctrine\Orm\Filter\OrFilter;
 use ApiPlatform\Doctrine\Orm\Filter\PartialSearchFilter;
 use ApiPlatform\Doctrine\Orm\Filter\SortFilter;
 use ApiPlatform\Metadata\ApiProperty;
@@ -97,25 +101,19 @@ use Symfony\Component\Validator\Constraints as Assert;
                     filter: new ExactFilter(),
                     property: 'status',
                 ),
-                'orderId' => new QueryParameter(
-                    filter: new SortFilter(),
-                    property: 'publicId',
-                ),
-                'orderTitle' => new QueryParameter(
-                    filter: new SortFilter(),
-                    property: 'title',
-                ),
-                'orderStartsAt' => new QueryParameter(
-                    filter: new SortFilter(),
+                'startsAt' => new QueryParameter(
+                    filter: new DateFilter(),
                     property: 'startsAt',
                 ),
-                'orderEndsAt' => new QueryParameter(
-                    filter: new SortFilter(),
-                    property: 'endsAt',
+                'search' => new QueryParameter(
+                    filter: new FreeTextQueryFilter(
+                        new OrFilter(filter: new PartialSearchFilter())
+                    ),
+                    properties: ['title', 'location'],
                 ),
-                'orderStatus' => new QueryParameter(
-                    filter: new SortFilter(),
-                    property: 'status',
+                'order[:property]' => new QueryParameter(
+                    filter: new OrderFilter(),
+                    properties: ['startsAt', 'title', 'location','endsAt', 'status', 'type'],
                 ),
             ],
         ),
