@@ -76,7 +76,7 @@ final readonly class CommunityPublicEventRegistrationRequestEligibilityPolicy im
      */
     private function assertEventCanReceivePublicRequests(Event $event, \DateTimeImmutable $now): void
     {
-        if (!$event->getStatus()->acceptsRegistrations()) {
+        if (!$event->getEventStatus()->acceptsRegistrations()) {
             throw new EventRegistrationNotAllowedException('Event does not accept registrations.');
         }
 

@@ -34,8 +34,8 @@ final readonly class EventToEventItemDtoMapper implements CustomMapperInterface
         $dto->description = $source->getDescription();
         $dto->location = $source->getLocation();
 
-        $dto->type = $source->getType()->value;
-        $dto->status = $source->getStatus()->value;
+        $dto->eventType = $source->getEventType()->value;
+        $dto->eventStatus = $source->getEventStatus()->value;
 
         $club = $source->getClub();
         $dto->clubId = $club?->getPublicId();

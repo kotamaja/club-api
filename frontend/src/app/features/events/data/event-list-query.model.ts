@@ -33,8 +33,8 @@ export type EventListSort =
   | 'startsAt'
   | 'title'
   | 'location'
-  | 'status'
-  | 'type';
+  | 'eventStatus'
+  | 'eventType';
 /**
  * Query state used by the event management list.
  *
@@ -45,8 +45,8 @@ export type EventListSort =
 export type EventListQuery = {
   search: string;
   period: EventListPeriod;
-  status: EventListStatus;
-  type: EventListType;
+  eventStatus: EventListStatus;
+  eventType: EventListType;
   sort: EventListSort;
   direction: SortDirection;
   page: number;
@@ -59,8 +59,8 @@ export type EventListQuery = {
 export const defaultEventListQuery: EventListQuery = {
   search: '',
   period: 'upcoming',
-  status: 'all',
-  type: 'all',
+  eventStatus: 'all',
+  eventType: 'all',
   sort: 'startsAt',
   direction: 'asc',
   page: 1,

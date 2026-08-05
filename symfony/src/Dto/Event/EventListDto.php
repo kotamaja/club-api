@@ -8,9 +8,9 @@ final class EventListDto
 
     public string $title;
 
-    public string $type;
+    public string $eventType;
 
-    public string $status;
+    public string $eventStatus;
 
     public ?string $clubId = null;
 

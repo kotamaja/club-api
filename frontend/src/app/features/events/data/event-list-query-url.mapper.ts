@@ -13,8 +13,8 @@ import {
 export type EventListUrlQueryParams = {
   search?: string | null;
   period?: string | null;
-  status?: string | null;
-  type?: string | null;
+  eventStatus?: string | null;
+  eventType?: string | null;
   sort?: string | null;
   direction?: string | null;
   page?: string | null;
@@ -52,8 +52,8 @@ const validSorts: readonly EventListSort[] = [
   'startsAt',
   'title',
   'location',
-  'status',
-  'type',
+  'eventStatus',
+  'eventType',
 ];
 
 const validDirections = ['asc', 'desc'] as const;
@@ -65,8 +65,8 @@ export function eventListQueryFromUrl(params: EventListUrlQueryParams): EventLis
   return {
     search: params.search ?? defaultEventListQuery.search,
     period: parseEnum(params.period, validPeriods, defaultEventListQuery.period),
-    status: parseEnum(params.status, validStatuses, defaultEventListQuery.status),
-    type: parseEnum(params.type, validTypes, defaultEventListQuery.type),
+    eventStatus: parseEnum(params.eventStatus, validStatuses, defaultEventListQuery.eventStatus),
+    eventType: parseEnum(params.eventType, validTypes, defaultEventListQuery.eventType),
     sort: parseEnum(params.sort, validSorts, defaultEventListQuery.sort),
     direction: parseEnum(params.direction, validDirections, defaultEventListQuery.direction),
     page: parsePositiveInteger(params.page, defaultEventListQuery.page),
@@ -85,8 +85,8 @@ export function eventListQueryToUrl(query: EventListQuery): Record<string, strin
   return {
     search: search === defaultEventListQuery.search ? null : search,
     period: query.period === defaultEventListQuery.period ? null : query.period,
-    status: query.status === defaultEventListQuery.status ? null : query.status,
-    type: query.type === defaultEventListQuery.type ? null : query.type,
+    eventStatus: query.eventStatus === defaultEventListQuery.eventStatus ? null : query.eventStatus,
+    eventType: query.eventType === defaultEventListQuery.eventType ? null : query.eventType,
     sort: query.sort === defaultEventListQuery.sort ? null : query.sort,
     direction: query.direction === defaultEventListQuery.direction ? null : query.direction,
     page: query.page === defaultEventListQuery.page ? null : query.page,

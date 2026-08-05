@@ -167,7 +167,7 @@ final class EventRegistrationCreateTest extends ApiTestCase
             ->forOrganization($organization)
             ->create();
 
-        $this->assertSame(EventStatus::Draft, $event->getStatus());
+        $this->assertSame(EventStatus::Draft, $event->getEventStatus());
 
         $this->apiPost('/api/v1/events/' . $event->getPublicId() . '/registrations', [
             'personId' => $person->getPublicId(),

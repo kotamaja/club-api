@@ -53,6 +53,11 @@ export class ApiClientService {
 
   patch<TResponse, TBody = unknown>(path: string, body: TBody, options?: ApiRequestOptions): Observable<TResponse> {
     return this.http.patch<TResponse>(this.apiUrl.build(path), body, {
+      params: this.toHttpParams(options?.params),
+      headers: {
+        'Content-Type': 'application/merge-patch+json',
+        ...options?.headers,
+      },
       withCredentials: options?.withCredentials,
     });
   }
@@ -95,5 +100,6 @@ export class ApiClientService {
  */
 export type ApiRequestOptions = {
   params?: ApiQueryParams;
+  headers?: Record<string, string>;
   withCredentials?: boolean;
 };

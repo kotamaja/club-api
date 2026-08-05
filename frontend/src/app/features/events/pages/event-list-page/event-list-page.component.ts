@@ -1,6 +1,6 @@
 import {DatePipe} from '@angular/common';
 import {Component, computed, inject, signal} from '@angular/core';
-import {ActivatedRoute, Router, RouterLink} from '@angular/router';
+import {ActivatedRoute, Router} from '@angular/router';
 
 import {ErrorStateComponent} from '../../../../shared/ui/error-state/error-state.component';
 import {PageHeaderComponent} from '../../../../shared/ui/page-header/page-header.component';
@@ -36,7 +36,6 @@ type EventListPageState =
   selector: 'app-event-list-page',
   imports: [
     DatePipe,
-    RouterLink,
     ErrorStateComponent,
     PageHeaderComponent,
   ],
@@ -130,18 +129,18 @@ export class EventListPageComponent {
     });
   }
 
-  protected updateStatus(status: EventListQuery['status']): void {
+  protected updateStatus(eventStatus: EventListQuery['eventStatus']): void {
     this.updateQuery({
       ...this.query(),
-      status,
+      eventStatus,
       page: 1,
     });
   }
 
-  protected updateType(type: EventListQuery['type']): void {
+  protected updateType(eventType: EventListQuery['eventType']): void {
     this.updateQuery({
       ...this.query(),
-      type,
+      eventType,
       page: 1,
     });
   }
@@ -205,8 +204,8 @@ export class EventListPageComponent {
     return eventListQueryFromUrl({
       search: queryParamMap.get('search'),
       period: queryParamMap.get('period'),
-      status: queryParamMap.get('status'),
-      type: queryParamMap.get('type'),
+      eventStatus: queryParamMap.get('eventStatus'),
+      eventType: queryParamMap.get('eventType'),
       sort: queryParamMap.get('sort'),
       direction: queryParamMap.get('direction'),
       page: queryParamMap.get('page'),
@@ -264,15 +263,15 @@ export class EventListPageComponent {
   /**
    * Returns the human-readable label for an event type.
    */
-  protected eventTypeLabel(type: EventListItem['type']): string {
-    return eventTypeLabels[type] ?? type;
+  protected eventTypeLabel(eventType: EventListItem['eventType']): string {
+    return eventTypeLabels[eventType] ?? eventType;
   }
 
   /**
    * Returns the human-readable label for an event status.
    */
-  protected eventStatusLabel(status: EventListItem['status']): string {
-    return eventStatusLabels[status] ?? status;
+  protected eventStatusLabel(eventStatus: EventListItem['eventStatus']): string {
+    return eventStatusLabels[eventStatus] ?? eventStatus;
   }
 
   /**
@@ -294,8 +293,8 @@ export class EventListPageComponent {
 
     return query.search.trim() !== defaultEventListQuery.search
       || query.period !== defaultEventListQuery.period
-      || query.status !== defaultEventListQuery.status
-      || query.type !== defaultEventListQuery.type
+      || query.eventStatus !== defaultEventListQuery.eventStatus
+      || query.eventType !== defaultEventListQuery.eventType
       || query.sort !== defaultEventListQuery.sort
       || query.direction !== defaultEventListQuery.direction
       || query.page !== defaultEventListQuery.page

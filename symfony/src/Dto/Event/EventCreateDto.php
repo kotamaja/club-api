@@ -11,7 +11,7 @@ final class EventCreateDto
     #[Assert\Ulid]
     public ?string $clubId = null;
 
-    public ?EventType $type = null;
+    public ?EventType $eventType = null;
 
     #[Assert\NotBlank]
     #[Assert\Length(max: 180)]

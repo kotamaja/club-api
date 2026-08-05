@@ -12,9 +12,9 @@ final class EventItemDto
 
     public ?string $location = null;
 
-    public string $type;
+    public string $eventType;
 
-    public string $status;
+    public string $eventStatus;
 
     public ?string $clubId = null;
 

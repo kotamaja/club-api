@@ -1,0 +1,225 @@
+@let currentState = state();
+
+@if (currentState.status === 'loading') {
+  <app-page-header
+    title="Modifier l’événement"
+    description="Chargement du formulaire."
+  />
+
+  <p>
+    Chargement de l’événement...
+  </p>
+}
+
+@if (currentState.status === 'error') {
+  <app-page-header
+    title="Modifier l’événement"
+    description="Le formulaire n’a pas pu être chargé."
+  />
+
+  <app-error-state
+    title="Événement indisponible"
+    [message]="currentState.message"
+    actionLabel="Réessayer"
+    (action)="reload()"
+  />
+}
+
+@if (currentState.status === 'ready') {
+  @let event = currentState.event;
+  @let form = currentState.form;
+
+  <app-page-header
+    [title]="'Modifier — ' + event.title"
+    description="Modification des informations principales de l’événement."
+  />
+
+  <div class="event-edit-page__actions">
+    <button
+      class="event-edit-page__button"
+      type="button"
+      (click)="goBack()"
+    >
+      Annuler
+    </button>
+
+    <button
+      class="event-edit-page__button event-edit-page__button--primary"
+      type="button"
+      [disabled]="currentState.save.status === 'saving'"
+      (click)="save(event, form)"
+    >
+      @if (currentState.save.status === 'saving') {
+        Enregistrement...
+      } @else {
+        Enregistrer
+      }
+    </button>
+  </div>
+
+  @if (currentState.save.status === 'error') {
+    <app-error-state
+      title="Enregistrement impossible"
+      [message]="currentState.save.message"
+    />
+  }
+
+  <form class="event-edit-page__form">
+    <section class="event-edit-page__card">
+      <h2>Informations générales</h2>
+
+      <label class="event-edit-page__field">
+        <span>Titre</span>
+        <input
+          type="text"
+          [value]="form.title"
+          (input)="updateTitle($any($event.target).value)"
+        />
+      </label>
+
+      <label class="event-edit-page__field">
+        <span>Description</span>
+        <textarea
+          rows="5"
+          [value]="form.description"
+          (input)="updateDescription($any($event.target).value)"
+        ></textarea>
+      </label>
+
+      <div class="event-edit-page__grid">
+        <label class="event-edit-page__field">
+          <span>Type</span>
+          <select
+            [value]="form.eventType"
+            (change)="updateType($any($event.target).value)"
+          >
+            <option value="general">Général</option>
+            <option value="course">Cours</option>
+            <option value="training">Entraînement</option>
+            <option value="trip">Sortie</option>
+            <option value="meeting">Réunion</option>
+            <option value="competition">Compétition</option>
+          </select>
+        </label>
+
+        <label class="event-edit-page__field">
+          <span>Statut</span>
+          <select
+            [value]="form.eventStatus"
+            (change)="updateStatus($any($event.target).value)"
+          >
+            <option value="draft">Brouillon</option>
+            <option value="published">Publié</option>
+            <option value="cancelled">Annulé</option>
+            <option value="archived">Archivé</option>
+          </select>
+        </label>
+      </div>
+    </section>
+
+    <section class="event-edit-page__card">
+      <h2>Dates</h2>
+
+      <div class="event-edit-page__grid">
+        <label class="event-edit-page__field">
+          <span>Début</span>
+          <input
+            type="datetime-local"
+            [value]="form.startsAt"
+            (input)="updateStartsAt($any($event.target).value)"
+          />
+        </label>
+
+        <label class="event-edit-page__field">
+          <span>Fin</span>
+          <input
+            type="datetime-local"
+            [value]="form.endsAt"
+            (input)="updateEndsAt($any($event.target).value)"
+          />
+        </label>
+      </div>
+
+      <label class="event-edit-page__checkbox">
+        <input
+          type="checkbox"
+          [checked]="form.allDay"
+          (change)="updateAllDay($any($event.target).checked)"
+        />
+        <span>Journée entière</span>
+      </label>
+
+      <p class="event-edit-page__muted">
+        Fuseau horaire : {{ form.timezone }}
+      </p>
+    </section>
+
+    <section class="event-edit-page__card">
+      <h2>Lieu et capacité</h2>
+
+      <label class="event-edit-page__field">
+        <span>Lieu</span>
+        <input
+          type="text"
+          [value]="form.location"
+          (input)="updateLocation($any($event.target).value)"
+        />
+      </label>
+
+      <label class="event-edit-page__field">
+        <span>Capacité</span>
+        <input
+          type="number"
+          min="0"
+          [value]="form.capacity ?? ''"
+          (input)="updateCapacity($any($event.target).value)"
+        />
+      </label>
+    </section>
+
+    <section class="event-edit-page__card">
+      <h2>Inscriptions</h2>
+
+      <label class="event-edit-page__checkbox">
+        <input
+          type="checkbox"
+          [checked]="form.publicRegistrationEnabled"
+          (change)="updatePublicRegistrationEnabled($any($event.target).checked)"
+        />
+        <span>Inscription publique activée</span>
+      </label>
+
+      <label class="event-edit-page__checkbox">
+        <input
+          type="checkbox"
+          [checked]="form.waitlistEnabled"
+          (change)="updateWaitlistEnabled($any($event.target).checked)"
+        />
+        <span>Liste d’attente activée</span>
+      </label>
+
+      <div class="event-edit-page__grid">
+        <label class="event-edit-page__field">
+          <span>Début des inscriptions</span>
+          <input
+            type="datetime-local"
+            [value]="form.registrationStartsAt"
+            (input)="updateRegistrationStartsAt($any($event.target).value)"
+          />
+        </label>
+
+        <label class="event-edit-page__field">
+          <span>Fin des inscriptions</span>
+          <input
+            type="datetime-local"
+            [value]="form.registrationEndsAt"
+            (input)="updateRegistrationEndsAt($any($event.target).value)"
+          />
+        </label>
+      </div>
+      <p class="event-edit-page__muted">
+        Saisir la date et l’heure pour enregistrer une période d’inscription.
+      </p>
+    </section>
+  </form>
+}

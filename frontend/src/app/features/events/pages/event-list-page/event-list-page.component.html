@@ -22,8 +22,8 @@
   <label class="event-list-page__field">
     <span>Type</span>
     <select
-      name="type"
-      [value]="queryValue.type"
+      name="eventType"
+      [value]="queryValue.eventType"
       (change)="updateType($any($event.target).value)"
     >
       <option value="all">Tous</option>
@@ -52,8 +52,8 @@
   <label class="event-list-page__field">
     <span>Statut</span>
     <select
-      name="status"
-      [value]="queryValue.status"
+      name="eventStatus"
+      [value]="queryValue.eventStatus"
       (change)="updateStatus($any($event.target).value)"
     >
       <option value="all">Tous</option>
@@ -132,9 +132,9 @@
             <button
               class="event-list-page__sort-button"
               type="button"
-              (click)="updateSort('type')"
+              (click)="updateSort('eventType')"
             >
-              Type {{ sortLabel('type') }}
+              Type {{ sortLabel('eventType') }}
             </button>
           </th>
 
@@ -162,9 +162,9 @@
             <button
               class="event-list-page__sort-button"
               type="button"
-              (click)="updateSort('status')"
+              (click)="updateSort('eventStatus')"
             >
-              Statut {{ sortLabel('status') }}
+              Statut {{ sortLabel('eventStatus') }}
             </button>
           </th>
           <th>Inscriptions</th>
@@ -183,7 +183,7 @@
                 {{ event.title }}
               </td>
               <td>
-                {{ eventTypeLabel(event.type) }}
+                {{ eventTypeLabel(event.eventType) }}
               </td>
               <td>
                 {{ event.startsAt | date:'dd.MM.yyyy HH:mm' }}
@@ -192,7 +192,7 @@
                 {{ event.location ?? '—' }}
               </td>
               <td>
-                {{ eventStatusLabel(event.status) }}
+                {{ eventStatusLabel(event.eventStatus) }}
               </td>
               <td>
                 {{ registrationSummary(event) }}

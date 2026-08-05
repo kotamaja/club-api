@@ -3,6 +3,7 @@
 namespace App\Write\Event;
 
 use App\Core\Event\Entity\Event;
+use App\Core\Event\Enum\EventStatus;
 use App\Core\Event\Enum\EventType;
 use App\Core\Event\Repository\EventRegistrationRepository;
 use App\Dto\Event\EventCreateDto;
@@ -117,7 +118,7 @@ class EventWriteService implements EventWriteServiceInterface
             $event->attachToClub($this->getClub($input->clubId));
         }
 
-        $event->changeType($input->type ?? EventType::General);
+        $event->changeType($input->eventType ?? EventType::General);
 
         $event->changeDescription($input->description);
         $event->changeLocation($input->location);
@@ -158,6 +159,7 @@ class EventWriteService implements EventWriteServiceInterface
 
         $changed = $this->applyClub($input, $event) || $changed;
         $changed = $this->applyType($input, $event) || $changed;
+        $changed = $this->applyStatus($input, $event) || $changed;
         $changed = $this->applyTitle($input, $event) || $changed;
         $changed = $this->applyDescription($input, $event) || $changed;
         $changed = $this->applyLocation($input, $event) || $changed;
@@ -192,21 +194,43 @@ class EventWriteService implements EventWriteServiceInterface
 
     private function applyType(EventPatchDto $input, Event $event): bool
     {
-        if (!$input->isTypeProvided()) {
+        if (!$input->isEventTypeProvided()) {
             return false;
         }
 
-        $type = $input->getType();
+        $type = $input->getEventType();
 
         if ($type === null) {
             throw new BusinessRuleViolationException('Type cannot be null.', 'type');
         }
 
-        if ($type === $event->getType()) {
+        if ($type === $event->getEventType()) {
             return false;
         }
 
         $event->changeType($type);
+
+        return true;
+    }
+
+
+    private function applyStatus(EventPatchDto $input, Event $event): bool
+    {
+        if (!$input->isEventStatusProvided()) {
+            return false;
+        }
+
+        $status = $input->getEventStatus();
+
+        if ($status === null) {
+            throw new BusinessRuleViolationException('Status cannot be null.', 'status');
+        }
+
+        if ($status === $event->getEventStatus()) {
+            return false;
+        }
+
+        $event->changeStatus($status);
 
         return true;
     }

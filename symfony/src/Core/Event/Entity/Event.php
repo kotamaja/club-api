@@ -93,13 +93,13 @@ use Symfony\Component\Validator\Constraints as Assert;
                     filter: new PartialSearchFilter(),
                     property: 'location',
                 ),
-                'type' => new QueryParameter(
+                'eventType' => new QueryParameter(
                     filter: new ExactFilter(),
-                    property: 'type',
+                    property: 'eventType',
                 ),
-                'status' => new QueryParameter(
+                'eventStatus' => new QueryParameter(
                     filter: new ExactFilter(),
-                    property: 'status',
+                    property: 'eventStatus',
                 ),
                 'startsAt' => new QueryParameter(
                     filter: new DateFilter(),
@@ -113,7 +113,7 @@ use Symfony\Component\Validator\Constraints as Assert;
                 ),
                 'order[:property]' => new QueryParameter(
                     filter: new OrderFilter(),
-                    properties: ['startsAt', 'title', 'location','endsAt', 'status', 'type'],
+                    properties: ['startsAt', 'title', 'location','endsAt', 'eventStatus', 'eventType'],
                 ),
             ],
         ),
@@ -208,10 +208,10 @@ class Event  implements OrganizationScopedInterface
     private ?Club $club = null;
 
     #[ORM\Column(name: 'event_type', nullable: false, enumType: EventType::class)]
-    private EventType $type = EventType::General;
+    private EventType $eventType = EventType::General;
 
     #[ORM\Column(name: 'event_status', nullable: false, enumType: EventStatus::class)]
-    private EventStatus $status = EventStatus::Draft;
+    private EventStatus $eventStatus = EventStatus::Draft;
 
     #[ORM\Column(name: 'title', type: TYPES::STRING, length: 180, nullable: false)]
     private string $title;
@@ -307,44 +307,49 @@ class Event  implements OrganizationScopedInterface
         $this->club = $club;
     }
 
-    public function getType(): EventType
+    public function getEventType(): EventType
     {
-        return $this->type;
+        return $this->eventType;
     }
 
     public function changeType(EventType $type): void
     {
-        $this->type = $type;
+        $this->eventType = $type;
     }
 
-    public function getStatus(): EventStatus
+    public function getEventStatus(): EventStatus
     {
-        return $this->status;
+        return $this->eventStatus;
+    }
+
+    public function changeStatus(EventStatus $status): void
+    {
+        $this->eventStatus = $status;
     }
 
     public function publish(): void
     {
-        $this->status = EventStatus::Published;
+        $this->eventStatus = EventStatus::Published;
     }
 
     public function cancel(): void
     {
-        $this->status = EventStatus::Cancelled;
+        $this->eventStatus = EventStatus::Cancelled;
     }
 
     public function archive(): void
     {
-        $this->status = EventStatus::Archived;
+        $this->eventStatus = EventStatus::Archived;
     }
 
     public function revertToDraft(): void
     {
-        $this->status = EventStatus::Draft;
+        $this->eventStatus = EventStatus::Draft;
     }
 
     public function acceptsRegistrations(): bool
     {
-        return $this->status->acceptsRegistrations();
+        return $this->eventStatus->acceptsRegistrations();
     }
 
     public function getTitle(): string

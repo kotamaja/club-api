@@ -83,15 +83,15 @@ export class EventDetailPageComponent {
   /**
    * Returns the human-readable label for an event type.
    */
-  protected eventTypeLabel(type: EventDetail['type']): string {
-    return eventTypeLabels[type] ?? type;
+  protected eventTypeLabel(eventType: EventDetail['eventType']): string {
+    return eventTypeLabels[eventType] ?? eventType;
   }
 
   /**
    * Returns the human-readable label for an event status.
    */
-  protected eventStatusLabel(status: EventDetail['status']): string {
-    return eventStatusLabels[status] ?? status;
+  protected eventStatusLabel(eventStatus: EventDetail['eventStatus']): string {
+    return eventStatusLabels[eventStatus] ?? eventStatus;
   }
 
   /**

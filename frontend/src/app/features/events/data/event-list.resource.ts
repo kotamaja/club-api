@@ -60,12 +60,12 @@ export class EventListResource {
   }
 
   private toStatusParam(query: EventListQuery): Record<string, string> {
-    if (query.status === 'all') {
+    if (query.eventStatus === 'all') {
       return {};
     }
 
     return {
-      status: query.status,
+      eventStatus: query.eventStatus,
     };
   }
 
@@ -73,12 +73,12 @@ export class EventListResource {
    * Converts the UI type filter to the API type filter.
    */
   private toTypeParam(query: EventListQuery): Record<string, string> {
-    if (query.type === 'all') {
+    if (query.eventType === 'all') {
       return {};
     }
 
     return {
-      type: query.type,
+      eventType: query.eventType,
     };
   }
 

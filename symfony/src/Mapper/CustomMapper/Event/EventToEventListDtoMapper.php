@@ -28,8 +28,8 @@ final readonly class EventToEventListDtoMapper implements CustomMapperInterface
 
         $dto->id = $source->getPublicId();
         $dto->title = $source->getTitle();
-        $dto->type = $source->getType()->value;
-        $dto->status = $source->getStatus()->value;
+        $dto->eventType = $source->getEventType()->value;
+        $dto->eventStatus = $source->getEventStatus()->value;
 
         $club = $source->getClub();
         $dto->clubId = $club?->getPublicId();

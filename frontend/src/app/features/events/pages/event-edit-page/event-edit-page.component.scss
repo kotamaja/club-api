@@ -1,0 +1,126 @@
+:host {
+  display: block;
+}
+
+.event-edit-page__actions {
+  margin-bottom: 16px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.event-edit-page__button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background: #fff;
+  color: inherit;
+  font: inherit;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.event-edit-page__button:hover:not(:disabled) {
+  background: #f5f5f5;
+}
+
+.event-edit-page__button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.event-edit-page__button--primary {
+  border-color: #333;
+  background: #333;
+  color: #fff;
+}
+
+.event-edit-page__button--primary:hover:not(:disabled) {
+  background: #111;
+}
+
+.event-edit-page__form {
+  display: grid;
+  gap: 16px;
+}
+
+.event-edit-page__card {
+  padding: 18px 20px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.event-edit-page__card h2 {
+  margin: 0 0 16px;
+  color: #555;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.event-edit-page__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.event-edit-page__field {
+  margin-bottom: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.event-edit-page__field:last-child {
+  margin-bottom: 0;
+}
+
+.event-edit-page__field span,
+.event-edit-page__checkbox span {
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.event-edit-page__field input,
+.event-edit-page__field textarea,
+.event-edit-page__field select {
+  padding: 8px 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font: inherit;
+  background: #fff;
+}
+
+.event-edit-page__field textarea {
+  resize: vertical;
+}
+
+.event-edit-page__checkbox {
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.event-edit-page__muted {
+  margin: 8px 0 0;
+  color: #666;
+  font-size: 0.875rem;
+}
+
+@media (max-width: 768px) {
+  .event-edit-page__actions {
+    justify-content: stretch;
+  }
+
+  .event-edit-page__button {
+    flex: 1;
+  }
+
+  .event-edit-page__grid {
+    grid-template-columns: 1fr;
+  }
+}

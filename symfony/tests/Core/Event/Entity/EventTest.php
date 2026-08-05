@@ -28,8 +28,8 @@ class EventTest extends ApiTestCase
         self::assertSame($organization, $event->getOrganization());
         self::assertNull($event->getClub());
 
-        self::assertSame(EventType::General, $event->getType());
-        self::assertSame(EventStatus::Draft, $event->getStatus());
+        self::assertSame(EventType::General, $event->getEventType());
+        self::assertSame(EventStatus::Draft, $event->getEventStatus());
 
         self::assertSame('Cours d’initiation', $event->getTitle());
         self::assertNull($event->getDescription());
@@ -167,7 +167,7 @@ class EventTest extends ApiTestCase
 
         $event->changeType(EventType::Competition);
 
-        self::assertSame(EventType::Competition, $event->getType());
+        self::assertSame(EventType::Competition, $event->getEventType());
     }
 
     public function testChangeStatus(): void
@@ -181,27 +181,27 @@ class EventTest extends ApiTestCase
             endsAt: new \DateTimeImmutable('2026-07-10 17:00:00'),
         );
 
-        self::assertSame(EventStatus::Draft, $event->getStatus());
+        self::assertSame(EventStatus::Draft, $event->getEventStatus());
         self::assertFalse($event->acceptsRegistrations());
 
         $event->publish();
 
-        self::assertSame(EventStatus::Published, $event->getStatus());
+        self::assertSame(EventStatus::Published, $event->getEventStatus());
         self::assertTrue($event->acceptsRegistrations());
 
         $event->cancel();
 
-        self::assertSame(EventStatus::Cancelled, $event->getStatus());
+        self::assertSame(EventStatus::Cancelled, $event->getEventStatus());
         self::assertFalse($event->acceptsRegistrations());
 
         $event->archive();
 
-        self::assertSame(EventStatus::Archived, $event->getStatus());
+        self::assertSame(EventStatus::Archived, $event->getEventStatus());
         self::assertFalse($event->acceptsRegistrations());
 
         $event->revertToDraft();
 
-        self::assertSame(EventStatus::Draft, $event->getStatus());
+        self::assertSame(EventStatus::Draft, $event->getEventStatus());
         self::assertFalse($event->acceptsRegistrations());
     }
 

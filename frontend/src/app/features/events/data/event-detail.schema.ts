@@ -19,8 +19,8 @@ export const EventDetailSchema = z.object({
   title: z.string(),
 
   description: OptionalNullableStringSchema,
-  type: EventTypeSchema,
-  status: EventStatusSchema,
+  eventType: EventTypeSchema,
+  eventStatus: EventStatusSchema,
 
   clubId: OptionalNullableStringSchema,
   clubName: OptionalNullableStringSchema,

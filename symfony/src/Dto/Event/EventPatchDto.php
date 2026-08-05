@@ -2,6 +2,7 @@
 
 namespace App\Dto\Event;
 
+use App\Core\Event\Enum\EventStatus;
 use App\Core\Event\Enum\EventType;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -11,8 +12,11 @@ final class EventPatchDto
     private ?string $clubId = null;
     private bool $clubIdProvided = false;
 
-    private ?EventType $type = null;
-    private bool $typeProvided = false;
+    private ?EventType $eventType = null;
+    private bool $eventTypeProvided = false;
+
+    private ?EventStatus $eventStatus = null;
+    private bool $eventStatusProvided = false;
 
     #[Assert\NotBlank(allowNull: true)]
     #[Assert\Length(max: 180)]
@@ -72,20 +76,36 @@ final class EventPatchDto
         return $this->clubIdProvided;
     }
 
-    public function getType(): ?EventType
+    public function getEventType(): ?EventType
     {
-        return $this->type;
+        return $this->eventType;
     }
 
-    public function setType(?EventType $type): void
+    public function setEventType(?EventType $eventType): void
     {
-        $this->typeProvided = true;
-        $this->type = $type;
+        $this->eventTypeProvided = true;
+        $this->eventType = $eventType;
     }
 
-    public function isTypeProvided(): bool
+    public function isEventTypeProvided(): bool
     {
-        return $this->typeProvided;
+        return $this->eventTypeProvided;
+    }
+
+    public function setEventStatus(?EventStatus $status): void
+    {
+        $this->eventStatusProvided = true;
+        $this->eventStatus = $status;
+    }
+
+    public function getEventStatus(): ?EventStatus
+    {
+        return $this->eventStatus;
+    }
+
+    public function isEventStatusProvided(): bool
+    {
+        return $this->eventStatusProvided;
     }
 
     public function getTitle(): ?string
