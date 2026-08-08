@@ -1,5 +1,5 @@
-import { SortDirection } from '../../../shared/list-state/list-query-state.model';
-import {EventType} from './event.schema';
+import { SortDirection } from '../../../../shared/list-state/list-query-state.model';
+import {EventType} from '../shared/event.schema';
 
 /**
  * UI-level period filter for the event list.

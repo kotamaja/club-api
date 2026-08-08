@@ -1,7 +1,7 @@
 import { httpResource } from '@angular/common/http';
 import { inject, Service, Signal } from '@angular/core';
 
-import { ApiUrlService } from '../../../core/api/api-url.service';
+import { ApiUrlService } from '../../../../core/api/api-url.service';
 import { EventDetailSchema } from './event-detail.schema';
 
 /**

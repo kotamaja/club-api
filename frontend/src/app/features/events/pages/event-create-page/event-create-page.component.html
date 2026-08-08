@@ -1,0 +1,192 @@
+<app-page-header
+  title="Créer un événement"
+  description="Création d’un nouvel événement de l’organisation courante."
+/>
+
+<div class="event-create-page__actions">
+  <button
+    class="event-create-page__button"
+    type="button"
+    (click)="goBack()"
+  >
+    Annuler
+  </button>
+
+  <button
+    class="event-create-page__button event-create-page__button--primary"
+    type="button"
+    [disabled]="!canSave()"
+    (click)="save()"
+  >
+    @if (saveState().status === 'saving') {
+      Création...
+    } @else {
+      Créer
+    }
+  </button>
+</div>
+
+@if (validationErrors().length > 0) {
+  <section class="event-create-page__validation">
+    <h2>Le formulaire contient des erreurs</h2>
+
+    <ul>
+      @for (error of validationErrors(); track error.field + error.message) {
+        <li>{{ error.message }}</li>
+      }
+    </ul>
+  </section>
+}
+
+@if (saveErrorMessage(); as message) {
+  <app-error-state
+    title="Création impossible"
+    [message]="message"
+  />
+}
+
+<form class="event-create-page__form">
+  <section class="event-create-page__card">
+    <h2>Informations générales</h2>
+
+    <label class="event-create-page__field">
+      <span>Titre</span>
+      <input
+        type="text"
+        [value]="form().title"
+        (input)="updateTitle($any($event.target).value)"
+      />
+    </label>
+
+    <label class="event-create-page__field">
+      <span>Description</span>
+      <textarea
+        rows="5"
+        [value]="form().description"
+        (input)="updateDescription($any($event.target).value)"
+      ></textarea>
+    </label>
+
+    <label class="event-create-page__field">
+      <span>Type</span>
+      <select
+        [value]="form().eventType"
+        (change)="updateType($any($event.target).value)"
+      >
+        <option value="general">Général</option>
+        <option value="course">Cours</option>
+        <option value="training">Entraînement</option>
+        <option value="trip">Sortie</option>
+        <option value="meeting">Réunion</option>
+        <option value="competition">Compétition</option>
+      </select>
+    </label>
+  </section>
+
+  <section class="event-create-page__card">
+    <h2>Dates</h2>
+
+    <div class="event-create-page__grid">
+      <label class="event-create-page__field">
+        <span>Début</span>
+        <input
+          type="datetime-local"
+          [value]="form().startsAt"
+          (input)="updateStartsAt($any($event.target).value)"
+        />
+      </label>
+
+      <label class="event-create-page__field">
+        <span>Fin</span>
+        <input
+          type="datetime-local"
+          [value]="form().endsAt"
+          (input)="updateEndsAt($any($event.target).value)"
+        />
+      </label>
+    </div>
+
+    <label class="event-create-page__checkbox">
+      <input
+        type="checkbox"
+        [checked]="form().allDay"
+        (change)="updateAllDay($any($event.target).checked)"
+      />
+      <span>Journée entière</span>
+    </label>
+
+    <p class="event-create-page__muted">
+      Fuseau horaire : {{ form().timezone }}
+    </p>
+  </section>
+
+  <section class="event-create-page__card">
+    <h2>Lieu et capacité</h2>
+
+    <label class="event-create-page__field">
+      <span>Lieu</span>
+      <input
+        type="text"
+        [value]="form().location"
+        (input)="updateLocation($any($event.target).value)"
+      />
+    </label>
+
+    <label class="event-create-page__field">
+      <span>Capacité</span>
+      <input
+        type="text"
+        inputmode="numeric"
+        autocomplete="off"
+        [value]="form().capacity"
+        (input)="updateCapacity($any($event.target).value)"
+      />
+    </label>
+  </section>
+
+  <section class="event-create-page__card">
+    <h2>Inscriptions</h2>
+
+    <label class="event-create-page__checkbox">
+      <input
+        type="checkbox"
+        [checked]="form().publicRegistrationEnabled"
+        (change)="updatePublicRegistrationEnabled($any($event.target).checked)"
+      />
+      <span>Inscription publique activée</span>
+    </label>
+
+    <label class="event-create-page__checkbox">
+      <input
+        type="checkbox"
+        [checked]="form().waitlistEnabled"
+        (change)="updateWaitlistEnabled($any($event.target).checked)"
+      />
+      <span>Liste d’attente activée</span>
+    </label>
+
+    <div class="event-create-page__grid">
+      <label class="event-create-page__field">
+        <span>Début des inscriptions</span>
+        <input
+          type="datetime-local"
+          [value]="form().registrationStartsAt"
+          (input)="updateRegistrationStartsAt($any($event.target).value)"
+        />
+      </label>
+
+      <label class="event-create-page__field">
+        <span>Fin des inscriptions</span>
+        <input
+          type="datetime-local"
+          [value]="form().registrationEndsAt"
+          (input)="updateRegistrationEndsAt($any($event.target).value)"
+        />
+      </label>
+    </div>
+
+    <p class="event-create-page__muted">
+      Saisir la date et l’heure pour enregistrer une période d’inscription.
+    </p>
+  </section>
+</form>

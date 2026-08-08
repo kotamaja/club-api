@@ -1,0 +1,144 @@
+:host {
+  display: block;
+}
+
+.event-create-page__actions {
+  margin-bottom: 16px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.event-create-page__button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background: #fff;
+  color: inherit;
+  font: inherit;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.event-create-page__button:hover:not(:disabled) {
+  background: #f5f5f5;
+}
+
+.event-create-page__button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.event-create-page__button--primary {
+  border-color: #333;
+  background: #333;
+  color: #fff;
+}
+
+.event-create-page__button--primary:hover:not(:disabled) {
+  background: #111;
+}
+
+.event-create-page__form {
+  display: grid;
+  gap: 16px;
+}
+
+.event-create-page__card {
+  padding: 18px 20px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.event-create-page__card h2 {
+  margin: 0 0 16px;
+  color: #555;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.event-create-page__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.event-create-page__field {
+  margin-bottom: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.event-create-page__field:last-child {
+  margin-bottom: 0;
+}
+
+.event-create-page__field span,
+.event-create-page__checkbox span {
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.event-create-page__field input,
+.event-create-page__field textarea,
+.event-create-page__field select {
+  padding: 8px 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font: inherit;
+  background: #fff;
+}
+
+.event-create-page__field textarea {
+  resize: vertical;
+}
+
+.event-create-page__checkbox {
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.event-create-page__muted {
+  margin: 8px 0 0;
+  color: #666;
+  font-size: 0.875rem;
+}
+
+@media (max-width: 768px) {
+  .event-create-page__actions {
+    justify-content: stretch;
+  }
+
+  .event-create-page__button {
+    flex: 1;
+  }
+
+  .event-create-page__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .event-create-page__validation {
+    margin-bottom: 16px;
+    padding: 14px 16px;
+    border: 1px solid #e0c27a;
+    border-radius: 8px;
+    background: #fff9e8;
+  }
+
+  .event-create-page__validation h2 {
+    margin: 0 0 8px;
+    font-size: 1rem;
+  }
+
+  .event-create-page__validation ul {
+    margin: 0;
+    padding-left: 20px;
+  }
+}

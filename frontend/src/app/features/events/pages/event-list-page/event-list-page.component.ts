@@ -1,19 +1,19 @@
 import {DatePipe} from '@angular/common';
 import {Component, computed, inject, signal} from '@angular/core';
-import {ActivatedRoute, Router} from '@angular/router';
+import {ActivatedRoute, Router, RouterLink} from '@angular/router';
 
 import {ErrorStateComponent} from '../../../../shared/ui/error-state/error-state.component';
 import {PageHeaderComponent} from '../../../../shared/ui/page-header/page-header.component';
-import {defaultEventListQuery, EventListQuery} from '../../data/event-list-query.model';
+import {defaultEventListQuery, EventListQuery} from '../../data/list/event-list-query.model';
 import {
   eventListQueryFromUrl,
   eventListQueryToUrl,
   eventListSelectedIdFromUrl,
   eventListSelectedIdToUrl,
-} from '../../data/event-list-query-url.mapper';
-import {EventListResource} from '../../data/event-list.resource';
-import {EventListItem, EventListPage} from '../../data/event.schema';
-import { eventStatusLabels, eventTypeLabels } from '../../data/event-labels';
+} from '../../data/list/event-list-query-url.mapper';
+import {EventListResource} from '../../data/list/event-list.resource';
+import { eventStatusLabels, eventTypeLabels } from '../../data/options/event-labels';
+import {EventListItem, EventListPage} from '../../data/list/event-list.schema';
 
 
 /**
@@ -38,6 +38,7 @@ type EventListPageState =
     DatePipe,
     ErrorStateComponent,
     PageHeaderComponent,
+    RouterLink,
   ],
   templateUrl: './event-list-page.component.html',
   styleUrl: './event-list-page.component.scss',
@@ -96,6 +97,10 @@ export class EventListPageComponent {
 
   protected reload(): void {
     this.eventsResource.reload();
+  }
+
+  protected goToCreateEvent(): void {
+    void this.router.navigate(['/app/manage/events/new']);
   }
 
   protected updateSearch(search: string): void {

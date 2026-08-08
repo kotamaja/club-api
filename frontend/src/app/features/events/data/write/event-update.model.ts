@@ -1,4 +1,4 @@
-import { EventStatus, EventType } from './event.schema';
+import { EventStatus, EventType } from '../shared/event.schema';
 
 /**
  * Payload used to update an event.

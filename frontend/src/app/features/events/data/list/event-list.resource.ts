@@ -1,9 +1,9 @@
 import { httpResource } from '@angular/common/http';
 import {  inject, Service, Signal } from '@angular/core';
 
-import { ApiUrlService } from '../../../core/api/api-url.service';
+import { ApiUrlService } from '../../../../core/api/api-url.service';
 import { EventListQuery } from './event-list-query.model';
-import {EventListPage, EventListPageSchema} from './event.schema';
+import {EventListPage, EventListPageSchema} from './event-list.schema';
 
 /**
  * Creates a reactive HTTP resource for the event management list.

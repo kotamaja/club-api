@@ -4,32 +4,16 @@ import { ActivatedRoute, Router } from '@angular/router';
 
 import { ErrorStateComponent } from '../../../../shared/ui/error-state/error-state.component';
 import { PageHeaderComponent } from '../../../../shared/ui/page-header/page-header.component';
-import { eventStatusLabels, eventTypeLabels } from '../../data/event-labels';
-import { EventDetailResource } from '../../data/event-detail.resource';
-import { EventDetail } from '../../data/event-detail.schema';
-import { EventUpdatePayload } from '../../data/event-update.model';
-import { EventWriteService } from '../../data/event-write.service';
-
-/**
- * Editable form state for an event.
- */
-type EventEditForm = {
-  title: string;
-  description: string;
-  eventType: EventDetail['eventType'];
-  eventStatus: EventDetail['eventStatus'];
-  clubId: string | null;
-  location: string;
-  startsAt: string;
-  endsAt: string;
-  timezone: string;
-  allDay: boolean;
-  capacity: string;
-  waitlistEnabled: boolean;
-  publicRegistrationEnabled: boolean;
-  registrationStartsAt: string;
-  registrationEndsAt: string;
-};
+import { EventDetailResource } from '../../data/detail/event-detail.resource';
+import { EventDetail } from '../../data/detail/event-detail.schema';
+import { EventEditForm, EventFormValidationError } from '../../data/form/event-form.model';
+import {
+  createEventEditForm,
+  createEventUpdatePayload,
+} from '../../data/form/event-form.mapper';
+import { validateEventForm } from '../../data/form/event-form.validation';
+import { eventStatusLabels, eventTypeLabels } from '../../data/options/event-labels';
+import { EventWriteService } from '../../data/write/event-write.service';
 
 /**
  * Save state used by the event edit page.
@@ -47,14 +31,6 @@ type EventEditPageState =
   | { status: 'loading' }
   | { status: 'ready'; event: EventDetail; form: EventEditForm; save: EventEditSaveState }
   | { status: 'error'; message: string };
-
-/**
- * Validation error displayed by the event edit form.
- */
-type EventEditValidationError = {
-  field: keyof EventEditForm | 'form';
-  message: string;
-};
 
 /**
  * Displays the event edit form.
@@ -95,7 +71,7 @@ export class EventEditPageComponent {
       return;
     }
 
-    this.form.set(this.createForm(event));
+    this.form.set(createEventEditForm(event));
     this.initializedEventId.set(event.id);
     this.saveState.set({ status: 'idle' });
   });
@@ -129,6 +105,35 @@ export class EventEditPageComponent {
       form,
       save: this.saveState(),
     };
+  });
+
+  protected readonly validationErrors = computed<EventFormValidationError[]>(() => {
+    const form = this.form();
+
+    if (form === null) {
+      return [];
+    }
+
+    return validateEventForm(form);
+  });
+
+  protected readonly isFormValid = computed(() => this.validationErrors().length === 0);
+
+  protected readonly isDirty = computed(() => {
+    const snapshot = this.eventResource.snapshot();
+    const form = this.form();
+
+    if (snapshot.status === 'error' || snapshot.status === 'loading' || snapshot.value === undefined || form === null) {
+      return false;
+    }
+
+    return JSON.stringify(createEventUpdatePayload(snapshot.value, form)) !== JSON.stringify(createEventUpdatePayload(snapshot.value, createEventEditForm(snapshot.value)));
+  });
+
+  protected readonly canSave = computed(() => {
+    return this.isFormValid()
+      && this.isDirty()
+      && this.saveState().status !== 'saving';
   });
 
   protected reload(): void {
@@ -193,17 +198,13 @@ export class EventEditPageComponent {
   }
 
   protected save(event: EventDetail, form: EventEditForm): void {
-    if (this.saveState().status === 'saving') {
-      return;
-    }
-
     if (!this.canSave()) {
       return;
     }
 
     this.saveState.set({ status: 'saving' });
 
-    this.eventWriteService.update(event.id, this.createPayload(event, form)).subscribe({
+    this.eventWriteService.update(event.id, createEventUpdatePayload(event, form)).subscribe({
       next: (updatedEvent) => {
         this.saveState.set({ status: 'saved' });
 
@@ -243,185 +244,5 @@ export class EventEditPageComponent {
     if (this.saveState().status === 'saved' || this.saveState().status === 'error') {
       this.saveState.set({ status: 'idle' });
     }
-  }
-
-  private createForm(event: EventDetail): EventEditForm {
-    return {
-      title: event.title,
-      description: event.description ?? '',
-      eventType: event.eventType,
-      eventStatus: event.eventStatus,
-      clubId: event.clubId,
-      location: event.location ?? '',
-      startsAt: this.toDateTimeLocalValue(event.startsAt),
-      endsAt: this.toDateTimeLocalValue(event.endsAt),
-      timezone: event.timezone,
-      allDay: event.allDay,
-      capacity: event.capacity === null ? '' : String(event.capacity),
-      waitlistEnabled: event.waitlistEnabled,
-      publicRegistrationEnabled: event.publicRegistrationEnabled,
-      registrationStartsAt: this.toDateTimeLocalValue(event.registrationStartsAt),
-      registrationEndsAt: this.toDateTimeLocalValue(event.registrationEndsAt),
-    };
-  }
-
-  private createPayload(event: EventDetail, form: EventEditForm): EventUpdatePayload {
-    return {
-      title: form.title.trim(),
-      description: this.toNullableString(form.description),
-      eventType: form.eventType,
-      eventStatus: form.eventStatus,
-      clubId: form.clubId,
-      location: this.toNullableString(form.location),
-      startsAt: this.toApiDateTime(form.startsAt, event.startsAt),
-      endsAt: this.toApiDateTime(form.endsAt, event.endsAt),
-      timezone: form.timezone,
-      allDay: form.allDay,
-      capacity: this.toNullableInteger(form.capacity),
-      waitlistEnabled: form.waitlistEnabled,
-      publicRegistrationEnabled: form.publicRegistrationEnabled,
-      registrationStartsAt: this.toNullableApiDateTime(form.registrationStartsAt, event.registrationStartsAt ?? event.startsAt),
-      registrationEndsAt: this.toNullableApiDateTime(form.registrationEndsAt, event.registrationEndsAt ?? event.startsAt),
-    };
-  }
-
-  private toNullableString(value: string): string | null {
-    const trimmed = value.trim();
-
-    return trimmed === '' ? null : trimmed;
-  }
-
-  private toDateTimeLocalValue(value: string | null): string {
-    if (value === null) {
-      return '';
-    }
-
-    return value.slice(0, 16);
-  }
-
-  private toNullableApiDateTime(value: string, originalValue: string | null): string | null {
-    if (value === '') {
-      return null;
-    }
-
-    return this.toApiDateTime(value, originalValue);
-  }
-
-  private toNullableInteger(value: string): number | null {
-    const trimmed = value.trim();
-
-    if (trimmed === '') {
-      return null;
-    }
-
-    return Number(trimmed);
-  }
-
-  /**
-   * Converts a datetime-local value to an ISO-like datetime.
-   *
-   * This first version preserves the original UTC offset. If the edited date
-   * crosses a daylight-saving boundary, the backend should ultimately resolve
-   * the local time with the event timezone.
-   */
-  private toApiDateTime(value: string, originalValue: string | null): string {
-    const offset = this.extractOffset(originalValue);
-
-    return `${value}:00${offset}`;
-  }
-
-  private extractOffset(value: string | null): string {
-    if (value === null) {
-      return '';
-    }
-
-    const match = value.match(/([+-]\d{2}:\d{2}|Z)$/);
-
-    return match?.[1] ?? '';
-  }
-
-
-
-
-
-  protected readonly validationErrors = computed<EventEditValidationError[]>(() => {
-    const form = this.form();
-
-    if (form === null) {
-      return [];
-    }
-
-    return this.validateForm(form);
-  });
-
-  protected readonly isFormValid = computed(() => this.validationErrors().length === 0);
-
-  protected readonly isDirty = computed(() => {
-    const snapshot = this.eventResource.snapshot();
-    const form = this.form();
-
-    if (snapshot.status === 'error' || snapshot.status === 'loading' || snapshot.value === undefined || form === null) {
-      return false;
-    }
-
-    return JSON.stringify(this.createPayload(snapshot.value, form)) !== JSON.stringify(this.createPayload(snapshot.value, this.createForm(snapshot.value)));
-  });
-
-  protected readonly canSave = computed(() => {
-    return this.isFormValid()
-      && this.isDirty()
-      && this.saveState().status !== 'saving';
-  });
-
-  private validateForm(form: EventEditForm): EventEditValidationError[] {
-    const errors: EventEditValidationError[] = [];
-
-    if (form.title.trim() === '') {
-      errors.push({
-        field: 'title',
-        message: 'Le titre est obligatoire.',
-      });
-    }
-
-    if (form.startsAt === '') {
-      errors.push({
-        field: 'startsAt',
-        message: 'La date de début est obligatoire.',
-      });
-    }
-
-    if (form.endsAt === '') {
-      errors.push({
-        field: 'endsAt',
-        message: 'La date de fin est obligatoire.',
-      });
-    }
-
-    if (form.startsAt !== '' && form.endsAt !== '' && form.endsAt <= form.startsAt) {
-      errors.push({
-        field: 'endsAt',
-        message: 'La date de fin doit être postérieure à la date de début.',
-      });
-    }
-
-    if (form.capacity.trim() !== '' && !/^\d+$/.test(form.capacity.trim())) {
-      errors.push({
-        field: 'capacity',
-        message: 'La capacité doit être vide ou être un entier supérieur ou égal à 0.',
-      });
-    }
-
-    if (
-      form.registrationStartsAt !== ''
-      && form.registrationEndsAt !== ''
-      && form.registrationEndsAt <= form.registrationStartsAt
-    ) {
-      errors.push({
-        field: 'registrationEndsAt',
-        message: 'La fin des inscriptions doit être postérieure au début des inscriptions.',
-      });
-    }
-
-    return errors;
   }
 }

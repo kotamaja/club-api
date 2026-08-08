@@ -7,7 +7,7 @@ import {
   OptionalMyRegistrationStatusSchema,
   OptionalNullableNumberSchema,
   OptionalNullableStringSchema,
-} from './event.schema';
+} from '../shared/event.schema';
 
 
 

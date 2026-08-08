@@ -1,52 +1,13 @@
 import { z } from 'zod';
 
-import { ApiPage } from '../../../core/api/api-page.model';
-
-/**
- * Runtime schema for event types returned by the backend.
- */
-export const EventTypeSchema = z.enum([
-  'general',
-  'course',
-  'training',
-  'trip',
-  'meeting',
-  'competition',
-]);
-
-/**
- * Runtime schema for event statuses returned by the backend.
- */
-export const EventStatusSchema = z.enum([
-  'draft',
-  'published',
-  'cancelled',
-  'archived',
-]);
-
-/**
- * Runtime schema for the current user's event registration status.
- */
-export const MyEventRegistrationStatusSchema = z.enum([
-  'registered',
-  'waitlisted',
-  'cancelled',
-]).nullable();
-
-/**
- * Normalizes an optional nullable string field to null.
- */
-export const OptionalNullableStringSchema = z.string().nullish().transform((value) => value ?? null);
-
-/**
- * Normalizes an optional nullable number field to null.
- */
-export const OptionalNullableNumberSchema = z.number().nullish().transform((value) => value ?? null);
-
-/**
- * Normalizes an optional nullable registration status field to null.
- */
-export const OptionalMyRegistrationStatusSchema = MyEventRegistrationStatusSchema.nullish().transform((value) => value ?? null);
+import { ApiPage } from '../../../../core/api/api-page.model';
+import {
+  EventStatusSchema,
+  EventTypeSchema,
+  OptionalMyRegistrationStatusSchema,
+  OptionalNullableNumberSchema,
+  OptionalNullableStringSchema,
+} from '../shared/event.schema';
 
 /**
  * Runtime schema for one event item in the management list.
@@ -95,9 +56,6 @@ const EventListPaginationSchema = z.object({
 
 /**
  * Runtime schema for the backend event list response.
- *
- * The backend returns pagination under a nested "pagination" key.
- * The schema transforms it into the shared ApiPage shape used by Angular.
  */
 export const EventListPageSchema = z.object({
   items: z.array(EventListItemSchema),
@@ -108,21 +66,6 @@ export const EventListPageSchema = z.object({
   perPage: response.pagination.itemsPerPage,
   totalItems: response.pagination.totalItems,
 }));
-
-/**
- * Event type supported by the backend.
- */
-export type EventType = z.infer<typeof EventTypeSchema>;
-
-/**
- * Event status supported by the backend.
- */
-export type EventStatus = z.infer<typeof EventStatusSchema>;
-
-/**
- * Registration status of the current user for an event.
- */
-export type MyEventRegistrationStatus = z.infer<typeof MyEventRegistrationStatusSchema>;
 
 /**
  * Event item displayed in the management event list.

@@ -4,9 +4,9 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 
 import { ErrorStateComponent } from '../../../../shared/ui/error-state/error-state.component';
 import { PageHeaderComponent } from '../../../../shared/ui/page-header/page-header.component';
-import { eventStatusLabels, eventTypeLabels } from '../../data/event-labels';
-import { EventDetailResource } from '../../data/event-detail.resource';
-import { EventDetail } from '../../data/event-detail.schema';
+import { eventStatusLabels, eventTypeLabels } from '../../data/options/event-labels';
+import { EventDetailResource } from '../../data/detail/event-detail.resource';
+import { EventDetail } from '../../data/detail/event-detail.schema';
 
 /**
  * State used by the event detail page.

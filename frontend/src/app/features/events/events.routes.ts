@@ -25,10 +25,6 @@ export const eventsRoutes: Routes = [
         component: EventListPageComponent,
       },
       {
-        path: 'new',
-        component: EventCreatePageComponent,
-      },
-      {
         path: ':eventId/registrations',
         data: {
           capabilities: ['canManageEventRegistrations'],
@@ -45,6 +41,10 @@ export const eventsRoutes: Routes = [
         loadComponent: () =>
           import('./components/public-registration-requests-panel/public-registration-requests-panel.component')
             .then((m) => m.PublicRegistrationRequestsPanelComponent),
+      },
+      {
+        path: 'new',
+        component: EventCreatePageComponent,
       },
       {
         path: ':eventId',
