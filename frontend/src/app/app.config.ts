@@ -8,6 +8,7 @@ import {provideHttpClient, withInterceptors} from '@angular/common/http';
 import {apiRequestInterceptor} from './core/interceptors/api-request.interceptor';
 import { organizationContextInterceptor } from './core/interceptors/organization-context.interceptor';
 import {provideAuthInitializer} from './core/auth/session/auth-initializer';
+import {loadingInterceptor} from './core/loading/loading.interceptor';
 
 
 export const appConfig: ApplicationConfig = {
@@ -24,6 +25,7 @@ export const appConfig: ApplicationConfig = {
     }),
     provideHttpClient(
       withInterceptors([
+        loadingInterceptor,
         apiRequestInterceptor,
         organizationContextInterceptor,
       ]),

@@ -1,0 +1,8 @@
+@if (isVisible()) {
+  <div class="top-loader">
+    <div
+      class="top-loader__bar"
+      [style.width.%]="progress()"
+    ></div>
+  </div>
+}
