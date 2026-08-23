@@ -1,0 +1,56 @@
+<app-page-header
+  title="Choisir un club"
+  description="Sélectionnez le club avec lequel vous souhaitez travailler."
+/>
+
+@let currentState = state();
+
+@if (currentState.status === 'loading') {
+  <p>
+    Chargement des clubs...
+  </p>
+}
+
+@if (currentState.status === 'empty') {
+  <p>
+    Aucun club n’est disponible pour l’organisation courante.
+  </p>
+
+  <button
+    class="select-club-page__button"
+    type="button"
+    (click)="goHome()"
+  >
+    Retour à l’accueil
+  </button>
+}
+
+@if (currentState.status === 'error') {
+  <p class="select-club-page__error">
+    {{ currentState.message }}
+  </p>
+
+  <button
+    class="select-club-page__button"
+    type="button"
+    (click)="goHome()"
+  >
+    Retour à l’accueil
+  </button>
+}
+
+@if (currentState.status === 'loaded') {
+  <div class="select-club-page__list">
+    @for (club of currentState.clubs; track club.clubId) {
+      <button
+        class="select-club-page__item"
+        type="button"
+        (click)="selectClub(currentState.context, club)"
+      >
+        <span class="select-club-page__name">
+          {{ club.clubName }}
+        </span>
+      </button>
+    }
+  </div>
+}

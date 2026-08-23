@@ -15,7 +15,6 @@ export const contextGuard: CanActivateFn = () => {
 
   const state = currentContext.state();
 
-  console.log (state)
 
   if (state.status === 'resolved') {
     return true;

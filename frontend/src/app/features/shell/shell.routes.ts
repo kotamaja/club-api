@@ -7,6 +7,7 @@ import { AppHomePageComponent } from './pages/app-home-page/app-home-page.compon
 import { NoAccessPageComponent } from './pages/no-access-page/no-access-page.component';
 import { SelectClubPageComponent } from './pages/select-club-page/select-club-page.component';
 import { SelectOrganizationPageComponent } from './pages/select-organization-page/select-organization-page.component';
+import {clubContextGuard} from '../../core/guards/club-context.guard';
 
 /**
  * Defines the connected application shell routes.
@@ -42,7 +43,7 @@ export const shellRoutes: Routes = [
       },
       {
         path: 'member',
-        canActivate: [contextGuard],
+        canActivate: [contextGuard, clubContextGuard],
         loadChildren: () => import('../member/member.routes').then((m) => m.memberRoutes),
       },
       {

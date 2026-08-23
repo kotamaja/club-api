@@ -27,17 +27,12 @@ export class ContextResolverService {
   private readonly clubAccessStore = inject(ClubAccessStoreService);
 
   resolve(): Observable<ContextResolution> {
-    console.log('[context] resolve start');
 
     const storedSelection = this.contextStorage.get();
-    console.log('[context] stored selection', storedSelection);
-
 
     return this.organizationAccessStore.load().pipe(
       map((organizations) => {
-        console.log('[context] organizations', organizations);
         const enabledOrganizations = organizations.filter((organization) => organization.enabled);
-        console.log('[context] enabled organizations', enabledOrganizations);
 
         if (enabledOrganizations.length === 0) {
           return {
@@ -76,9 +71,7 @@ export class ContextResolverService {
         };
       }),
       switchMap((result) => {
-        console.log('[context] organization resolution result', result);
         if (result.organization === null) {
-          console.log('[context] no organization resolved, skip clubs');
           return of({
             ...result,
             context: null,
@@ -86,11 +79,9 @@ export class ContextResolverService {
         }
 
 
-        console.log('[context] loading clubs for organization', result.organization.organizationId);
 
         return this.clubAccessStore.load(result.organization.organizationId).pipe(
           map((clubs) => {
-            console.log('[context] clubs loaded', clubs);
             return {
             ...result,
             context: this.createContext(result.organization, clubs, result.storedClubId),

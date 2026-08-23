@@ -39,7 +39,7 @@ class ClubMembershipGroupMembershipFixtures extends Fixture implements Dependent
     public function load(ObjectManager $manager): void
     {
 
-        $this->create($manager ,"Club Group 1", "yves", "");
+        $this->create($manager ,"Club Group 1", "yves1", "");
         $this->create($manager ,"Club Group 1", "marie", "");
         $this->create($manager ,"Club Group 1", "serge", "");
 
