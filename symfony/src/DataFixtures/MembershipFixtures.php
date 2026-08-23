@@ -40,6 +40,8 @@ class MembershipFixtures extends Fixture implements DependentFixtureInterface
         $this->create($manager, sprintf("%s-%s", 'serge', 'a'), $club, new DateTimeImmutable()->setDate(1980, 1, 30), new DateTimeImmutable()->setDate(1985, 2, 25));
         $this->create($manager, sprintf("%s-%s", 'serge', 'a'), $club, new DateTimeImmutable()->setDate(2000, 1, 30), new DateTimeImmutable()->setDate(2005, 2, 25));
         $serge = $this->create($manager, sprintf("%s-%s", 'serge', 'a'), $club, new DateTimeImmutable()->setDate(2010, 1, 30), new DateTimeImmutable()->setDate(2015, 2, 25));
+        $daniel=  $this->create($manager, sprintf("%s-%s", 'daniel', 'a'), $club, new DateTimeImmutable()->setDate(2010, 1, 30),null);
+
 
         $club = $this->getReference("Lausanne Sport Aviron", Club::class);
         $yves2 = $this->create($manager, sprintf("%s-%s", 'yves', 'a'), $club, new DateTimeImmutable()->setDate(2020, 1, 30), null);
@@ -48,6 +50,7 @@ class MembershipFixtures extends Fixture implements DependentFixtureInterface
         $this->addReference("yves2", $yves2);
         $this->addReference("marie", $marie);
         $this->addReference("serge", $serge);
+        $this->addReference("daniel", $daniel);
 
         $manager->flush();
 

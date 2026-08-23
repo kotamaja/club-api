@@ -32,9 +32,27 @@
   font-weight: 500;
 }
 
-.app-header__club--empty {
+.app-header__club-select-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.app-header__club-select-text {
   color: #777;
-  font-weight: 400;
+  font-size: 0.875rem;
+  white-space: nowrap;
+}
+
+.app-header__club-select {
+  max-width: 240px;
+  min-width: 160px;
+  padding: 6px 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background: #fff;
+  font: inherit;
 }
 
 .app-header__user {
@@ -72,5 +90,10 @@
 
   .app-header__user {
     display: none;
+  }
+
+  .app-header__club-select {
+    min-width: 120px;
+    max-width: 180px;
   }
 }

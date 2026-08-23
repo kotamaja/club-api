@@ -10,7 +10,33 @@
       </span>
     }
 
-    @if (currentClub(); as club) {
+    @if (shouldShowClubSelect()) {
+      <label class="app-header__club-select-label">
+        <span class="app-header__club-select-text">Club</span>
+
+        <select
+          class="app-header__club-select"
+          (change)="selectClub($any($event.target).value)"
+        >
+          <option
+            value=""
+            disabled
+            [selected]="currentClub() === null"
+          >
+            Choisir un club
+          </option>
+
+          @for (club of availableClubs(); track club.clubId) {
+            <option
+              [value]="club.clubId"
+              [selected]="currentClub()?.id === club.clubId"
+            >
+              {{ club.clubName }}
+            </option>
+          }
+        </select>
+      </label>
+    } @else if (shouldShowReadonlyClub() && currentClub(); as club) {
       <span class="app-header__club">
         {{ club.name }}
       </span>
@@ -20,8 +46,8 @@
   <div class="app-header__user">
     @if (currentUser(); as user) {
       <span class="app-header__username">
-      {{ user.displayName }}
-    </span>
+        {{ user.displayName }}
+      </span>
 
       <button
         class="app-header__logout"
