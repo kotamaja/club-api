@@ -208,9 +208,7 @@ export class EventEditPageComponent {
       next: (updatedEvent) => {
         this.saveState.set({ status: 'saved' });
 
-        void this.router.navigate(['/app/manage/events', updatedEvent.id], {
-          replaceUrl: true,
-        });
+        this.location.back();
       },
       error: () => {
         this.saveState.set({

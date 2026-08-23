@@ -1,4 +1,4 @@
-import { DatePipe } from '@angular/common';
+import { DatePipe, Location } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
@@ -52,6 +52,8 @@ export class EventRegistrationsPageComponent {
   private readonly eventDetailResource = inject(EventDetailResource);
   private readonly registrationListResource = inject(EventRegistrationListResource);
   private readonly registrationWrite = inject(EventRegistrationWriteService);
+  private readonly location = inject(Location);
+
 
   protected readonly eventId = computed(() => this.route.snapshot.paramMap.get('eventId') ?? '');
   protected readonly query = signal<EventRegistrationListQuery>(this.createInitialQuery());
@@ -288,5 +290,10 @@ export class EventRegistrationsPageComponent {
     const parsedValue = Number.parseInt(value, 10);
 
     return Number.isFinite(parsedValue) && parsedValue > 0 ? parsedValue : fallback;
+  }
+
+
+  protected backToEvent(): void {
+    this.location.back();
   }
 }

@@ -43,12 +43,13 @@
 </form>
 
 <div class="event-registrations-page__toolbar">
-  <a
+  <button
     class="event-registrations-page__button"
-    routerLink="/app/manage/events"
+    type="button"
+    (click)="backToEvent()"
   >
-    Retour aux événements
-  </a>
+    Retour à l’événement
+  </button>
 
   <button
     class="event-registrations-page__button"
