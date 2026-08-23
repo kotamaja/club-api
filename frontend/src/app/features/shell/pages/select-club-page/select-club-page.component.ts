@@ -1,9 +1,9 @@
-import { Component, computed, inject, signal } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component, computed, inject } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 
 import { ClubAccess } from '../../../../core/context/club-access/club-access.model';
 import { ClubAccessStoreService } from '../../../../core/context/club-access/club-access-store.service';
-import { CurrentContext, CurrentContextState } from '../../../../core/context/current/current-context.model';
+import { CurrentContext } from '../../../../core/context/current/current-context.model';
 import { CurrentContextService } from '../../../../core/context/current/current-context.service';
 import { ContextStorageService } from '../../../../core/context/storage/context-storage.service';
 import { PageHeaderComponent } from '../../../../shared/ui/page-header/page-header.component';
@@ -33,6 +33,7 @@ export class SelectClubPageComponent {
   private readonly currentContext = inject(CurrentContextService);
   private readonly clubAccessStore = inject(ClubAccessStoreService);
   private readonly contextStorage = inject(ContextStorageService);
+  private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
 
   protected readonly state = computed<SelectClubPageState>(() => {
@@ -73,13 +74,20 @@ export class SelectClubPageComponent {
       clubId: nextContext.club?.id ?? null,
     });
 
+    this.navigateAfterSelection();
+  }
+
+  protected goHome(): void {
     void this.router.navigate(['/app/home'], {
       replaceUrl: true,
     });
   }
 
-  protected goHome(): void {
-    void this.router.navigate(['/app/home'], {
+  private navigateAfterSelection(): void {
+    const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
+    const safeReturnUrl = returnUrl?.startsWith('/app/') === true ? returnUrl : '/app/home';
+
+    void this.router.navigateByUrl(safeReturnUrl, {
       replaceUrl: true,
     });
   }

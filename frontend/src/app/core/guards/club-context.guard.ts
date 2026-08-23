@@ -7,19 +7,23 @@ import { CurrentContextService } from '../context/current/current-context.servic
  * Ensures that a current club is selected for routes that require a club
  * context.
  */
-export const clubContextGuard: CanActivateFn = () => {
+export const clubContextGuard: CanActivateFn = (route, state) => {
   const currentContext = inject(CurrentContextService);
   const router = inject(Router);
 
-  const state = currentContext.state();
+  const contextState = currentContext.state();
 
-  if (state.status !== 'resolved') {
+  if (contextState.status !== 'resolved') {
     return router.createUrlTree(['/app']);
   }
 
-  if (state.context.club !== null) {
+  if (contextState.context.club !== null) {
     return true;
   }
 
-  return router.createUrlTree(['/app/select-club']);
+  return router.createUrlTree(['/app/select-club'], {
+    queryParams: {
+      returnUrl: state.url,
+    },
+  });
 };
