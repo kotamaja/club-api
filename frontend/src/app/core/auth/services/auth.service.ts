@@ -34,8 +34,10 @@ export class AuthService {
 
   loginWithPassword(email: string, password: string): Observable<LoginResult> {
     this.currentContext.reset();
+    this.contextStorage.clear();
     this.organizationAccessStore.clear();
     this.clubAccessStore.clear();
+
     const command: PasswordLoginCommand = {
       email,
       password,
@@ -132,6 +134,7 @@ export class AuthService {
       }),
     );
   }
+
   private mapMeToCurrentUser(me: Me): CurrentUser {
     return {
       id: me.id,
