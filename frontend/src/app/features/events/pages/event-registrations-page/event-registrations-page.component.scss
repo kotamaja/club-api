@@ -1,0 +1,147 @@
+:host {
+  display: block;
+}
+
+.event-registrations-page__event-summary {
+  margin: 0 0 16px;
+  color: #666;
+}
+
+.event-registrations-page__toolbar {
+  margin-bottom: 16px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.event-registrations-page__button {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background: #fff;
+  color: inherit;
+  font: inherit;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.event-registrations-page__button:hover:not(:disabled) {
+  background: #f5f5f5;
+}
+
+.event-registrations-page__button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.event-registrations-page__reloading {
+  color: #666;
+}
+
+.event-registrations-page__table-wrapper {
+  overflow-x: auto;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+}
+
+.event-registrations-page__table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+}
+
+.event-registrations-page__table th,
+.event-registrations-page__table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #eee;
+  text-align: left;
+  vertical-align: top;
+}
+
+.event-registrations-page__table th {
+  font-weight: 600;
+  background: #fafafa;
+}
+
+.event-registrations-page__table tr:last-child td {
+  border-bottom: 0;
+}
+
+.event-registrations-page__pagination {
+  margin-top: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.event-registrations-page__pagination-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.event-registrations-page__filters {
+  margin-bottom: 16px;
+  display: grid;
+  grid-template-columns: minmax(150px, 1fr);
+  gap: 12px;
+  align-items: end;
+}
+
+.event-registrations-page__field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.event-registrations-page__field span {
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.event-registrations-page__field input,
+.event-registrations-page__field select {
+  padding: 8px 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font: inherit;
+  background: #fff;
+}
+
+.event-registrations-page__sort-button {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.event-registrations-page__sort-button:hover {
+  text-decoration: underline;
+}
+
+.event-registrations-page__row:hover {
+  background: #f8f8f8;
+}
+
+@media (max-width: 768px) {
+  .event-registrations-page__pagination {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .event-registrations-page__pagination-actions {
+    justify-content: stretch;
+  }
+
+  .event-registrations-page__pagination-actions .event-registrations-page__button {
+    flex: 1;
+  }
+
+  .event-registrations-page__filters {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,224 @@
+<app-page-header
+  title="Inscriptions"
+  description="Gestion des inscriptions à l’événement."
+/>
+
+@let currentState = state();
+
+@let queryValue = currentQuery();
+
+@if (eventResource.value(); as event) {
+  <p class="event-registrations-page__event-summary">
+    <strong>{{ event.title }}</strong>
+    —
+    @if (event.capacity !== null) {
+      {{ event.registeredCount }} / {{ event.capacity }} inscrit(s)
+    } @else {
+      {{ event.registeredCount }} / illimité
+    }
+
+    @if (event.waitlistEnabled) {
+      · Liste d’attente activée
+    }
+  </p>
+}
+
+<form class="event-registrations-page__filters">
+  <label class="event-registrations-page__field">
+    <span>Statut</span>
+    <select
+      name="status"
+      [value]="queryValue.status"
+      (change)="updateStatus($any($event.target).value)"
+    >
+      <option value="all">Tous</option>
+
+      @for (status of statusOptions; track status) {
+        <option [value]="status">
+          {{ statusLabel(status) }}
+        </option>
+      }
+    </select>
+  </label>
+</form>
+
+<div class="event-registrations-page__toolbar">
+  <a
+    class="event-registrations-page__button"
+    routerLink="/app/manage/events"
+  >
+    Retour aux événements
+  </a>
+
+  <button
+    class="event-registrations-page__button"
+    type="button"
+    [disabled]="!hasActiveFilters()"
+    (click)="resetFilters()"
+  >
+    Réinitialiser
+  </button>
+
+  <button
+    class="event-registrations-page__button"
+    type="button"
+    (click)="reload()"
+  >
+    Recharger
+  </button>
+</div>
+
+@if (currentState.status === 'loading') {
+  <p>
+    Chargement des inscriptions...
+  </p>
+}
+
+@if (currentState.status === 'error') {
+  <app-error-state
+    title="Inscriptions indisponibles"
+    [message]="currentState.message"
+    actionLabel="Réessayer"
+    (action)="reload()"
+  />
+}
+
+@if (currentState.status === 'empty') {
+  <p>
+    Aucune inscription ne correspond aux critères actuels.
+  </p>
+}
+
+@if (currentState.status === 'loaded' || currentState.status === 'reloading') {
+  <section>
+    @if (currentState.status === 'reloading') {
+      <p class="event-registrations-page__reloading">
+        Actualisation...
+      </p>
+    }
+
+    <div class="event-registrations-page__table-wrapper">
+      <table class="event-registrations-page__table">
+        <thead>
+        <tr>
+          <th>
+            <button
+              class="event-registrations-page__sort-button"
+              type="button"
+              (click)="updateSort('personLastname')"
+            >
+              Personne {{ sortLabel('personLastname') }}
+            </button>
+          </th>
+
+          <th>
+            <button
+              class="event-registrations-page__sort-button"
+              type="button"
+              (click)="updateSort('status')"
+            >
+              Statut {{ sortLabel('status') }}
+            </button>
+          </th>
+
+          <th>
+            <button
+              class="event-registrations-page__sort-button"
+              type="button"
+              (click)="updateSort('requestedAt')"
+            >
+              Demande {{ sortLabel('requestedAt') }}
+            </button>
+          </th>
+
+          <th>
+            <button
+              class="event-registrations-page__sort-button"
+              type="button"
+              (click)="updateSort('cancelledAt')"
+            >
+              Annulation {{ sortLabel('cancelledAt') }}
+            </button>
+          </th>
+
+          <th>Note</th>
+          <th>Actions</th>
+        </tr>
+        </thead>
+
+        <tbody>
+          @for (registration of currentState.page.items; track trackRegistration($index, registration)) {
+            <tr class="event-registrations-page__row">
+              <td>
+                {{ personName(registration) }}
+              </td>
+              <td>
+                {{ statusLabel(registration.status) }}
+              </td>
+              <td>
+                {{ registration.requestedAt | date:'dd.MM.yyyy HH:mm' }}
+              </td>
+              <td>
+                @if (registration.cancelledAt !== null) {
+                  {{ registration.cancelledAt | date:'dd.MM.yyyy HH:mm' }}
+                } @else {
+                  —
+                }
+              </td>
+              <td>
+                {{ registration.note ?? '—' }}
+              </td>
+              <td>
+                @if (canCancel(registration)) {
+                  <button
+                    class="event-registrations-page__button"
+                    type="button"
+                    [disabled]="isCancellingRegistration(registration)"
+                    (click)="cancelRegistration(registration)"
+                  >
+                    @if (isCancellingRegistration(registration)) {
+                      Annulation...
+                    } @else {
+                      Annuler
+                    }
+                  </button>
+                } @else {
+                  —
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <footer class="event-registrations-page__pagination">
+      <span>
+        Page {{ currentState.page.page }}
+        sur {{ totalPages(currentState.page) }}
+        —
+        {{ currentState.page.totalItems }} inscription(s)
+      </span>
+
+      <div class="event-registrations-page__pagination-actions">
+        <button
+          class="event-registrations-page__button"
+          type="button"
+          [disabled]="currentState.page.page <= 1"
+          (click)="previousPage()"
+        >
+          Précédent
+        </button>
+
+        <button
+          class="event-registrations-page__button"
+          type="button"
+          [disabled]="currentState.page.page * currentState.page.perPage >= currentState.page.totalItems"
+          (click)="nextPage(currentState.page)"
+        >
+          Suivant
+        </button>
+      </div>
+    </footer>
+  </section>
+}

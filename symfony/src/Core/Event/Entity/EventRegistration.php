@@ -54,6 +54,10 @@ use Symfony\Component\Uid\Ulid;
                     filter: new SortFilter(),
                     property: 'person.lastname',
                 ),
+                'orderCancelledAt' => new QueryParameter(
+                    filter: new SortFilter(),
+                    property: 'cancelledAt',
+                ),
             ],
         ),
         new Post(

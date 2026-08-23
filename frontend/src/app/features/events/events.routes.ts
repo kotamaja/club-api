@@ -1,10 +1,10 @@
-import { Routes } from '@angular/router';
+import {Routes} from '@angular/router';
 
-import { capabilityGuard } from '../../core/guards/capability.guard';
-import { EventCreatePageComponent } from './pages/event-create-page/event-create-page.component';
-import { EventDetailPageComponent } from './pages/event-detail-page/event-detail-page.component';
-import { EventEditPageComponent } from './pages/event-edit-page/event-edit-page.component';
-import { EventListPageComponent } from './pages/event-list-page/event-list-page.component';
+import {capabilityGuard} from '../../core/guards/capability.guard';
+import {EventCreatePageComponent} from './pages/event-create-page/event-create-page.component';
+import {EventDetailPageComponent} from './pages/event-detail-page/event-detail-page.component';
+import {EventEditPageComponent} from './pages/event-edit-page/event-edit-page.component';
+import {EventListPageComponent} from './pages/event-list-page/event-list-page.component';
 
 /**
  * Defines the routes for managing club events.
@@ -30,8 +30,8 @@ export const eventsRoutes: Routes = [
           capabilities: ['canManageEventRegistrations'],
         },
         loadComponent: () =>
-          import('./components/event-registrations-panel/event-registrations-panel.component')
-            .then((m) => m.EventRegistrationsPanelComponent),
+          import('./pages/event-registrations-page/event-registrations-page.component')
+            .then((m) => m.EventRegistrationsPageComponent),
       },
       {
         path: ':eventId/public-registration-requests',
