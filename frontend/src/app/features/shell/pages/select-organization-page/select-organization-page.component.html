@@ -17,6 +17,12 @@
   </p>
 }
 
+@if (currentState.status === 'selecting') {
+  <p>
+    Préparation de l’organisation {{ currentState.organization.organizationName }}...
+  </p>
+}
+
 @if (currentState.status === 'error') {
   <p class="select-organization-page__error">
     {{ currentState.message }}

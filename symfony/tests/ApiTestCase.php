@@ -197,4 +197,13 @@ abstract class ApiTestCase extends BaseApiTestCase
             (new DateTimeImmutable($actual))->format('Y-m-d H:i:s')
         );
     }
+
+    protected function authenticatedHeaders(AuthenticatedOrganizationContext $context, array $headers = []): array
+    {
+        return [
+            'Accept' => 'application/json',
+            'Authorization' => 'Bearer '.$context->jwt,
+            ...$headers,
+        ];
+    }
 }

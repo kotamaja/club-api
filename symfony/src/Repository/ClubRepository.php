@@ -3,6 +3,8 @@
 namespace App\Repository;
 
 use App\Entity\Club;
+use App\Entity\Organization;
+use App\Entity\Person;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -16,28 +18,21 @@ class ClubRepository extends ServiceEntityRepository
         parent::__construct($registry, Club::class);
     }
 
-    //    /**
-    //     * @return Club[] Returns an array of Club objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('c')
-    //            ->andWhere('c.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('c.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
-
-    //    public function findOneBySomeField($value): ?Club
-    //    {
-    //        return $this->createQueryBuilder('c')
-    //            ->andWhere('c.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+    /**
+     * @return list<Club>
+     */
+    public function findAccessibleForPerson(Organization $organization, Person $person): array
+    {
+        return $this->createQueryBuilder('club')
+            ->innerJoin('club.memberships', 'membership')
+            ->andWhere('club.organization = :organization')
+            ->andWhere('membership.organization = :organization')
+            ->andWhere('membership.person = :person')
+            ->andWhere('membership.endedAt IS NULL')
+            ->setParameter('organization', $organization)
+            ->setParameter('person', $person)
+            ->orderBy('club.name', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 }

@@ -12,6 +12,7 @@ import { TokenService } from '../session/token.service';
 import { ContextStorageService } from '../../context/storage/context-storage.service';
 import { ContextResolverService } from '../../context/resolution/context-resolver.service';
 import {OrganizationAccessStoreService} from '../../context/organization-access/organization-access-store.service';
+import {ClubAccessStoreService} from '../../context/club-access/club-access-store.service';
 
 /**
  * Coordinates authentication workflows.
@@ -29,8 +30,12 @@ export class AuthService {
   private readonly contextStorage = inject(ContextStorageService);
   private readonly contextResolver = inject(ContextResolverService);
   private readonly organizationAccessStore = inject(OrganizationAccessStoreService);
+  private readonly clubAccessStore = inject(ClubAccessStoreService);
 
   loginWithPassword(email: string, password: string): Observable<LoginResult> {
+    this.currentContext.reset();
+    this.organizationAccessStore.clear();
+    this.clubAccessStore.clear();
     const command: PasswordLoginCommand = {
       email,
       password,
@@ -87,6 +92,7 @@ export class AuthService {
         this.currentContext.reset();
         this.contextStorage.clear();
         this.organizationAccessStore.clear();
+        this.clubAccessStore.clear();
 
         return of(false);
       }),
@@ -116,6 +122,7 @@ export class AuthService {
     this.currentContext.reset();
     this.contextStorage.clear();
     this.organizationAccessStore.clear();
+    this.clubAccessStore.clear();
 
     return this.api.post<void, Record<string, never>>('/auth/logout', {}, {
       withCredentials: true,

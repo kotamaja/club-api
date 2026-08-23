@@ -1,14 +1,14 @@
 import { Component, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 
-import { ContextStorageService } from '../../../../core/context/storage/context-storage.service';
+import { ClubAccess } from '../../../../core/context/club-access/club-access.model';
+import { ClubAccessStoreService } from '../../../../core/context/club-access/club-access-store.service';
 import { CurrentContextService } from '../../../../core/context/current/current-context.service';
 import { OrganizationAccess } from '../../../../core/context/organization-access/organization-access.model';
-import { PageHeaderComponent } from '../../../../shared/ui/page-header/page-header.component';
+import { OrganizationAccessStoreService } from '../../../../core/context/organization-access/organization-access-store.service';
 import { ContextFactoryService } from '../../../../core/context/resolution/context-factory.service';
-import {
-  OrganizationAccessStoreService
-} from '../../../../core/context/organization-access/organization-access-store.service';
+import { ContextStorageService } from '../../../../core/context/storage/context-storage.service';
+import { PageHeaderComponent } from '../../../../shared/ui/page-header/page-header.component';
 
 /**
  * State used by the organization selection page.
@@ -16,6 +16,7 @@ import {
 type SelectOrganizationPageState =
   | { status: 'loading' }
   | { status: 'loaded'; organizations: OrganizationAccess[] }
+  | { status: 'selecting'; organization: OrganizationAccess }
   | { status: 'empty' }
   | { status: 'error'; message: string };
 
@@ -35,6 +36,7 @@ export class SelectOrganizationPageComponent {
   private readonly contextStorage = inject(ContextStorageService);
   private readonly currentContext = inject(CurrentContextService);
   private readonly organizationAccessStore = inject(OrganizationAccessStoreService);
+  private readonly clubAccessStore = inject(ClubAccessStoreService);
   private readonly router = inject(Router);
   private readonly contextFactory = inject(ContextFactoryService);
 
@@ -45,16 +47,34 @@ export class SelectOrganizationPageComponent {
   }
 
   protected selectOrganization(organization: OrganizationAccess): void {
-    const context = this.contextFactory.createFromOrganizationAccess(organization);
-
-    this.currentContext.setContext(context);
-    this.contextStorage.save({
-      organizationId: context.organization.id,
-      clubId: null,
+    this.state.set({
+      status: 'selecting',
+      organization,
     });
 
-    void this.router.navigate(['/app/home'], {
-      replaceUrl: true,
+    const storedSelection = this.contextStorage.get();
+
+    this.clubAccessStore.reload(organization.organizationId).subscribe({
+      next: (clubs) => {
+        const selectedClub = this.resolveClub(clubs, storedSelection?.clubId ?? null);
+        const context = this.contextFactory.createFromOrganizationAccess(organization, selectedClub);
+
+        this.currentContext.setContext(context);
+        this.contextStorage.save({
+          organizationId: context.organization.id,
+          clubId: context.club?.id ?? null,
+        });
+
+        void this.router.navigate(['/app/home'], {
+          replaceUrl: true,
+        });
+      },
+      error: () => {
+        this.state.set({
+          status: 'error',
+          message: 'Impossible de charger les clubs disponibles pour cette organisation.',
+        });
+      },
     });
   }
 
@@ -85,4 +105,19 @@ export class SelectOrganizationPageComponent {
     });
   }
 
+  private resolveClub(clubs: ClubAccess[], storedClubId: string | null): ClubAccess | null {
+    if (storedClubId !== null) {
+      const storedClub = clubs.find((club) => club.clubId === storedClubId);
+
+      if (storedClub !== undefined) {
+        return storedClub;
+      }
+    }
+
+    if (clubs.length === 1) {
+      return clubs[0];
+    }
+
+    return null;
+  }
 }
