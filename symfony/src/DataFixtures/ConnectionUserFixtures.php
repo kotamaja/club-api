@@ -45,6 +45,16 @@ class ConnectionUserFixtures extends Fixture
         $this->addReference("Yves", $user);
         $manager->persist($user);
 
+        $user = new ConnectionUser("sandra@test.com");
+
+        $passwordHash = $this->passwordHasher->hashPassword(
+            $user,
+            "welcome"
+        );
+        $user->activate($passwordHash);
+        $this->addReference("Sandra", $user);
+        $manager->persist($user);
+
         $manager->flush();
     }
 

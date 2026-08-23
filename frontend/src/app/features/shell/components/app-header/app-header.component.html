@@ -4,10 +4,24 @@
   </a>
 
   <div class="app-header__context">
-    @if (shouldShowOrganization() && currentOrganization(); as organization) {
-      <span class="app-header__organization">
-        {{ organization.name }}
-      </span>
+    @if (shouldShowOrganizationSelect()) {
+      <label class="app-header__organization-select-label">
+        <span class="app-header__organization-select-text">Organisation</span>
+
+        <select
+          class="app-header__organization-select"
+          (change)="selectOrganization($any($event.target).value)"
+        >
+          @for (organization of availableOrganizations(); track organization.organizationId) {
+            <option
+              [value]="organization.organizationId"
+              [selected]="currentOrganization()?.id === organization.organizationId"
+            >
+              {{ organization.organizationName }}
+            </option>
+          }
+        </select>
+      </label>
     }
 
     @if (shouldShowClubSelect()) {

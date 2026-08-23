@@ -38,6 +38,16 @@ class OrganizationUserFixtures  extends Fixture implements DependentFixtureInter
         $user = new  OrganizationUser( $connectionUser,$organization, [], $person  );
         $manager->persist($user);
 
+
+
+        $connectionUser = $this->getReference("Sandra", ConnectionUser::class);
+        $person = $this->getReference("sandra-a", Person::class);
+        $organization = $this->getReference("Association Jurassienne Aviron", Organization::class);
+        $user = new  OrganizationUser( $connectionUser,$organization, [], $person  );
+        $manager->persist($user);
+
+
+
         $manager->flush();
 
     }

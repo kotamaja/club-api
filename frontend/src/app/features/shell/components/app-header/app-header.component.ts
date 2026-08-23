@@ -7,15 +7,16 @@ import { ClubAccess } from '../../../../core/context/club-access/club-access.mod
 import { ClubAccessStoreService } from '../../../../core/context/club-access/club-access-store.service';
 import { CurrentContext } from '../../../../core/context/current/current-context.model';
 import { CurrentContextService } from '../../../../core/context/current/current-context.service';
+import { OrganizationAccess } from '../../../../core/context/organization-access/organization-access.model';
 import { OrganizationAccessStoreService } from '../../../../core/context/organization-access/organization-access-store.service';
+import { ContextFactoryService } from '../../../../core/context/resolution/context-factory.service';
 import { ContextStorageService } from '../../../../core/context/storage/context-storage.service';
 
 /**
  * Displays the connected application header.
  *
- * The current organization is only shown when the user has access to multiple
- * enabled organizations. The current club is shown when it exists, and becomes
- * selectable when several clubs are available.
+ * The organization selector is shown only when several organizations are
+ * available. The club selector is shown only when several clubs are available.
  */
 @Component({
   selector: 'app-app-header',
@@ -30,15 +31,17 @@ export class AppHeaderComponent {
   private readonly currentContext = inject(CurrentContextService);
   private readonly organizationAccessStore = inject(OrganizationAccessStoreService);
   private readonly clubAccessStore = inject(ClubAccessStoreService);
+  private readonly contextFactory = inject(ContextFactoryService);
   private readonly contextStorage = inject(ContextStorageService);
 
   protected readonly currentUser = this.session.currentUser;
   protected readonly currentClub = this.currentContext.currentClub;
   protected readonly currentOrganization = this.currentContext.currentOrganization;
   protected readonly availableClubs = this.clubAccessStore.clubs;
+  protected readonly availableOrganizations = this.organizationAccessStore.enabledOrganizations;
 
-  protected readonly shouldShowOrganization = computed(() => {
-    return this.organizationAccessStore.enabledOrganizations().length > 1;
+  protected readonly shouldShowOrganizationSelect = computed(() => {
+    return this.availableOrganizations().length > 1;
   });
 
   protected readonly shouldShowReadonlyClub = computed(() => {
@@ -49,6 +52,33 @@ export class AppHeaderComponent {
     return this.availableClubs().length > 1;
   });
 
+  protected selectOrganization(organizationId: string): void {
+    const selectedOrganization = this.availableOrganizations().find((organization) => {
+      return organization.organizationId === organizationId;
+    });
+
+    if (selectedOrganization === undefined) {
+      return;
+    }
+
+    this.clubAccessStore.reload(selectedOrganization.organizationId).subscribe({
+      next: (clubs) => {
+        const selectedClub = this.resolveClub(clubs, null);
+        const context = this.contextFactory.createFromOrganizationAccess(selectedOrganization, selectedClub);
+
+        this.currentContext.setContext(context);
+        this.contextStorage.save({
+          organizationId: context.organization.id,
+          clubId: context.club?.id ?? null,
+        });
+
+        void this.router.navigate(['/app/home'], {
+          replaceUrl: true,
+        });
+      },
+    });
+  }
+
   protected selectClub(clubId: string): void {
     const state = this.currentContext.state();
 
@@ -56,13 +86,15 @@ export class AppHeaderComponent {
       return;
     }
 
-    const selectedClub = this.availableClubs().find((club) => club.clubId === clubId);
+    const selectedClub = this.availableClubs().find((club) => {
+      return club.clubId === clubId;
+    });
 
     if (selectedClub === undefined) {
       return;
     }
 
-    this.setCurrentClub(state.context, selectedClub)
+    this.setCurrentClub(state.context, selectedClub);
 
     void this.router.navigate(['/app/home'], {
       replaceUrl: true,
@@ -91,5 +123,21 @@ export class AppHeaderComponent {
       organizationId: nextContext.organization.id,
       clubId: nextContext.club?.id ?? null,
     });
+  }
+
+  private resolveClub(clubs: ClubAccess[], storedClubId: string | null): ClubAccess | null {
+    if (storedClubId !== null) {
+      const storedClub = clubs.find((club) => club.clubId === storedClubId);
+
+      if (storedClub !== undefined) {
+        return storedClub;
+      }
+    }
+
+    if (clubs.length === 1) {
+      return clubs[0];
+    }
+
+    return null;
   }
 }
